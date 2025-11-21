@@ -25,7 +25,8 @@ public class FlowStateMachine : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
+				"Core", 
+				"FlowStateMachine_Widget"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -39,7 +40,7 @@ public class FlowStateMachine : ModuleRules
 				"Slate",
 				"SlateCore",
 				"GameplayTags",
-				"UMG"
+				"UMG",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

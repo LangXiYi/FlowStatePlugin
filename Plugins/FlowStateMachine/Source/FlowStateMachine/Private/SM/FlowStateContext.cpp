@@ -4,29 +4,37 @@
 #include "SM/FlowStateContext.h"
 
 #include "Components/Widget.h"
-#include "Data/FlowStateDataAsset.h"
+#include "Data/FSMMetaDataAsset.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "SM/FlowState.h"
+#include "SM/FlowStateMachine.h"
+#include "SM/FSMGC.h"
+#include "Utility/FSMUtility.h"
 
 
 void UFlowStateContext::Initialize()
 {
+	// 创建垃圾回收对象
+	GC = MakeShareable(new FSMGC);
 	OnInitialize();
-	LoadingFlowStateData([this]()
-	{
-		// Loading Success Callback
-		BeginPlay();
-	});
 }
 
 void UFlowStateContext::BeginPlay()
 {
 	OnBeignPlay();
-	if (FlowStateData)
+}
+
+void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine* FlowStateMachine)
+{
+	StateMachine = FlowStateMachine;
+	// TODO::注册状态机并运行
+	LoadingFlowStateData(FlowStateMachine->GetMetaDataID(), [this]()
 	{
-		SwitchToByClass(FlowStateData->StartState);
-	}
+		// Loading Success Callback
+		BeginPlay();
+	});
 }
 
 UFlowState* UFlowStateContext::SwitchTo(UFlowState* NewState)
@@ -59,107 +67,55 @@ UFlowState* UFlowStateContext::SwitchToByIndex(int32 Index)
 {
 	if (!FlowStateList.IsValidIndex(Index))
 	{
-		UE_LOG(LogFlowState, Error, TEXT("Index is not valid by %d"), Index);
+		UE_LOG(LogFlowStateMachine, Error, TEXT("Index is not valid by %d"), Index);
 		return nullptr;
 	}
 	return SwitchToByClass(FlowStateList[Index]);
 }
 
+UFlowState* UFlowStateContext::SwitchToByClass(const TSubclassOf<UFlowState>& NewState)
+{
+	{ return SwitchTo(NewObject<UFlowState>(this, NewState)); }
+}
+
 void UFlowStateContext::Tick(float DeltaTime)
 {
+	OnTick(DeltaTime);
 	if (CurState != nullptr)
 	{
 		CurState->Tick(DeltaTime);
 	}
-#if !UE_BUILD_SHIPPING
-	if (GEngine)
-	{
-		FStringFormatNamedArguments FormatArguments;
-		FormatArguments.Add("StateName", CurState ? CurState->GetName() : "None");
-		FormatArguments.Add("HiddenActors", HiddenActorsCache.Num());
-		FormatArguments.Add("HiddenWidgets", HiddenWidgetsCache.Num());
-		FormatArguments.Add("HiddenLevels", HiddenLevelsCache.Num());
-		FString Str = FString::Format(
-			TEXT("Train State {StateName}\n"
-				 "      Hidden Actors  : {HiddenActors}\n"
-				 "      Hidden Widgets : {HiddenWidgets}\n"
-				 "      Hidden Level   : {HiddenLevels}"), FormatArguments);
-		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, Str);
-	}
-#endif
 }
 
-AActor* UFlowStateContext::FindActorFromCache(TSubclassOf<AActor> Type, FName ActorTag)
-{
-	for (AActor* HiddenActor : HiddenActorsCache)
-	{
-		if (HiddenActor && HiddenActor->IsA(Type) && HiddenActor->ActorHasTag(ActorTag))
-		{
-			// UE_LOG(LogTemp, Log, TEXT("找到标签为 %s 的对象"), *ActorTag.ToString())
-			return HiddenActor;
-		}
-	}
-	UE_LOG(LogTemp, Warning, TEXT("未找到标签为 %s 的 %s"), *ActorTag.ToString(), *Type->GetName())
-	return nullptr;
-}
-
-void UFlowStateContext::ClearCache()
-{
-	for (AActor* ActorsCache : HiddenActorsCache)
-	{
-		ActorsCache->Destroy();
-	}
-	HiddenActorsCache.Empty();
-	for (UWidget* WidgetsCache : HiddenWidgetsCache)
-	{
-		WidgetsCache->RemoveFromParent();
-	}
-	HiddenWidgetsCache.Empty();
-	for (FName LevelName : HiddenLevelsCache)
-	{
-		UGameplayStatics::UnloadStreamLevel(this, LevelName, FLatentActionInfo(), false);
-	}
-	HiddenLevelsCache.Empty();
-}
-
-UFlowStateDataFragment* UFlowStateContext::FindFlowStateDataFragment(TSubclassOf<UFlowStateDataFragment> FragmentClass)
-{
-	if (FlowStateData)
-	{
-		return FlowStateData->FindDataFragment(FragmentClass);
-	}
-	return nullptr;
-}
-
-void UFlowStateContext::LoadingFlowStateData(std::function<void()> Callback)
+void UFlowStateContext::LoadingFlowStateData(const FPrimaryAssetId& FlowStateDataID, TFunction<void()> Callback)
 {
 	if (!FlowStateDataID.IsValid())
 	{
-		UE_LOG(LogFlowState, Error, TEXT("%hs::FlowStateDataID is invalid"), __FUNCTION__);
+		UE_LOG(LogFlowStateMachine, Error, TEXT("%hs::FlowStateDataID is invalid"), __FUNCTION__);
 		return;
 	}
-	auto OnLoadedFunc = [this, Callback]()
+	auto OnLoadedFunc = [this, Callback, FlowStateDataID]()
 	{
-		FlowStateDataLoadHandle.Reset();
+		MetaDataLoadHandle.Reset();
 		UObject* AssetObject = UAssetManager::Get().GetPrimaryAssetObject(FlowStateDataID);
-		if (UFlowStateDataAsset* GuideDataAsset = Cast<UFlowStateDataAsset>(AssetObject))
+		if (UFSMMetaDataAsset* GuideDataAsset = Cast<UFSMMetaDataAsset>(AssetObject))
 		{
-			UE_LOG(LogFlowState, Log, TEXT("FlowStateData loading success."));
+			UE_LOG(LogFlowStateMachine, Log, TEXT("FlowStateData loading success."));
 			FlowStateData = GuideDataAsset;
 			Callback();
 		}
 		else
 		{
-			UE_LOG(LogFlowState, Error, TEXT("FlowStateData loading error."));
+			UE_LOG(LogFlowStateMachine, Error, TEXT("FlowStateData loading error."));
 		}
 	};
 	// 尝试加载数据资产
-	FlowStateDataLoadHandle = UAssetManager::Get().LoadPrimaryAsset(FlowStateDataID);
-	if (FlowStateDataLoadHandle.IsValid())
+	MetaDataLoadHandle = UAssetManager::Get().LoadPrimaryAsset(FlowStateDataID);
+	if (MetaDataLoadHandle.IsValid())
 	{
-		if (!FlowStateDataLoadHandle->HasLoadCompleted())
+		if (!MetaDataLoadHandle->HasLoadCompleted())
 		{
-			FlowStateDataLoadHandle->BindCompleteDelegate(
+			MetaDataLoadHandle->BindCompleteDelegate(
 				FStreamableDelegate::CreateLambda(OnLoadedFunc));
 		}
 		else

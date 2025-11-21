@@ -6,7 +6,7 @@
 #include "UObject/Object.h"
 #include "FlowState.generated.h"
 
-class UFlowStateDataAsset;
+class UFSMMetaDataAsset;
 class UFlowStateDataFragment;
 class UWidget;
 class UFlowStateLayoutWidget;
@@ -21,116 +21,54 @@ class FLOWSTATEMACHINE_API UFlowState : public UObject
 
 	friend class UFlowStateContext;
 
+	////////////////////////////////////////////////////////////////////////
+	/// Get or Set
+	////////////////////////////////////////////////////////////////////////
 public:
+	virtual UWorld* GetWorld() const override;
+	virtual ULevel* GetLevel() const;
+
+	UFUNCTION(BlueprintPure, Category="Flow State")
+	FORCEINLINE float GetDeltaTime() const { return Private_DeltaTime; }
+
+	////////////////////////////////////////////////////////////////////////
+	/// Custom Process Event
+	////////////////////////////////////////////////////////////////////////
+public:
+	/** 每帧执行事件 */
 	virtual void Tick(float DeltaTime);
+	/** 每帧执行事件 */
 	UFUNCTION(BlueprintImplementableEvent, Category="FlowState", DisplayName="Tick")
 	void OnTick(float DeltaTime);
 
-	virtual UWorld* GetWorld() const override;
-
-	virtual ULevel* GetLevel() const;
-
-	/**
-	 * 
-	 * @param Context 
-	 */
+	/** 进入当前状态事件 */
 	virtual void Enter(UFlowStateContext* Context);
-	UFUNCTION(BlueprintImplementableEvent, Category="Flow State")
+	/** 进入当前状态事件 */
+	UFUNCTION(BlueprintImplementableEvent, Category="FlowState")
 	void OnEnter();
 
-	/**
-	 * 初始化控件
-	 */
+	/** 初始化控件事件 */
 	virtual void InitWidget(UFlowStateLayoutWidget* Layout);
-	UFUNCTION(BlueprintImplementableEvent, Category="Flow State")
+	/** 初始化控件事件 */
+	UFUNCTION(BlueprintImplementableEvent, Category="FlowState")
 	void OnInitWidget(UFlowStateLayoutWidget* Layout);
 
-	/**
-	 * 
-	 */
+	/** 退出当前状态事件 */
 	virtual void Exit();
-	UFUNCTION(BlueprintImplementableEvent, Category="Flow State")
+	/** 退出当前状态事件 */
+	UFUNCTION(BlueprintImplementableEvent, Category="FlowState")
 	void OnExit();
-
-	UFlowStateContext* GetContext() { return StateContext; }
-
-	UFUNCTION(BlueprintCallable, Category="Flow State")
-	void ClearCache();
-
-	// 重载该函数即可实现对指定类型的物体的生命周期管理
-	void AddToKills(AActor* Target) { KillActors.Add(Target); }
-	void AddToKills(UWidget* Target){ KillWidgets.Add(Target); }
-	void AddToKills(FName LevelName){ KillLevels.Add(LevelName); }
-
-	// 重载该函数即可实现对指定类型的物体的生命周期管理
-	void AddToHiddens(AActor* Target) { HiddenActors.Add(Target); }
-	void AddToHiddens(UWidget* Target){ HiddenWidgets.Add(Target); }
-	void AddToHiddens(FName LevelName){ HiddenLevels.Add(LevelName); }
-
-	UFUNCTION(BlueprintCallable, Category="Flow State", meta = (DeterminesOutputType = Type))
-	AActor* FindActorFromCache(TSubclassOf<AActor> Type, FName ActorTag);
-
-	template<class T>
-	T* FindActorFromCache(TSubclassOf<AActor> Type, FName ActorTag)
-	{
-		return static_cast<T*>(FindActorFromCache(Type, ActorTag));
-	}
-
-	UFUNCTION(BlueprintPure, Category="Flow State")
-	float GetDeltaTime() const { return Private_DeltaTime; }
-
-	UFUNCTION(BlueprintPure, Category = "Flow State", meta = (DeterminesOutputType = "AssetType"))
-	UObject* FindAssetByName(TSubclassOf<UObject> AssetType, FName AssetName) const;
-
-	UFUNCTION(BlueprintPure, Category = "Flow State")
-	UFlowStateDataAsset* GetFlowStateData() const;
-
-	UFUNCTION(BlueprintPure, Category = "Flow State", meta = (DeterminesOutputType = "FragmentClass"))
-	UFlowStateDataFragment* FindFlowStateDataFragment(TSubclassOf<UFlowStateDataFragment> FragmentClass) const;
-
-	template<class T>
-	T* FindFlowStateDataFragment() const
-	{
-		return (T*)FindFlowStateDataFragment(T::StaticClass());
-	}
-
-	/** 获取上一状态的信息，不保证对象有效性，不要直接使用 */
-	UFUNCTION(BlueprintPure, Category = "Flow State")
-	UFlowState* GetLastFlowState() const;
-
-protected:
-	virtual void PreIniProperties(UFlowState* LastState);
 	
-	UFUNCTION(BlueprintImplementableEvent, Category = "Flow State")
+protected:
+	// 预初始化属性，可以在这里继承上一状态的属性
+	virtual void PreIniProperties(UFlowState* LastState);
+	UFUNCTION(BlueprintImplementableEvent, Category = "FlowState")
 	void OnPreInitProperties(UFlowState* LastState);
 
-	/**
-	 * 从当前状态转移至目标状态是否符合条件
-	 * @param LastState 
-	 * @return 
-	 */
-	virtual bool Condition(UFlowState* LastState);
-
-	UFUNCTION(BlueprintImplementableEvent, Category="Flow State", DisplayName="Condition")
-	bool BP_Condition();
-
-	// 临时使用，不作为最终使用方案，但调用方式可以不变
-	UPROPERTY(EditDefaultsOnly, Category="Flow State");
-	TArray<TSubclassOf<UFlowState>> FlowStates;
-	
 protected:
-	UPROPERTY(BlueprintReadOnly, Category = "Flow State", meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, Category = "FlowState", meta = (AllowPrivateAccess = true))
 	UFlowStateContext* StateContext;
 
 private:
-	TArray<AActor*> KillActors;
-	TArray<AActor*> HiddenActors;
-
-	TArray<UWidget*> KillWidgets;
-	TArray<UWidget*> HiddenWidgets;
-
-	TArray<FName> HiddenLevels;
-	TArray<FName> KillLevels;
-
 	float Private_DeltaTime;
 };

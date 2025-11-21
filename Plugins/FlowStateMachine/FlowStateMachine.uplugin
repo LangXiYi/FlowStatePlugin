@@ -21,8 +21,23 @@
 			"LoadingPhase": "Default"
 		},
 		{
-			"Name": "FlowStateMachine_EditorModule",
+			"Name": "FlowStateMachine_Node",
 			"Type": "UncookedOnly",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "FlowStateMachine_Editor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "FlowStateMachine_Widget",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "FlowStateMachine_AssetType",
+			"Type": "Editor",
 			"LoadingPhase": "Default"
 		}
 	]
