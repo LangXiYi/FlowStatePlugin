@@ -39,38 +39,29 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine* FlowStateMac
 
 UFlowState* UFlowStateContext::SwitchTo(UFlowState* NewState)
 {
-	// 当前状态有效，但未通过检测时，跳过执行
-	if (CurState && !CurState->Condition(NewState))
+	if (CurState == nullptr)
 	{
 		return nullptr;
 	}
-
-	// 清理上上次的状态
-	if (LastState != nullptr)
-	{
-		LastState->ConditionalBeginDestroy();
-	}
 	if (CurState != nullptr)
 	{
-		LastState = CurState;
 		CurState->Exit();
 	}
-	check(NewState);
+	NewState->PreIniProperties(CurState);
 	CurState = NewState;
-	CurState->PreIniProperties(LastState);
-	FlowStateList = CurState->FlowStates;
 	CurState->Enter(this);
 	return CurState;
 }
 
 UFlowState* UFlowStateContext::SwitchToByIndex(int32 Index)
 {
-	if (!FlowStateList.IsValidIndex(Index))
-	{
-		UE_LOG(LogFlowStateMachine, Error, TEXT("Index is not valid by %d"), Index);
-		return nullptr;
-	}
-	return SwitchToByClass(FlowStateList[Index]);
+	return nullptr;
+	// if (!FlowStateList.IsValidIndex(Index))
+	// {
+	// 	UE_LOG(LogFlowStateMachine, Error, TEXT("Index is not valid by %d"), Index);
+	// 	return nullptr;
+	// }
+	// return SwitchToByClass(FlowStateList[Index]);
 }
 
 UFlowState* UFlowStateContext::SwitchToByClass(const TSubclassOf<UFlowState>& NewState)
@@ -111,6 +102,7 @@ void UFlowStateContext::LoadingFlowStateData(const FPrimaryAssetId& FlowStateDat
 	};
 	// 尝试加载数据资产
 	MetaDataLoadHandle = UAssetManager::Get().LoadPrimaryAsset(FlowStateDataID);
+	checkf(MetaDataLoadHandle.IsValid(), "The MetaDataLoadHandle is not valid. Check your 'AssetManager' added the MetaData.");
 	if (MetaDataLoadHandle.IsValid())
 	{
 		if (!MetaDataLoadHandle->HasLoadCompleted())

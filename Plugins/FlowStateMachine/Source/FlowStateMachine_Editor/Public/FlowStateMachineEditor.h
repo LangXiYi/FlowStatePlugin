@@ -1,14 +1,28 @@
 ﻿#pragma once
+#include "IFlowStateMachineEditor.h"
 
-#include "BlueprintEditor.h"
+class UFlowStateMachine;
 
-class FFlowStateMachineEditor : public FBlueprintEditor
+
+
+
+class FFlowStateMachineEditor: public IFlowStateMachineEditor
 {
 public:
-	// todo::Create my editor
+	FFlowStateMachineEditor():
+		FlowStateMachine(nullptr)
+	{
+		
+	}
+	
+	void InitFlowStateMachineEditor(EToolkitMode::Type Mode,
+		const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject);
 
-	virtual FName GetToolkitFName() const override { return FName("FlowStateMachineEditor"); }
-	virtual FText GetToolkitName() const override { return FText::FromString("FlowStateMachineEditor"); }
-	virtual FString GetWorldCentricTabPrefix() const override { return FString("FlowStateMachineEditor"); }
-	virtual FLinearColor GetWorldCentricTabColorScale() const override { return FLinearColor::Yellow; }
+	void SaveEditedObjectState();
+
+public:
+	static FName const FlowStateMachineMode; 
+	
+private:
+	UFlowStateMachine* FlowStateMachine;
 };

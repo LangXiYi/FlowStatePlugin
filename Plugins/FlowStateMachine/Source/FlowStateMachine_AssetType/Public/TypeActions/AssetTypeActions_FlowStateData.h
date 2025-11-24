@@ -7,7 +7,7 @@ class FAssetTypeActions_FlowStateData : public FAssetTypeActions_Base
 {
 public:
 	// IAssetTypeActions Implementation
-	virtual FText GetName() const override { return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_FlowStateData", "Flow State Dat"); }
+	virtual FText GetName() const override { return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_FlowStateData", "FlowStateDat"); }
 	virtual UClass* GetSupportedClass() const override { return UFSMMetaDataAsset::StaticClass(); }
 
 	virtual FColor GetTypeColor() const override { return FFSMAssetTypeHelper::AssetColor; }

@@ -9,7 +9,7 @@ public class FlowStateMachine_Editor : ModuleRules
         PublicDependencyModuleNames.AddRange(
             new string[]
             {
-                "Core",
+                "Core", "FlowStateMachine"
             }
         );
 
@@ -19,7 +19,8 @@ public class FlowStateMachine_Editor : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "Slate",
-                "SlateCore"
+                "SlateCore",
+                "Kismet"
             }
         );
     }

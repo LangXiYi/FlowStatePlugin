@@ -10,7 +10,8 @@ public class FlowStateMachine_AssetType : ModuleRules
             new string[]
             {
                 "Core",
-                "FlowStateMachine"
+                "FlowStateMachine",
+                "FlowStateMachine_Editor"
             }
         );
 
@@ -21,7 +22,7 @@ public class FlowStateMachine_AssetType : ModuleRules
                 "Engine",
                 "Slate",
                 "SlateCore",
-                "AssetTools"
+                "AssetTools", 
             }
         );
     }
