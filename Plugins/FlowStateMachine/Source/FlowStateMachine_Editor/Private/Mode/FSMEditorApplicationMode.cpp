@@ -1,32 +1,38 @@
-﻿#include "FlowStateMachineEditorApplicationMode.h"
+﻿#include "Mode/FSMEditorApplicationMode.h"
 
 #include "FlowStateMachineEditor.h"
-#include "TabFactories/FlowStateMachineDetailSummoner.h"
-#include "TabFactories/FlowStateMachineEditorTabs.h"
+#include "TabFactories/FSMGraphDetailSummoner.h"
+#include "TabFactories/FSMEditorTabsHelper.h"
+#include "TabFactories/FSMGraphEditorSummoner.h"
+#include "TabFactories/FSMSearchSummoner.h"
 
-FFlowStateMachineEditorApplicationMode::FFlowStateMachineEditorApplicationMode(
+FFSMEditorApplicationMode::FFSMEditorApplicationMode(
 	TSharedPtr<FFlowStateMachineEditor> InEditor)
 		:FApplicationMode(FFlowStateMachineEditor::FlowStateMachineMode)
 {
 	FlowStateMachineEditor = InEditor;
 
 	// Register Tabs
-	FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFlowStateMachineDetailSummoner(InEditor)));
+	// FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMGraphEditorSummoner(InEditor)));
+	// FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMGraphDetailSummoner(InEditor)));
+	// FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FSMSearchSummoner(InEditor)));
+	// TODO::Add More Tab Factories..
 
-	TabLayout = FTabManager::NewLayout("Standalone_FlowStateMachine_Layout_v1")
+	TabLayout = FTabManager::FLayout::NullLayout;
+	/*TabLayout = FTabManager::NewLayout("Standalone_FlowStateMachine_Layout_v1")
 	->AddArea
 	(
 		FTabManager::NewPrimaryArea() ->SetOrientation(Orient_Vertical)
-		->Split
+#if ENGINE_MAJOR_VERSION < 5
+		/*->Split
 		(
 		// DEPRECATED:: UE5 Deprecated the toolbar tab
-#if ENGINE_MAJOR_VERSION < 5
 			FTabManager::NewStack()
 			->SetSizeCoefficient(0.1f)
 			->AddTab(InEditor->GetToolbarTabId(), ETabState::OpenedTab) 
 			->SetHideTabWell(true) 
+		)#1#
 #endif
-		)
 		->Split
 		(
 			FTabManager::NewSplitter() ->SetOrientation(Orient_Horizontal)
@@ -34,7 +40,7 @@ FFlowStateMachineEditorApplicationMode::FFlowStateMachineEditorApplicationMode(
 			(
 				FTabManager::NewStack()
 				->SetSizeCoefficient(0.7f)
-				->AddTab(FFlowStateMachineEditorTabs::GraphEditorID, ETabState::ClosedTab)
+				->AddTab(FFSMEditorTabsHelper::GraphEditorID, ETabState::OpenedTab)
 			)
 			->Split
 			(
@@ -44,31 +50,28 @@ FFlowStateMachineEditorApplicationMode::FFlowStateMachineEditorApplicationMode(
 				(
 					FTabManager::NewStack()
 					->SetSizeCoefficient(0.6f)
-					->AddTab(FFlowStateMachineEditorTabs::GraphDetailsID, ETabState::OpenedTab)
-					->AddTab(FFlowStateMachineEditorTabs::SearchID, ETabState::ClosedTab)
+					->AddTab(FFSMEditorTabsHelper::GraphDetailsID, ETabState::OpenedTab)
+					->AddTab(FFSMEditorTabsHelper::SearchID, ETabState::ClosedTab)
 				)
 			)
 		)
-	);
+	);*/
 
 	// InEditor->GetToolbarBuilder()->AddModesToolbar(ToolbarExtender);
 	// InEditor->GetToolbarBuilder()->AddDebuggerToolbar(ToolbarExtender);
 	// InEditor->GetToolbarBuilder()->AddBehaviorTreeToolbar(ToolbarExtender);
 }
 
-void FFlowStateMachineEditorApplicationMode::RegisterTabFactories(TSharedPtr<FTabManager> InTabManager)
+void FFSMEditorApplicationMode::RegisterTabFactories(TSharedPtr<FTabManager> InTabManager)
 {
 	check(FlowStateMachineEditor.IsValid());
+	// Push our tabs
 	TSharedPtr<FFlowStateMachineEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
-
-	FlowStateMachineEditorPtr->RegisterTabSpawners(InTabManager.ToSharedRef());
 	FlowStateMachineEditorPtr->PushTabFactories(FlowStateMachineTabFactories);
-	
-	
 	FApplicationMode::RegisterTabFactories(InTabManager);
 }
 
-void FFlowStateMachineEditorApplicationMode::PreDeactivateMode()
+void FFSMEditorApplicationMode::PreDeactivateMode()
 {
 	FApplicationMode::PreDeactivateMode();
 	check(FlowStateMachineEditor.IsValid());

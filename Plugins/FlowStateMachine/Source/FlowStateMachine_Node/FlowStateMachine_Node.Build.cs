@@ -26,6 +26,8 @@ public class FlowStateMachine_Node : ModuleRules
                 "GraphEditor",
                 "BlueprintGraph",
                 "KismetCompiler", 
+                "GameplayTags",
+                "UMG"
             }
         );
         /*

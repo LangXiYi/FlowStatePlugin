@@ -20,7 +20,8 @@ public class FlowStateMachine_Widget : ModuleRules
                 "Engine",
                 "Slate",
                 "SlateCore",
-                "UMG"
+                "UMG",
+                "GameplayTags"
             }
         );
     }

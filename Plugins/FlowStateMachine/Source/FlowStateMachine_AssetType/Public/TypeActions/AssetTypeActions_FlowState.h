@@ -10,7 +10,6 @@ public:
 	// IAssetTypeActions Implementation
 	virtual FText GetName() const override { return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_FlowState", "FlowState"); }
 	virtual UClass* GetSupportedClass() const override { return UFlowState::StaticClass(); }
-
 	virtual FColor GetTypeColor() const override { return FFSMAssetTypeHelper::AssetColor; }
 	virtual uint32 GetCategories() override { return FFSMAssetTypeHelper::AssetCategory; }
 };

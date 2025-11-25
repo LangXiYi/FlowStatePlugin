@@ -20,7 +20,8 @@ public class FlowStateMachine_Editor : ModuleRules
                 "Engine",
                 "Slate",
                 "SlateCore",
-                "Kismet"
+                "Kismet",
+                "UnrealEd",
             }
         );
     }

@@ -4,6 +4,8 @@
 
 #define LOCTEXT_NAMESPACE "FFlowStateMachine_EditorModule"
 
+const FName FFlowStateMachine_EditorModule::FlowStateMachineAppIdentifier = "FlowStateMachineEditor";
+
 void FFlowStateMachine_EditorModule::StartupModule()
 {
     

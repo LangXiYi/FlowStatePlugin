@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-struct FFlowStateMachineEditorTabs
+struct FFSMEditorTabsHelper
 {
 	// Tab identifiers
 	static const FName GraphDetailsID;

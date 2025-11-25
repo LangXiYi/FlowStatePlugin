@@ -4,10 +4,10 @@
 
 class FFlowStateMachineEditor;
 
-class FFlowStateMachineEditorApplicationMode : public FApplicationMode
+class FFSMEditorApplicationMode : public FApplicationMode
 {
 public:
-	FFlowStateMachineEditorApplicationMode(TSharedPtr<FFlowStateMachineEditor> InEditor);
+	FFSMEditorApplicationMode(TSharedPtr<FFlowStateMachineEditor> InEditor);
 
 	virtual void RegisterTabFactories(TSharedPtr<FTabManager> InTabManager) override;
 	virtual void PreDeactivateMode() override;

@@ -1,19 +1,21 @@
 ﻿#include "Data/DataFragments/FSMMetaDataFragment_Assets.h"
-
+#include "Engine/StaticMesh.h"
+#include "Engine/SkeletalMesh.h"
+#include "Animation/AnimSequence.h"
 #include "Utility/FSMUtility.h"
 
 
 UObject* UFSMMetaDataFragment_Assets::FindAsset(const FName Name, TSubclassOf<UObject> AssetType) const
 {
-	if (AssetType->IsA<UStaticMesh>())
+	if (AssetType == UStaticMesh::StaticClass())
 	{
 		return FindAssetByStaticMesh(Name);
 	}
-	if (AssetType->IsA<USkeletalMesh>())
+	if (AssetType == USkeletalMesh::StaticClass())
 	{
 		return FindAssetBySkeletalMesh(Name);
 	}
-	if (AssetType->IsA<UAnimSequence>())
+	if (AssetType == UAnimSequence::StaticClass())
 	{
 		return FindAssetByAnimSequence(Name);
 	}

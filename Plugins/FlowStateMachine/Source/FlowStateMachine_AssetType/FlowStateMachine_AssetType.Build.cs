@@ -23,6 +23,7 @@ public class FlowStateMachine_AssetType : ModuleRules
                 "Slate",
                 "SlateCore",
                 "AssetTools", 
+                "UnrealEd"
             }
         );
     }

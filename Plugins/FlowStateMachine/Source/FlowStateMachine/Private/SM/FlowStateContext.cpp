@@ -102,7 +102,7 @@ void UFlowStateContext::LoadingFlowStateData(const FPrimaryAssetId& FlowStateDat
 	};
 	// 尝试加载数据资产
 	MetaDataLoadHandle = UAssetManager::Get().LoadPrimaryAsset(FlowStateDataID);
-	checkf(MetaDataLoadHandle.IsValid(), "The MetaDataLoadHandle is not valid. Check your 'AssetManager' added the MetaData.");
+	checkf(MetaDataLoadHandle.IsValid(), TEXT("The MetaDataLoadHandle is not valid. Check your 'AssetManager' added the MetaData."));
 	if (MetaDataLoadHandle.IsValid())
 	{
 		if (!MetaDataLoadHandle->HasLoadCompleted())

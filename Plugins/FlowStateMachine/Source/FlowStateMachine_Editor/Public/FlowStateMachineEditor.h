@@ -17,10 +17,17 @@ public:
 	
 	void InitFlowStateMachineEditor(EToolkitMode::Type Mode,
 		const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject);
+	
+	// IAssetEditorInstance Begin
+	virtual FLinearColor GetWorldCentricTabColorScale() const override { return FLinearColor::Blue;}
+	virtual FName GetToolkitFName() const override { return FName("FlowStateMachineEditor"); }
+	virtual FText GetBaseToolkitName() const override { return FText::FromString("FlowStateMachineEditor"); }
+	virtual FString GetWorldCentricTabPrefix() const override { return "FlowStateMachineEditor"; }
+	// IAssetEditorInstance End
 
 	void SaveEditedObjectState();
+	
 
-public:
 	static FName const FlowStateMachineMode; 
 	
 private:

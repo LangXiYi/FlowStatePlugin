@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AutomationBlueprintFunctionLibrary.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 #include "FSMMetaDataFunctionLibrary.generated.h"
 
 class UFSMMetaDataAsset;
@@ -13,7 +13,7 @@ class UFSMMetaDataFragment;
  * 
  */
 UCLASS()
-class FLOWSTATEMACHINE_API UFSMMetaDataFunctionLibrary : public UAutomationBlueprintFunctionLibrary
+class FLOWSTATEMACHINE_API UFSMMetaDataFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

@@ -124,11 +124,19 @@ UObject* UFactory_FlowState::FactoryCreateNew(UClass* Class, UObject* InParent, 
 /// Factory For Flow State Machine
 ////////////////////////////////////////////////////////////////////
 
+UFactory_FlowStateMachine::UFactory_FlowStateMachine(const FObjectInitializer& ObjectInitializer)
+	:Super(ObjectInitializer)
+{
+	SupportedClass = UFlowStateMachine::StaticClass();
+	bCreateNew = true;
+	bEditAfterNew = true;
+}
+
 UObject* UFactory_FlowStateMachine::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags,
 	UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
 	check(Class->IsChildOf(UFlowStateMachine::StaticClass()));
-	return NewObject<UFSMMetaDataAsset>(InParent, Class, Name, Flags);
+	return NewObject<UFlowStateMachine>(InParent, Class, Name, Flags);
 }
 
 UObject* UFactory_FlowStateMachine::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name,

@@ -15,5 +15,8 @@ public:
     virtual TSharedRef<FFlowStateMachineEditor> CreateFlowStateMachineEditor( const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, class UObject* Object );
 
 
+public:
+    static const FName FlowStateMachineAppIdentifier;
+    
 protected:
 };
