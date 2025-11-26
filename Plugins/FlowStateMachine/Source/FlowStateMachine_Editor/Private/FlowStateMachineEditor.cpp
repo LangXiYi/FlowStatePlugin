@@ -2,14 +2,19 @@
 
 #include "BlueprintEditorModes.h"
 #include "FlowStateMachine_Editor.h"
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "Mode/FSMEditorApplicationMode.h"
 #include "SM/FlowStateMachine.h"
 
 
 FName const FFlowStateMachineEditor::FlowStateMachineMode = FName("FlowStateMachine");
 
+FFlowStateMachineEditor::FFlowStateMachineEditor()
+{
+}
+
 void FFlowStateMachineEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode,
-	const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject)
+                                                         const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject)
 {
 	UFlowStateMachine* FlowStateMachineInEditor = Cast<UFlowStateMachine>(InObject);
 
@@ -25,7 +30,29 @@ void FFlowStateMachineEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode
 	}
 	// TODO::Add More Edit Objects..
 
-	// TODO::Register Document Factories
+	// TODO::创建 FDocumentTracker  ----- DocumentManager
+	FlowStateMachineGraph = FBlueprintEditorUtils::CreateNewGraph(
+		FlowStateMachine,
+		NAME_None,
+		UEdGraph::StaticClass(),
+		UEdGraphSchema::StaticClass());
+
+	if(!DocumentManager.IsValid())
+	{
+		DocumentManager = MakeShareable(new FDocumentTracker);
+		DocumentManager->Initialize(SharedThis(this));
+
+		// Register the document factories
+		/*{
+			TSharedRef<FDocumentTabFactory> GraphEditorFactory = MakeShareable(new FBTGraphEditorSummoner(ThisPtr,
+				FBTGraphEditorSummoner::FOnCreateGraphEditorWidget::CreateSP(this, &FBehaviorTreeEditor::CreateGraphEditorWidget)
+				));
+
+			// Also store off a reference to the grapheditor factory so we can find all the tabs spawned by it later.
+			GraphEditorTabFactoryPtr = GraphEditorFactory;
+			DocumentManager->RegisterDocumentFactory(GraphEditorFactory);
+		}*/
+	}
 
 	// if we are already editing objects, dont try to recreate the editor from scratch but update the list of objects in edition
 	// ex: BehaviorTree may want to reuse an editor already opened for its associated Blackboard asset.

@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "IFlowStateMachineEditor.h"
+#include "WorkflowOrientedApp/WorkflowTabManager.h"
+
 
 class UFlowStateMachine;
 
@@ -9,11 +11,7 @@ class UFlowStateMachine;
 class FFlowStateMachineEditor: public IFlowStateMachineEditor
 {
 public:
-	FFlowStateMachineEditor():
-		FlowStateMachine(nullptr)
-	{
-		
-	}
+	FFlowStateMachineEditor();
 	
 	void InitFlowStateMachineEditor(EToolkitMode::Type Mode,
 		const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject);
@@ -26,10 +24,21 @@ public:
 	// IAssetEditorInstance End
 
 	void SaveEditedObjectState();
-	
 
+	//////////////////////////////////////////////////////////////
+	/// Get Or Set
+	//////////////////////////////////////////////////////////////
+public:
+	FORCEINLINE UFlowStateMachine* GetEditAsset() const { return FlowStateMachine; }
+	FORCEINLINE UEdGraph* GetEditGraph() const { return FlowStateMachineGraph; }
+
+public:
 	static FName const FlowStateMachineMode; 
-	
+
 private:
-	UFlowStateMachine* FlowStateMachine;
+	UFlowStateMachine* FlowStateMachine = nullptr;
+	UEdGraph* FlowStateMachineGraph = nullptr;
+
+	// 管理不同编辑器图表
+	TSharedPtr<FDocumentTracker> DocumentManager;
 };

@@ -4,6 +4,7 @@
 #include "TabFactories/FSMGraphDetailSummoner.h"
 #include "TabFactories/FSMEditorTabsHelper.h"
 #include "TabFactories/FSMGraphEditorSummoner.h"
+#include "TabFactories/FSMGraphNodeListSummoner.h"
 #include "TabFactories/FSMSearchSummoner.h"
 
 FFSMEditorApplicationMode::FFSMEditorApplicationMode(
@@ -13,39 +14,44 @@ FFSMEditorApplicationMode::FFSMEditorApplicationMode(
 	FlowStateMachineEditor = InEditor;
 
 	// Register Tabs
-	// FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMGraphEditorSummoner(InEditor)));
-	// FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMGraphDetailSummoner(InEditor)));
-	// FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FSMSearchSummoner(InEditor)));
+	FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMGraphEditorSummoner(InEditor)));
+	FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMGraphDetailSummoner(InEditor)));
+	FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMGraphNodeListSummoner(InEditor)));
+	FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FSMSearchSummoner(InEditor)));
 	// TODO::Add More Tab Factories..
 
-	TabLayout = FTabManager::FLayout::NullLayout;
-	/*TabLayout = FTabManager::NewLayout("Standalone_FlowStateMachine_Layout_v1")
+	// TabLayout = FTabManager::FLayout::NullLayout;
+	TabLayout = FTabManager::NewLayout("Standalone_FlowStateMachine_Layout_v2")
 	->AddArea
 	(
 		FTabManager::NewPrimaryArea() ->SetOrientation(Orient_Vertical)
-#if ENGINE_MAJOR_VERSION < 5
-		/*->Split
+		->Split
 		(
-		// DEPRECATED:: UE5 Deprecated the toolbar tab
+			// DEPRECATED:: UE5 Deprecated the toolbar tab
 			FTabManager::NewStack()
 			->SetSizeCoefficient(0.1f)
 			->AddTab(InEditor->GetToolbarTabId(), ETabState::OpenedTab) 
 			->SetHideTabWell(true) 
-		)#1#
-#endif
+		)
 		->Split
 		(
 			FTabManager::NewSplitter() ->SetOrientation(Orient_Horizontal)
 			->Split
 			(
 				FTabManager::NewStack()
-				->SetSizeCoefficient(0.7f)
+				->SetSizeCoefficient(0.2f)
+				->AddTab(FFSMEditorTabsHelper::GraphNodeListID, ETabState::OpenedTab)
+			)
+			->Split
+			(
+				FTabManager::NewStack()
+				->SetSizeCoefficient(0.55f)
 				->AddTab(FFSMEditorTabsHelper::GraphEditorID, ETabState::OpenedTab)
 			)
 			->Split
 			(
 				FTabManager::NewSplitter() ->SetOrientation(Orient_Vertical)
-				->SetSizeCoefficient(0.3f)
+				->SetSizeCoefficient(0.25f)
 				->Split
 				(
 					FTabManager::NewStack()
@@ -55,7 +61,7 @@ FFSMEditorApplicationMode::FFSMEditorApplicationMode(
 				)
 			)
 		)
-	);*/
+	);
 
 	// InEditor->GetToolbarBuilder()->AddModesToolbar(ToolbarExtender);
 	// InEditor->GetToolbarBuilder()->AddDebuggerToolbar(ToolbarExtender);

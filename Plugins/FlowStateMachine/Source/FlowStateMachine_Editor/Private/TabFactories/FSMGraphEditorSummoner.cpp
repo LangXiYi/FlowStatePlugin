@@ -16,7 +16,25 @@ FFSMGraphEditorSummoner::FFSMGraphEditorSummoner(TSharedPtr<FFlowStateMachineEdi
 
 TSharedRef<SWidget> FFSMGraphEditorSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
 {
-	return SNew(STextBlock).Text(LOCTEXT("GraphSummoner_Title", "GraphEditorSummoner"));
+	TSharedPtr<FFlowStateMachineEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
+	check(StateMachineEditor);
+
+	SGraphEditor::FGraphEditorEvents InEvents;
+	// InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FBehaviorTreeEditor::OnSelectedNodesChanged);
+	// InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FBehaviorTreeEditor::OnNodeDoubleClicked);
+	// InEvents.OnTextCommitted = FOnNodeTextCommitted::CreateSP(this, &FBehaviorTreeEditor::OnNodeTitleCommitted);
+
+
+	UEdGraph* EditGraph = StateMachineEditor->GetEditGraph();
+	TSharedPtr<SGraphEditor> GraphEditor = SNew(SGraphEditor)
+		.IsEditable(true)
+		.GraphToEdit(EditGraph);
+	
+	return SNew(SVerticalBox)
+		+SVerticalBox::Slot()
+		[
+			GraphEditor.ToSharedRef()
+		];
 }
 
 FText FFSMGraphEditorSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
