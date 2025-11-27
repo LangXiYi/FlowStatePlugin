@@ -4,17 +4,16 @@
 
 class FFlowStateMachineEditor;
 
-class FFSMEditorApplicationMode : public FApplicationMode
+class FFSMCommonDataEditorApplicationMode : public FApplicationMode
 {
 public:
-	FFSMEditorApplicationMode(TSharedPtr<FFlowStateMachineEditor> InEditor);
+	FFSMCommonDataEditorApplicationMode(TSharedPtr<FFlowStateMachineEditor> InEditor);
 
 	virtual void RegisterTabFactories(TSharedPtr<FTabManager> InTabManager) override;
-	virtual void PreDeactivateMode() override;
 	virtual void PostActivateMode() override;
 
 protected:
 	TWeakPtr<FFlowStateMachineEditor> FlowStateMachineEditor;
 
-	FWorkflowAllowedTabSet FlowStateMachineTabFactories;
+	FWorkflowAllowedTabSet CommonDataTabFactories;
 };

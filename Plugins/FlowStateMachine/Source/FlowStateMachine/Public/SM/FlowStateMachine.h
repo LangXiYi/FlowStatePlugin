@@ -18,6 +18,11 @@ class FLOWSTATEMACHINE_API UFlowStateMachine : public UObject
 
 public:
 	FORCEINLINE const FPrimaryAssetId& GetMetaDataID() const { return MetaDataID; }
+
+public:
+	/** Graph for Behavior Tree */
+	UPROPERTY()
+	class UEdGraph*	FSMGraph;
 	
 protected:
 	UPROPERTY(EditAnywhere)

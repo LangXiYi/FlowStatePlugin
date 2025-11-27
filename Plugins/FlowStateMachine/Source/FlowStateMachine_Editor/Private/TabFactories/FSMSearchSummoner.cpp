@@ -4,7 +4,7 @@
 
 #define LOCTEXT_NAMESPACE "FSMSearchSummoner"
 
-FSMSearchSummoner::FSMSearchSummoner(TSharedPtr<FFlowStateMachineEditor> InEditor):
+FFSMSearchSummoner::FFSMSearchSummoner(TSharedPtr<FFlowStateMachineEditor> InEditor):
 	FWorkflowTabFactory(FFSMEditorTabsHelper::SearchID, InEditor),
 	FlowStateMachineEditor(InEditor)
 {
@@ -14,12 +14,12 @@ FSMSearchSummoner::FSMSearchSummoner(TSharedPtr<FFlowStateMachineEditor> InEdito
 	bIsSingleton = true;
 }
 
-FText FSMSearchSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
+FText FFSMSearchSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
 {
 	return LOCTEXT("TabToolTipText", "The tab is for search FlowState.");
 }
 
-TSharedRef<SWidget> FSMSearchSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
+TSharedRef<SWidget> FFSMSearchSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
 {
 	return SNew(STextBlock).Text(LOCTEXT("DetailSummonerText", "This is a Search View"));
 }

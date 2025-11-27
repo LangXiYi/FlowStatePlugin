@@ -5,10 +5,10 @@
 
 class FFlowStateMachineEditor;
 
-class FSMSearchSummoner : public FWorkflowTabFactory
+class FFSMSearchSummoner : public FWorkflowTabFactory
 {
 public:
-	FSMSearchSummoner(TSharedPtr<FFlowStateMachineEditor> InEditor);
+	FFSMSearchSummoner(TSharedPtr<FFlowStateMachineEditor> InEditor);
 
 protected:
 	// Begin FWorkflowTabFactory
