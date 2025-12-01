@@ -1,10 +1,58 @@
-﻿#include "TabFactories/FSMGraphEditorSummoner.h"
-#include "FlowStateMachineEditor.h"
+#include "TabFactories/FSMTabSummoner.h"
 #include "TabFactories/FSMEditorTabsHelper.h"
+#include "FSMEditor.h"
+#include "SM/FlowStateMachine.h"
+
+#define LOCTEXT_NAMESPACE "FlowStateMachineDetailSummoner"
+
+FFSMGraphDetailSummoner::FFSMGraphDetailSummoner(TSharedPtr<FFSMEditor> InEditor)
+	:FWorkflowTabFactory(FFSMEditorTabsHelper::GraphDetailsID, InEditor) , FlowStateMachineEditor(InEditor)
+{
+	TabLabel = LOCTEXT("DetailSummonerLabel", "GraphDetailView");
+	ViewMenuDescription = LOCTEXT("ViewMenuDescription", "Open detail view");
+	ViewMenuTooltip = LOCTEXT("ViewMenuTooltip", "detail view");
+	bIsSingleton = true;
+}
+
+FText FFSMGraphDetailSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
+{
+	return LOCTEXT("FlowStateMachineDetailTooltip", "The details tab is for editing FlowState entries.");
+}
+
+TSharedRef<SWidget> FFSMGraphDetailSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
+{
+	TSharedPtr<FFSMEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
+	
+	FPropertyEditorModule& PropertyEditor = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	FDetailsViewArgs PropertyViewArgs(false, false, true, FDetailsViewArgs::HideNameArea);
+	
+	TSharedRef<IDetailsView> AssetDetailsView = PropertyEditor.CreateDetailView(PropertyViewArgs);
+	TSharedRef<IDetailsView> NodeDetailsView = PropertyEditor.CreateDetailView(PropertyViewArgs);
+
+	AssetDetailsView->SetObject(StateMachineEditor->GetFlowStateMachine());
+	// TODO::需要修改为选择的节点
+	NodeDetailsView->SetObject(nullptr);
+	
+	return SNew(SVerticalBox)
+		+SVerticalBox::Slot()
+		.FillHeight(1.f)
+		[
+			AssetDetailsView
+		]
+		+SVerticalBox::Slot()
+		.FillHeight(1.f)
+		[
+			NodeDetailsView
+		];
+}
+
+#undef LOCTEXT_NAMESPACE
+
+
 
 #define LOCTEXT_NAMESPACE "FSMGraphEditorSummoner"
 
-FFSMGraphEditorSummoner::FFSMGraphEditorSummoner(TSharedPtr<FFlowStateMachineEditor> InEditor):
+FFSMGraphEditorSummoner::FFSMGraphEditorSummoner(TSharedPtr<FFSMEditor> InEditor):
 	FDocumentTabFactoryForObjects(FFSMEditorTabsHelper::GraphEditorID, InEditor),
 	FlowStateMachineEditor(InEditor)
 {
@@ -21,29 +69,7 @@ TAttribute<FText> FFSMGraphEditorSummoner::ConstructTabNameForObject(UFSMGraph* 
 
 TSharedRef<SWidget> FFSMGraphEditorSummoner::CreateTabBodyForObject(const FWorkflowTabSpawnInfo& Info, UFSMGraph* InGraph) const
 {
-#if 0
-	TSharedPtr<FFlowStateMachineEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
-	check(StateMachineEditor);
-
-	SGraphEditor::FGraphEditorEvents InEvents;
-	// InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FBehaviorTreeEditor::OnSelectedNodesChanged);
-	// InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FBehaviorTreeEditor::OnNodeDoubleClicked);
-	// InEvents.OnTextCommitted = FOnNodeTextCommitted::CreateSP(this, &FBehaviorTreeEditor::OnNodeTitleCommitted);
-
-
-	UEdGraph* EditGraph = StateMachineEditor->GetEditGraph();
-	TSharedPtr<SGraphEditor> GraphEditor = SNew(SGraphEditor)
-		.IsEditable(true)
-		.GraphToEdit(EditGraph);
-	
-	return SNew(SVerticalBox)
-		+SVerticalBox::Slot()
-		[
-			GraphEditor.ToSharedRef()
-		];
-#else
-
-	TSharedPtr<FFlowStateMachineEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
 	
 	check(InGraph != NULL);
 	
@@ -111,7 +137,6 @@ TSharedRef<SWidget> FFSMGraphEditorSummoner::CreateTabBodyForObject(const FWorkf
 		.Appearance(this, &FFSMGraphEditorSummoner::GetGraphAppearance)
 		.GraphToEdit(InGraph)
 		.GraphEvents(InEvents);
-#endif
 }
 
 const FSlateBrush* FFSMGraphEditorSummoner::GetTabIconForObject(const FWorkflowTabSpawnInfo& Info, UFSMGraph* InGraph) const
@@ -153,7 +178,7 @@ FGraphAppearanceInfo FFSMGraphEditorSummoner::GetGraphAppearance() const
 
 /*TSharedRef<SWidget> FFSMGraphEditorSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
 {
-	TSharedPtr<FFlowStateMachineEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
 	check(StateMachineEditor);
 
 	SGraphEditor::FGraphEditorEvents InEvents;
@@ -174,5 +199,30 @@ FGraphAppearanceInfo FFSMGraphEditorSummoner::GetGraphAppearance() const
 		];
 }*/
 
+
+#undef LOCTEXT_NAMESPACE
+
+
+#define LOCTEXT_NAMESPACE "FSMGraphNodeListSummoner"
+
+FFSMGraphNodeListSummoner::FFSMGraphNodeListSummoner(TSharedPtr<FFSMEditor> InEditor):
+	FWorkflowTabFactory(FFSMEditorTabsHelper::GraphNodeListID, InEditor),
+	FlowStateMachineEditor(InEditor)
+{
+	TabLabel = LOCTEXT("TabLabel", "GraphEditorSummoner");
+	ViewMenuDescription = LOCTEXT("ViewMenuDescription", "Open detail view");
+	ViewMenuTooltip = LOCTEXT("ViewMenuTooltip", "detail view");
+	bIsSingleton = true;
+}
+
+TSharedRef<SWidget> FFSMGraphNodeListSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
+{
+	return SNew(STextBlock).Text(LOCTEXT("GraphSummoner_Title", "GraphNodeListSummoner"));
+}
+
+FText FFSMGraphNodeListSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
+{
+	return LOCTEXT("ToolTip", "GraphNodeListSummoner");
+}
 
 #undef LOCTEXT_NAMESPACE

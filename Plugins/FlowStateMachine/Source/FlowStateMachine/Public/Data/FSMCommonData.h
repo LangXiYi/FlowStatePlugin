@@ -13,4 +13,8 @@ UCLASS()
 class FLOWSTATEMACHINE_API UFSMCommonData : public UDataAsset
 {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere)
+	int Value;
 };

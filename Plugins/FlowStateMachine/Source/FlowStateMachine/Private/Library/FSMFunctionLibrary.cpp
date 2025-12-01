@@ -4,12 +4,23 @@
 #include "FlowStateMachine_Widget/Public/Widgets/FlowStateLayoutWidget.h"
 #include "FlowStateMachine_Widget/Public/Widgets/GameplayTagSlot.h"
 #include "SM/FlowStateContext.h"
+#include "System/FlowStateMachineSubsystem.h"
 #include "System/FSMWorldSettings.h"
 
 UFlowStateContext* UFSMFunctionLibrary::GetFlowStateContext(UObject* WorldContextObject)
 {
-	AFSMWorldSettings* WorldSettings = AFSMWorldSettings::Get(WorldContextObject);
-	return WorldSettings ? WorldSettings->GetFlowStateContext() : nullptr;
+	UWorld* World = FlowStateMachine::GetWorldFromContextObject(WorldContextObject);
+	if (World)
+	{
+		UFlowStateMachineSubsystem* Subsystem = World->GetGameInstance()->GetSubsystem<UFlowStateMachineSubsystem>();
+		if (Subsystem)
+		{
+			return Subsystem->GetRunningStateContext();
+		}
+	}
+	return nullptr;
+	// AFSMWorldSettings* WorldSettings = AFSMWorldSettings::Get(WorldContextObject);
+	// return WorldSettings ? WorldSettings->GetFlowStateContext() : nullptr;
 }
 
 UFlowState* UFSMFunctionLibrary::GetCurFlowState(UObject* WorldContextObject)
@@ -20,7 +31,12 @@ UFlowState* UFSMFunctionLibrary::GetCurFlowState(UObject* WorldContextObject)
 
 UFlowState* UFSMFunctionLibrary::GetCurFlowStateAs(UObject* WorldContextObject, TSubclassOf<UFlowState> Type)
 {
-	return GetCurFlowState(WorldContextObject);
+	UFlowState* State = GetCurFlowState(WorldContextObject);
+	if (State && State->IsA(Type))
+	{
+		return State;
+	}
+	return nullptr;
 }
 
 UUserWidget* UFSMFunctionLibrary::CreateAndBindWidget(UObject* WorldContextObject, UFlowStateLayoutWidget* WidgetLayout,

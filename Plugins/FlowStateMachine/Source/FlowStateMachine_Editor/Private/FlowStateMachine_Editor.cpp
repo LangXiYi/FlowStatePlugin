@@ -1,6 +1,6 @@
 ﻿#include "FlowStateMachine_Editor.h"
 
-#include "FlowStateMachineEditor.h"
+#include "..\Public\FSMEditor.h"
 
 #define LOCTEXT_NAMESPACE "FFlowStateMachine_EditorModule"
 
@@ -16,7 +16,7 @@ void FFlowStateMachine_EditorModule::ShutdownModule()
     
 }
 
-TSharedRef<FFlowStateMachineEditor> FFlowStateMachine_EditorModule::CreateFlowStateMachineEditor(
+TSharedRef<FFSMEditor> FFlowStateMachine_EditorModule::CreateFlowStateMachineEditor(
 	const EToolkitMode::Type Mode, const TSharedPtr<class IToolkitHost>& InitToolkitHost, class UObject* Object)
 {
 	/*if (!ClassCache.IsValid())
@@ -27,7 +27,7 @@ TSharedRef<FFlowStateMachineEditor> FFlowStateMachine_EditorModule::CreateFlowSt
 		FGraphNodeClassHelper::AddObservedBlueprintClasses(UBTService_BlueprintBase::StaticClass());
 		ClassCache->UpdateAvailableBlueprintClasses();
 	}*/
-	TSharedRef< FFlowStateMachineEditor > NewBehaviorTreeEditor( new FFlowStateMachineEditor() );
+	TSharedRef< FFSMEditor > NewBehaviorTreeEditor( new FFSMEditor() );
 	NewBehaviorTreeEditor->InitFlowStateMachineEditor( Mode, InitToolkitHost, Object );
 	return NewBehaviorTreeEditor;	
 }

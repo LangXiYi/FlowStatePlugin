@@ -1,14 +1,12 @@
-﻿#include "Mode/FSMEditorApplicationMode.h"
+﻿#include "Mode/FSMEditorAppMode.h"
 
-#include "FlowStateMachineEditor.h"
+#include "FSMEditor.h"
 #include "FSMEditorToolbar.h"
-#include "TabFactories/FSMGraphDetailSummoner.h"
 #include "TabFactories/FSMEditorTabsHelper.h"
-#include "TabFactories/FSMGraphNodeListSummoner.h"
-#include "TabFactories/FSMSearchSummoner.h"
+#include "TabFactories/FSMTabSummoner.h"
 
-FFSMEditorApplicationMode::FFSMEditorApplicationMode(TSharedPtr<FFlowStateMachineEditor> InEditor):
-	FApplicationMode(FFlowStateMachineEditor::FlowStateMachineMode),
+FFSMEditorAppMode::FFSMEditorAppMode(TSharedPtr<FFSMEditor> InEditor):
+	FApplicationMode(FFSMEditor::FlowStateMachineMode),
 	FlowStateMachineEditor(InEditor)
 {
 	// FlowStateMachineEditor = InEditor;
@@ -16,7 +14,7 @@ FFSMEditorApplicationMode::FFSMEditorApplicationMode(TSharedPtr<FFlowStateMachin
 	// Register Tabs
 	FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMGraphDetailSummoner(InEditor)));
 	FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMGraphNodeListSummoner(InEditor)));
-	FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMSearchSummoner(InEditor)));
+	// FlowStateMachineTabFactories.RegisterFactory(MakeShareable(new FFSMSearchSummoner(InEditor)));
 	// TODO::Add More Tab Factories..
 
 	// TabLayout = FTabManager::FLayout::NullLayout;
@@ -56,7 +54,7 @@ FFSMEditorApplicationMode::FFSMEditorApplicationMode(TSharedPtr<FFlowStateMachin
 					FTabManager::NewStack()
 					->SetSizeCoefficient(0.6f)
 					->AddTab(FFSMEditorTabsHelper::GraphDetailsID, ETabState::OpenedTab)
-					->AddTab(FFSMEditorTabsHelper::SearchID, ETabState::ClosedTab)
+					// ->AddTab(FFSMEditorTabsHelper::SearchID, ETabState::ClosedTab)
 				)
 			)
 		)
@@ -67,10 +65,10 @@ FFSMEditorApplicationMode::FFSMEditorApplicationMode(TSharedPtr<FFlowStateMachin
 	InEditor->GetToolbarBuilder()->AddBehaviorTreeToolbar(ToolbarExtender);
 }
 
-void FFSMEditorApplicationMode::RegisterTabFactories(TSharedPtr<FTabManager> InTabManager)
+void FFSMEditorAppMode::RegisterTabFactories(TSharedPtr<FTabManager> InTabManager)
 {
 	check(FlowStateMachineEditor.IsValid());
-	TSharedPtr<FFlowStateMachineEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
 	// Create Editor Toolbar Tab
 	FlowStateMachineEditorPtr->RegisterToolbarTab(InTabManager.ToSharedRef());
 	// Push our tabs
@@ -78,20 +76,20 @@ void FFSMEditorApplicationMode::RegisterTabFactories(TSharedPtr<FTabManager> InT
 	FApplicationMode::RegisterTabFactories(InTabManager);
 }
 
-void FFSMEditorApplicationMode::PreDeactivateMode()
+void FFSMEditorAppMode::PreDeactivateMode()
 {
 	FApplicationMode::PreDeactivateMode();
 	check(FlowStateMachineEditor.IsValid());
-	TSharedPtr<FFlowStateMachineEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
 
 	FlowStateMachineEditorPtr->SaveEditedObjectState();
 }
 
-void FFSMEditorApplicationMode::PostActivateMode()
+void FFSMEditorAppMode::PostActivateMode()
 {
 	// Reopen any documents that were open when the blueprint was last saved
 	check(FlowStateMachineEditor.IsValid());
-	TSharedPtr<FFlowStateMachineEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
 	FlowStateMachineEditorPtr->RestoreFlowStateMachine();
 
 	FApplicationMode::PostActivateMode();

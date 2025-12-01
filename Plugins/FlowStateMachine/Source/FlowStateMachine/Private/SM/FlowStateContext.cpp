@@ -18,7 +18,17 @@ void UFlowStateContext::Initialize()
 {
 	// 创建垃圾回收对象
 	GC = MakeShareable(new FSMGC);
+
+	// 调用蓝图实现函数，初始化对象
 	OnInitialize();
+
+	check(StateMachine)
+	// 加载数据资产至内存并在完成后调用 BeginPlay
+	LoadingFlowStateData(StateMachine->GetMetaDataID(), [this]()
+	{
+		// Loading Success Callback
+		BeginPlay();
+	});
 }
 
 void UFlowStateContext::BeginPlay()
@@ -30,11 +40,6 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine* FlowStateMac
 {
 	StateMachine = FlowStateMachine;
 	// TODO::注册状态机并运行
-	LoadingFlowStateData(FlowStateMachine->GetMetaDataID(), [this]()
-	{
-		// Loading Success Callback
-		BeginPlay();
-	});
 }
 
 UFlowState* UFlowStateContext::SwitchTo(UFlowState* NewState)

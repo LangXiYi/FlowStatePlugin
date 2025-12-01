@@ -1,49 +1,62 @@
-﻿#include "FlowStateMachineEditor.h"
+﻿#include "FSMEditor.h"
 
 #include "BlueprintEditorModes.h"
 #include "FlowStateMachine_Editor.h"
 #include "FSMEditorToolbar.h"
 #include "Graph/FSMGraph.h"
-#include "Graph/Schema/EdGraphSchema_FlowStateMachine.h"
+#include "Data/FSMCommonData.h"
+#include "Graph/Schema/EdGraphSchema_FSM.h"
 #include "Kismet2/BlueprintEditorUtils.h"
-#include "Mode/FSMCommonDataEditorApplicationMode.h"
-#include "Mode/FSMEditorApplicationMode.h"
+#include "Mode/CommonDataEditorAppMode.h"
+#include "Mode/FSMEditorAppMode.h"
 #include "SM/FlowStateMachine.h"
-#include "TabFactories/FSMGraphEditorSummoner.h"
+#include "TabFactories/FSMTabSummoner.h"
 
-FName const FFlowStateMachineEditor::FlowStateMachineMode = FName("FlowStateMachine");
-FName const FFlowStateMachineEditor::CommonDataMode = FName("CommonData");
+FName const FFSMEditor::FlowStateMachineMode = FName("FlowStateMachine");
+FName const FFSMEditor::CommonDataMode = FName("CommonData");
 
 #define LOCTEXT_NAMESPACE "FlowStateMachineEditor"
 
-FFlowStateMachineEditor::FFlowStateMachineEditor()
+FFSMEditor::FFSMEditor()
 {
 }
 
-void FFlowStateMachineEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode,
+void FFSMEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode,
                                                          const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject)
 {
 	UFlowStateMachine* FlowStateMachineInEditor = Cast<UFlowStateMachine>(InObject);
+	UFSMCommonData* CommonDataInEditor = Cast<UFSMCommonData>(InObject);
 
 	if (FlowStateMachineInEditor != nullptr)
 	{
 		FlowStateMachine = FlowStateMachineInEditor;
+		if(FlowStateMachine->CommonData != nullptr)
+		{
+			CommonData = FlowStateMachine->CommonData;
+		}
 	}
+	else if (CommonDataInEditor != nullptr)
+	{
+		CommonData = CommonDataInEditor;
+	}
+	
 	// 将目标添加到待编辑列表
 	TArray<UObject*> ObjectsToEdit;
 	if (FlowStateMachine != nullptr)
 	{
 		ObjectsToEdit.Add(FlowStateMachine);
 	}
+	if (CommonData != nullptr)
+	{
+		ObjectsToEdit.Add(CommonData);
+	}
 	// TODO::Add More Edit Objects..
 
+	// 创建编辑模式切换按钮
 	if (!ToolbarBuilder.IsValid())
 	{
 		ToolbarBuilder = MakeShareable(new FFSMEditorToolbar(SharedThis(this)));
 	}
-
-	// 创建模式切换按钮
-	// void FBehaviorTreeEditorToolbar::FillModesToolbar(FToolBarBuilder& ToolbarBuilder)
 
 	if(!DocumentManager.IsValid())
 	{
@@ -76,8 +89,8 @@ void FFlowStateMachineEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode
 			ObjectsToEdit
 			);
 		// Add Application Mode
-		AddApplicationMode(FlowStateMachineMode, MakeShareable(new FFSMEditorApplicationMode(SharedThis(this))));
-		AddApplicationMode(CommonDataMode, MakeShareable(new FFSMCommonDataEditorApplicationMode(SharedThis(this))));
+		AddApplicationMode(FlowStateMachineMode, MakeShareable(new FFSMEditorAppMode(SharedThis(this))));
+		AddApplicationMode(CommonDataMode, MakeShareable(new FCommonDataEditorAppMode(SharedThis(this))));
 	}
 	else
 	{
@@ -94,33 +107,37 @@ void FFlowStateMachineEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode
 	{
 		SetCurrentMode(FlowStateMachineMode);
 	}
+	else if (CommonData != nullptr)
+	{
+		SetCurrentMode(CommonDataMode);
+	}
 
 	// OnClassListUpdated();
 	RegenerateMenusAndToolbars();
 }
 
-void FFlowStateMachineEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager)
+void FFSMEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager)
 {
 	DocumentManager->SetTabManager(InTabManager);
 	IFlowStateMachineEditor::RegisterTabSpawners(InTabManager);
 }
 
-void FFlowStateMachineEditor::UnregisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager)
+void FFSMEditor::UnregisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager)
 {
 	IFlowStateMachineEditor::UnregisterTabSpawners(InTabManager);
 }
 
-void FFlowStateMachineEditor::RegisterToolbarTab(const TSharedRef<class FTabManager>& InTabManager)
+void FFSMEditor::RegisterToolbarTab(const TSharedRef<class FTabManager>& InTabManager)
 {
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 }
 
-void FFlowStateMachineEditor::SaveEditedObjectState()
+void FFSMEditor::SaveEditedObjectState()
 {
 	// todo::Save Object State
 }
 
-void FFlowStateMachineEditor::RestoreFlowStateMachine()
+void FFSMEditor::RestoreFlowStateMachine()
 {
 	// Update BT asset data based on saved graph to have correct data in editor
 	UFSMGraph* MyGraph = Cast<UFSMGraph>(FlowStateMachine->FSMGraph);
@@ -131,7 +148,7 @@ void FFlowStateMachineEditor::RestoreFlowStateMachine()
 			FlowStateMachine,
 			TEXT("FlowStateMachine"),
 			UFSMGraph::StaticClass(),
-			UEdGraphSchema_FlowStateMachine::StaticClass());
+			UEdGraphSchema_FSM::StaticClass());
 		MyGraph = Cast<UFSMGraph>(FlowStateMachine->FSMGraph);
 
 		// Initialize the behavior tree graph
@@ -176,17 +193,17 @@ void FFlowStateMachineEditor::RestoreFlowStateMachine()
 	MyGraph->UpdateAbortHighlight(EmptyMode, EmptyMode);*/
 }
 
-bool FFlowStateMachineEditor::CanAccessFlowStateMachineMode() const
+bool FFSMEditor::CanAccessFlowStateMachineMode() const
 {
 	return FlowStateMachine != nullptr;
 }
 
-bool FFlowStateMachineEditor::CanAccessCommonDataMode() const
+bool FFSMEditor::CanAccessCommonDataMode() const
 {
 	return CommonData != nullptr;
 }
 
-FText FFlowStateMachineEditor::GetLocalizedMode(FName InMode)
+FText FFSMEditor::GetLocalizedMode(FName InMode)
 {
 	static TMap< FName, FText > LocModes;
 

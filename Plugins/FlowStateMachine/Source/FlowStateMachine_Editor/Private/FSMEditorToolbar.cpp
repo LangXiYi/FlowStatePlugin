@@ -33,7 +33,7 @@ public:
 void FFSMEditorToolbar::AddModesToolbar(TSharedPtr<FExtender> Extender)
 {
 	check(FlowStateMachineEditor.IsValid());
-	TSharedPtr<FFlowStateMachineEditor> StateMachineEditorPtr = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMEditor> StateMachineEditorPtr = FlowStateMachineEditor.Pin();
 
 	Extender->AddToolBarExtension(
 		"Asset",
@@ -53,19 +53,19 @@ void FFSMEditorToolbar::AddBehaviorTreeToolbar(TSharedPtr<FExtender> Extender)
 void FFSMEditorToolbar::FillModesToolbar(FToolBarBuilder& ToolbarBuilder)
 {
 	check(FlowStateMachineEditor.IsValid());
-	TSharedPtr<FFlowStateMachineEditor> StateMachineEditorPtr = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMEditor> StateMachineEditorPtr = FlowStateMachineEditor.Pin();
 
-	TAttribute<FName> GetActiveMode(StateMachineEditorPtr.ToSharedRef(), &FFlowStateMachineEditor::GetCurrentMode);
-	FOnModeChangeRequested SetActiveMode = FOnModeChangeRequested::CreateSP(StateMachineEditorPtr.ToSharedRef(), &FFlowStateMachineEditor::SetCurrentMode);
+	TAttribute<FName> GetActiveMode(StateMachineEditorPtr.ToSharedRef(), &FFSMEditor::GetCurrentMode);
+	FOnModeChangeRequested SetActiveMode = FOnModeChangeRequested::CreateSP(StateMachineEditorPtr.ToSharedRef(), &FFSMEditor::SetCurrentMode);
 
 	// Left side padding
 	StateMachineEditorPtr->AddToolbarWidget(SNew(SSpacer).Size(FVector2D(4.0f, 1.0f)));
 
 	StateMachineEditorPtr->AddToolbarWidget(
-		SNew(SModeWidget, FFlowStateMachineEditor::GetLocalizedMode( FFlowStateMachineEditor::FlowStateMachineMode ), FFlowStateMachineEditor::FlowStateMachineMode)
+		SNew(SModeWidget, FFSMEditor::GetLocalizedMode( FFSMEditor::FlowStateMachineMode ), FFSMEditor::FlowStateMachineMode)
 		.OnGetActiveMode(GetActiveMode)
 		.OnSetActiveMode(SetActiveMode)
-		.CanBeSelected(StateMachineEditorPtr.Get(), &FFlowStateMachineEditor::CanAccessFlowStateMachineMode)
+		.CanBeSelected(StateMachineEditorPtr.Get(), &FFSMEditor::CanAccessFlowStateMachineMode)
 		.ToolTipText(LOCTEXT("FlowStateMachineModeButtonTooltip", "Switch to FlowStateMachine Mode"))
 		// TODO::Use Custom Image
 		.IconImage(FEditorStyle::GetBrush("BTEditor.SwitchToBehaviorTreeMode"))
@@ -75,10 +75,10 @@ void FFSMEditorToolbar::FillModesToolbar(FToolBarBuilder& ToolbarBuilder)
 	StateMachineEditorPtr->AddToolbarWidget(SNew(SFlowStateMachineModeSeparator));
 
 	StateMachineEditorPtr->AddToolbarWidget(
-		SNew(SModeWidget, FFlowStateMachineEditor::GetLocalizedMode( FFlowStateMachineEditor::CommonDataMode ), FFlowStateMachineEditor::CommonDataMode)
+		SNew(SModeWidget, FFSMEditor::GetLocalizedMode( FFSMEditor::CommonDataMode ), FFSMEditor::CommonDataMode)
 		.OnGetActiveMode(GetActiveMode)
 		.OnSetActiveMode(SetActiveMode)
-		.CanBeSelected(StateMachineEditorPtr.Get(), &FFlowStateMachineEditor::CanAccessFlowStateMachineMode)
+		.CanBeSelected(StateMachineEditorPtr.Get(), &FFSMEditor::CanAccessCommonDataMode)
 		.ToolTipText(LOCTEXT("CommonDataModeButtonTooltip", "Switch to CommonData Mode"))
 		// TODO::Use Custom Image
 		.IconImage(FEditorStyle::GetBrush("BTEditor.SwitchToBlackboardMode"))

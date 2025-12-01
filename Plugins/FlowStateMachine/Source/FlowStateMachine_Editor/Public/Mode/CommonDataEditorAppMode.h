@@ -2,18 +2,18 @@
 #include "WorkflowOrientedApp/ApplicationMode.h"
 #include "WorkflowOrientedApp/WorkflowTabManager.h"
 
-class FFlowStateMachineEditor;
+class FFSMEditor;
 
-class FFSMCommonDataEditorApplicationMode : public FApplicationMode
+class FCommonDataEditorAppMode : public FApplicationMode
 {
 public:
-	FFSMCommonDataEditorApplicationMode(TSharedPtr<FFlowStateMachineEditor> InEditor);
+	FCommonDataEditorAppMode(TSharedPtr<FFSMEditor> InEditor);
 
 	virtual void RegisterTabFactories(TSharedPtr<FTabManager> InTabManager) override;
 	virtual void PostActivateMode() override;
 
 protected:
-	TWeakPtr<FFlowStateMachineEditor> FlowStateMachineEditor;
+	TWeakPtr<FFSMEditor> FlowStateMachineEditor;
 
 	FWorkflowAllowedTabSet CommonDataTabFactories;
 };

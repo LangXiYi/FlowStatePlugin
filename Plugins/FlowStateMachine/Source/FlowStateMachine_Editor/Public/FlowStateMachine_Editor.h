@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FFlowStateMachineEditor;
+class FFSMEditor;
 class IFlowStateMachineEditor;
 
 class FFlowStateMachine_EditorModule : public IModuleInterface
@@ -12,7 +12,7 @@ public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;
 
-    virtual TSharedRef<FFlowStateMachineEditor> CreateFlowStateMachineEditor( const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, class UObject* Object );
+    virtual TSharedRef<FFSMEditor> CreateFlowStateMachineEditor( const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, class UObject* Object );
 
 
 public:

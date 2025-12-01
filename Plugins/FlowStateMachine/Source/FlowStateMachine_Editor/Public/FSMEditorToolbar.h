@@ -1,10 +1,10 @@
 ﻿#pragma once
-#include "FlowStateMachineEditor.h"
+#include "FSMEditor.h"
 
 struct FFSMEditorToolbar : public TSharedFromThis<FFSMEditorToolbar>
 {
 public:
-	FFSMEditorToolbar(TSharedPtr<FFlowStateMachineEditor> InEditor)
+	FFSMEditorToolbar(TSharedPtr<FFSMEditor> InEditor)
 		: FlowStateMachineEditor(InEditor) {}
 
 	void AddModesToolbar(TSharedPtr<FExtender> Extender);
@@ -18,5 +18,5 @@ private:
 
 protected:
 	/** Pointer back to the blueprint editor tool that owns us */
-	TWeakPtr<FFlowStateMachineEditor> FlowStateMachineEditor;
+	TWeakPtr<FFSMEditor> FlowStateMachineEditor;
 };

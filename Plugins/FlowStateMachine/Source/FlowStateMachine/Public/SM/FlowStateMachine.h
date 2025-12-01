@@ -20,9 +20,14 @@ public:
 	FORCEINLINE const FPrimaryAssetId& GetMetaDataID() const { return MetaDataID; }
 
 public:
+#if WITH_EDITORONLY_DATA
 	/** Graph for Behavior Tree */
 	UPROPERTY()
 	class UEdGraph*	FSMGraph;
+
+#endif
+	UPROPERTY()
+	class UFSMCommonData* CommonData = nullptr;
 	
 protected:
 	UPROPERTY(EditAnywhere)

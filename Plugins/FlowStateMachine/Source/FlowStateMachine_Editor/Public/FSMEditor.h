@@ -6,10 +6,10 @@ struct FFSMEditorToolbar;
 class UFSMCommonData;
 class UFlowStateMachine;
 
-class FFlowStateMachineEditor: public IFlowStateMachineEditor
+class FFSMEditor: public IFlowStateMachineEditor
 {
 public:
-	FFlowStateMachineEditor();
+	FFSMEditor();
 	
 	void InitFlowStateMachineEditor(EToolkitMode::Type Mode,
 		const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject);
@@ -45,7 +45,8 @@ public:
 	//////////////////////////////////////////////////////////////
 public:
 	/** Get editing asset */
-	FORCEINLINE UFlowStateMachine* GetEditAsset() const { return FlowStateMachine; }
+	FORCEINLINE UFlowStateMachine* GetFlowStateMachine() const { return FlowStateMachine; }
+	FORCEINLINE UFSMCommonData* GetCommonData() const { return CommonData; }
 
 	/** Access the toolbar builder for this editor */
 	FORCEINLINE TSharedPtr<FFSMEditorToolbar> GetToolbarBuilder() const { return ToolbarBuilder; }
