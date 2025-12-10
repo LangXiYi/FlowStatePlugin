@@ -24,18 +24,20 @@ class FLOWSTATEMACHINE_API UFlowStateContext : public UObject
 
 public:
 	virtual void RegisterFlowStateMachine(UFlowStateMachine* FlowStateMachine);
-	
+
+	// TODO::由程序自动处理状态切换而不是用户定义
+
+protected:
 	UFUNCTION(BlueprintCallable, Category="Flow State Context")
 	virtual UFlowState* SwitchTo(UFlowState* NewState);
-
-	UFUNCTION(BlueprintCallable, Category="Flow State Context")
-	UFlowState* SwitchToByIndex(int32 Index);
 
 	UFUNCTION(BlueprintCallable, Category="Flow State Context", meta = (DeterminesOutputType = "NewState"))
 	UFlowState* SwitchToByClass(const TSubclassOf<UFlowState>& NewState);
 
-	template<class T>
-	T* SwitchTo() { return (T*)SwitchToByClass(T::StaticClass()); }
+	template<class StateType>
+	StateType* SwitchTo() { return (StateType*)SwitchToByClass(StateType::StaticClass()); }
+
+	// 获取下一组将要进入的节点
 
 	////////////////////////////////////////////////////////////////////////
 	/// Get or Set

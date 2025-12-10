@@ -35,20 +35,32 @@ void UFlowState::Tick(float DeltaTime)
 	OnTick(DeltaTime); 
 }
 
-void UFlowState::Enter(UFlowStateContext* Context)
+void UFlowState::OnEnter()
+{
+	NativeOnEnter();
+}
+
+void UFlowState::OnInitWidget(UFlowStateLayoutWidget* Layout)
+{
+	NativeOnInitWidget(Layout);
+}
+
+void UFlowState::OnInitialize(UFlowStateContext* Context)
 {
 	StateContext = Context;
+	// 预初始化状态
+	OnPreInitialize(Context->CurState);
+	// TODO::获取当前新节点的Action并执行它们！！！
+
+	// for (Action* Action : Actions)
+
+	// 进入状态
 	OnEnter();
 }
 
-void UFlowState::InitWidget(UFlowStateLayoutWidget* Layout)
+void UFlowState::OnExit()
 {
-	OnInitWidget(Layout);
-}
-
-void UFlowState::Exit()
-{
-	OnExit();
+	NativeOnExit();
 }
 
 void UFlowState::PreIniProperties(UFlowState* LastState)

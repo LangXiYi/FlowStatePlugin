@@ -7,6 +7,10 @@
 
 DECLARE_LOG_CATEGORY_CLASS(LogFlowStateMachine, Log, All);
 
+#define FSMLOG(msg, ...) UE_LOG(LogFlowStateMachine, Log, TEXT(msg), __VA_ARGS__)
+#define FSMLOGW(msg, ...) UE_LOG(LogFlowStateMachine, Warning, TEXT(msg), __VA_ARGS__)
+#define FSMLOGE(msg, ...) UE_LOG(LogFlowStateMachine, Error, TEXT(msg), __VA_ARGS__)
+
 #define BEGIN_NAMESPACE_FSM namespace FlowStateMachine {
 #define END_NAMESPACE_FSM } 
 

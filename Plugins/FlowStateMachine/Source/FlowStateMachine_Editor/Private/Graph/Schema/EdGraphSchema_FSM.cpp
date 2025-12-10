@@ -1,13 +1,47 @@
 ﻿#include "Graph/Schema/EdGraphSchema_FSM.h"
 
+UEdGraphNode* FFSMSchemaAction_NewMachine::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
+	const FVector2D Location, bool bSelectNewNode)
+{
+	UEdGraphNode* Node = NewObject<UEdGraphNode>(ParentGraph, NodeParentClass);
+	Node->CreateNewGuid();
+	Node->NodePosX = Location.X;
+	Node->NodePosY = Location.Y;
+
+	// TODO::创建输入输出引脚
+	UEdGraphPin* Input = Node->CreatePin(EGPD_Input, "InputPin", "From");
+	Node->CreatePin(EGPD_Output, "OutputPin", "Output_1");
+	Node->CreatePin(EGPD_Output, "OutputPin", "Output_2");
+	Node->CreatePin(EGPD_Output, "OutputPin", "Output_3");
+
+	// From引脚有效时会尝试将引脚连接至新建的节点
+	if (FromPin)
+	{
+		Node->GetSchema()->TryCreateConnection(FromPin, Input);
+	}
+	ParentGraph->Modify();
+	ParentGraph->AddNode(Node);
+	return Node;
+}
+
 void UEdGraphSchema_FSM::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 {
 	Super::CreateDefaultNodesForGraph(Graph);
 	// TODO:: Create Root Node
+
 }
 
 void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
+	TSharedPtr<FFSMSchemaAction_NewMachine> NewMachineAction = MakeShareable(new FFSMSchemaAction_NewMachine(
+		// TODO::需要在后续修改该部分的类型
+		UEdGraphNode::StaticClass(),
+		FText::FromString("Flow State Machine"),
+		FText::FromString("New state machine"),
+		FText::FromString("Create a new state machine"),
+		0
+	));
+	ContextMenuBuilder.AddAction(NewMachineAction);
 	/*const FName PinCategory = ContextMenuBuilder.FromPin ?
 		ContextMenuBuilder.FromPin->PinType.PinCategory : 
 		UBehaviorTreeEditorTypes::PinCategory_MultipleNodes;
@@ -127,10 +161,18 @@ const FPinConnectionResponse UEdGraphSchema_FSM::CanCreateConnection(const UEdGr
 
 	// TODO::控制两个引脚之间是否可以连接
 	// A->Direction != B->Direction;
+	if (A == nullptr || B == nullptr)
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("A || B is nullptr."));
+	}
+	if (A->Direction == B->Direction)
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("A Direction == B Direction."));
+	}
+
 	
-
-
-	return Response;
+	
+	return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_AB, "");
 }
 
 const FPinConnectionResponse UEdGraphSchema_FSM::CanMergeNodes(const UEdGraphNode* A, const UEdGraphNode* B) const

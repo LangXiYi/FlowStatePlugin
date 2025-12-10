@@ -3,6 +3,28 @@
 #include "UObject/Object.h"
 #include "EdGraphSchema_FSM.generated.h"
 
+/** Action to auto arrange the graph */
+USTRUCT()
+struct FFSMSchemaAction_NewMachine : public FEdGraphSchemaAction
+{
+	GENERATED_USTRUCT_BODY();
+
+	FFSMSchemaAction_NewMachine() 
+		: FEdGraphSchemaAction() {}
+
+	FFSMSchemaAction_NewMachine(UClass* InNodeParentClass, FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping):
+		FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping),
+		NodeParentClass(InNodeParentClass)
+	{
+	}
+
+	//~ Begin FEdGraphSchemaAction Interface
+	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
+	//~ End FEdGraphSchemaAction Interface
+private:
+	UClass* NodeParentClass = nullptr;
+};
+
 UCLASS()
 class UEdGraphSchema_FSM : public UEdGraphSchema
 {

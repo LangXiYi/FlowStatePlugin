@@ -13,13 +13,13 @@ public:
 		switch (Lifetime)
 		{
 		case EFlowStateLifetime::None:
-			AddToStaticBy(Target);
+			_AddToStaticBy(Target);
 			break;
 		case EFlowStateLifetime::Kill:
-			AddToKillBy(Target);
+			_AddToKillBy(Target);
 			break;
 		case EFlowStateLifetime::Hien:
-			AddToHiddenBy(Target);
+			_AddToHiddenBy(Target);
 			break;
 		}
 	}
@@ -34,27 +34,27 @@ public:
 	void ClearAllCache();
 
 protected:
-	void AddToStaticBy(AActor* Target)
+	void _AddToStaticBy(AActor* Target)
 	{
 		
 	}
-	void AddToStaticBy(UWidget* Target)
+	void _AddToStaticBy(UWidget* Target)
 	{
 		
 	}
-	void AddToKillBy(AActor* Target)
+	void _AddToKillBy(AActor* Target)
 	{
 		
 	}
-	void AddToKillBy(UWidget* Target)
+	void _AddToKillBy(UWidget* Target)
 	{
 		
 	}
-	void AddToHiddenBy(AActor* Target)
+	void _AddToHiddenBy(AActor* Target)
 	{
 		
 	}
-	void AddToHiddenBy(UWidget* Target)
+	void _AddToHiddenBy(UWidget* Target)
 	{
 		
 	}

@@ -40,38 +40,33 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine* FlowStateMac
 {
 	StateMachine = FlowStateMachine;
 	// TODO::注册状态机并运行
+	
 }
 
 UFlowState* UFlowStateContext::SwitchTo(UFlowState* NewState)
 {
-	if (CurState == nullptr)
-	{
-		return nullptr;
-	}
 	if (CurState != nullptr)
 	{
-		CurState->Exit();
+		CurState->OnExit();
 	}
-	NewState->PreIniProperties(CurState);
+	NewState->OnInitialize(this);
 	CurState = NewState;
-	CurState->Enter(this);
-	return CurState;
-}
 
-UFlowState* UFlowStateContext::SwitchToByIndex(int32 Index)
-{
-	return nullptr;
-	// if (!FlowStateList.IsValidIndex(Index))
-	// {
-	// 	UE_LOG(LogFlowStateMachine, Error, TEXT("Index is not valid by %d"), Index);
-	// 	return nullptr;
-	// }
-	// return SwitchToByClass(FlowStateList[Index]);
+	// TODO::初始化控件
+	// CurState->OnInitWidget(Layout);
+	return CurState;
 }
 
 UFlowState* UFlowStateContext::SwitchToByClass(const TSubclassOf<UFlowState>& NewState)
 {
-	{ return SwitchTo(NewObject<UFlowState>(this, NewState)); }
+	FSMLOG("正在切换状态至 -----> %s", NewState->GetName())
+	UFlowState* State = NewObject<UFlowState>(this, NewState);
+	if (State == nullptr)
+	{
+		FSMLOGE("创建新的状态对象失败")
+		return nullptr;
+	}
+	return SwitchTo(State);
 }
 
 void UFlowStateContext::Tick(float DeltaTime)
