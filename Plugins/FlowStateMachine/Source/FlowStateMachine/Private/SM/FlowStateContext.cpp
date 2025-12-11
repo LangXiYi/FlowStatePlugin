@@ -8,7 +8,7 @@
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "Kismet/GameplayStatics.h"
-#include "SM/FlowState.h"
+#include "SM/FlowStateBase.h"
 #include "SM/FlowStateMachine.h"
 #include "SM/FSMGC.h"
 #include "Utility/FSMUtility.h"
@@ -36,37 +36,17 @@ void UFlowStateContext::BeginPlay()
 	OnBeignPlay();
 }
 
+UFlowStateContext::UFlowStateContext()//:
+	// UFlowStateBase(InContext)
+{
+	CurState = nullptr;
+}
+
 void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine* FlowStateMachine)
 {
 	StateMachine = FlowStateMachine;
 	// TODO::注册状态机并运行
 	
-}
-
-UFlowState* UFlowStateContext::SwitchTo(UFlowState* NewState)
-{
-	if (CurState != nullptr)
-	{
-		CurState->OnExit();
-	}
-	NewState->OnInitialize(this);
-	CurState = NewState;
-
-	// TODO::初始化控件
-	// CurState->OnInitWidget(Layout);
-	return CurState;
-}
-
-UFlowState* UFlowStateContext::SwitchToByClass(const TSubclassOf<UFlowState>& NewState)
-{
-	FSMLOG("正在切换状态至 -----> %s", NewState->GetName())
-	UFlowState* State = NewObject<UFlowState>(this, NewState);
-	if (State == nullptr)
-	{
-		FSMLOGE("创建新的状态对象失败")
-		return nullptr;
-	}
-	return SwitchTo(State);
 }
 
 void UFlowStateContext::Tick(float DeltaTime)
@@ -115,6 +95,32 @@ void UFlowStateContext::LoadingFlowStateData(const FPrimaryAssetId& FlowStateDat
 			OnLoadedFunc();
 		}
 	}
+}
+
+UFlowStateBase* UFlowStateContext::SwitchTo(UFlowStateBase* NewState)
+{
+	if (CurState != nullptr)
+	{
+		CurState->OnExit();
+	}
+	NewState->OnInitialize(this);
+	CurState = NewState;
+
+	// TODO::初始化控件
+	// CurState->OnInitWidget(Layout);
+	return CurState;
+}
+
+UFlowStateBase* UFlowStateContext::SwitchTo(const TSubclassOf<UFlowStateBase>& NewStateClass)
+{
+	FSMLOG("正在切换状态至 -----> %s", *NewStateClass->GetName())
+	UFlowStateBase* State = NewObject<UFlowStateBase>(this, NewStateClass);
+	if (State == nullptr)
+	{
+		FSMLOGE("创建新的状态对象失败")
+		return nullptr;
+	}
+	return SwitchTo(State);
 }
 
 UWorld* UFlowStateContext::GetWorld() const

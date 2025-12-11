@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SM/FlowState.h"
+#include "SM/FlowStateBase.h"
 #include "Factories/Factory.h"
 #include "Factory_FlowStateMachine.generated.h"
 

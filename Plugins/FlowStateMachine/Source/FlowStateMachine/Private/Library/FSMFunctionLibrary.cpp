@@ -23,15 +23,15 @@ UFlowStateContext* UFSMFunctionLibrary::GetFlowStateContext(UObject* WorldContex
 	// return WorldSettings ? WorldSettings->GetFlowStateContext() : nullptr;
 }
 
-UFlowState* UFSMFunctionLibrary::GetCurFlowState(UObject* WorldContextObject)
+UFlowStateBase* UFSMFunctionLibrary::GetCurFlowState(UObject* WorldContextObject)
 {
 	UFlowStateContext* FlowStateContext = GetFlowStateContext(WorldContextObject);
 	return FlowStateContext ? FlowStateContext->GetCurrentState() : nullptr;
 }
 
-UFlowState* UFSMFunctionLibrary::GetCurFlowStateAs(UObject* WorldContextObject, TSubclassOf<UFlowState> Type)
+UFlowStateBase* UFSMFunctionLibrary::GetCurFlowStateAs(UObject* WorldContextObject, TSubclassOf<UFlowStateBase> Type)
 {
-	UFlowState* State = GetCurFlowState(WorldContextObject);
+	UFlowStateBase* State = GetCurFlowState(WorldContextObject);
 	if (State && State->IsA(Type))
 	{
 		return State;

@@ -139,7 +139,7 @@ void FFSMEditor::SaveEditedObjectState()
 
 void FFSMEditor::RestoreFlowStateMachine()
 {
-	// Update BT asset data based on saved graph to have correct data in editor
+	// 根据保存的图形更新 FSM 资产数据，使编辑器中有正确的数据
 	UFSMGraph* MyGraph = Cast<UFSMGraph>(FlowStateMachine->FSMGraph);
 	const bool bNewGraph = (MyGraph == nullptr);
 	if (bNewGraph)

@@ -5,14 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "SM/FlowState.h"
+#include "SM/FlowStateBase.h"
 #include "SM/FlowStateContext.h"
 #include "Utility/FSMUtility.h"
 #include "FSMFunctionLibrary.generated.h"
 
 
 class UFlowStateLayoutWidget;
-class UFlowState;
+class UFlowStateBase;
 class UFlowStateContext;
 
 /**
@@ -37,10 +37,10 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, Category = "FSMFunctionLibrary", meta = (WorldContext = "WorldContextObject"))
-	static UFlowState* GetCurFlowState(UObject* WorldContextObject);
+	static UFlowStateBase* GetCurFlowState(UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintPure, Category = "FSMFunctionLibrary", meta = (WorldContext = "WorldContextObject", DeterminesOutputType = "Type"))
-	static UFlowState* GetCurFlowStateAs(UObject* WorldContextObject, TSubclassOf<UFlowState> Type);
+	static UFlowStateBase* GetCurFlowStateAs(UObject* WorldContextObject, TSubclassOf<UFlowStateBase> Type);
 
 	template<class T>
 	static T* GetCurFlowStateAs(UObject* WorldContextObject)

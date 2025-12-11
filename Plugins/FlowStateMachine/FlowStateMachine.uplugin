@@ -39,6 +39,11 @@
 			"Name": "FlowStateMachine_AssetType",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "FlowStateMachine_EditorRuntime",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
 		}
 	]
 }

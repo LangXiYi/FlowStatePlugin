@@ -5,7 +5,7 @@
 #include "Kismet2/SClassPickerDialog.h"
 #include "Misc/MessageDialog.h"
 // Asset Class
-#include "SM/FlowState.h"
+#include "SM/FlowStateBase.h"
 #include "SM/FlowStateMachine.h"
 #include "Data/FSMMetaDataAsset.h"
 // Factory Class
@@ -44,8 +44,8 @@ UObject* UFactory_FlowStateData::FactoryCreateNew(UClass* Class, UObject* InPare
 UFactory_FlowState::UFactory_FlowState(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
 {
-	SupportedClass = UFlowState::StaticClass();
-	ParentClass = UFlowState::StaticClass();
+	SupportedClass = UFlowStateBase::StaticClass();
+	ParentClass = UFlowStateBase::StaticClass();
 	bCreateNew = true;
 	bEditAfterNew = true;
 }
@@ -76,11 +76,11 @@ bool UFactory_FlowState::ConfigureProperties()
 	Options.ClassFilter = Filter;
 
 	Filter->DisallowedClassFlags = CLASS_Abstract | CLASS_Deprecated | CLASS_NewerVersionExists;
-	Filter->AllowedChildrenOfClasses.Add(UFlowState::StaticClass());
+	Filter->AllowedChildrenOfClasses.Add(UFlowStateBase::StaticClass());
 
 	const FText TitleText = LOCTEXT("CreateFlowStateOptions", "Pick Flow State Class");
 	UClass* ChosenClass = nullptr;
-	const bool bPressedOk = SClassPickerDialog::PickClass(TitleText, Options, ChosenClass, UFlowState::StaticClass());
+	const bool bPressedOk = SClassPickerDialog::PickClass(TitleText, Options, ChosenClass, UFlowStateBase::StaticClass());
 
 	if ( bPressedOk )
 	{
@@ -93,7 +93,7 @@ UObject* UFactory_FlowState::FactoryCreateNew(UClass* Class, UObject* InParent, 
 	UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
 	// Make sure we are trying to factory a blueprint, then create and init one
-	check(Class->IsChildOf(UFlowState::StaticClass()));
+	check(Class->IsChildOf(UFlowStateBase::StaticClass()));
 
 	if ((ParentClass == nullptr) || !FKismetEditorUtilities::CanCreateBlueprintOfClass(ParentClass))
 	{

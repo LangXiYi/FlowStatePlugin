@@ -1,15 +1,15 @@
 ﻿using UnrealBuildTool;
 
-public class FlowStateMachine_Editor : ModuleRules
+public class FlowStateMachine_EditorRuntime : ModuleRules
 {
-    public FlowStateMachine_Editor(ReadOnlyTargetRules Target) : base(Target)
+    public FlowStateMachine_EditorRuntime(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(
             new string[]
             {
-                "Core", "FlowStateMachine", "FlowStateMachine_EditorRuntime"
+                "Core",
             }
         );
 
@@ -19,11 +19,7 @@ public class FlowStateMachine_Editor : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "Slate",
-                "SlateCore",
-                "Kismet",
-                "UnrealEd",
-                "PropertyEditor",
-                "EditorStyle",
+                "SlateCore"
             }
         );
     }

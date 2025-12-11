@@ -1,6 +1,6 @@
 ﻿#include "Graph/Schema/EdGraphSchema_FSM.h"
 
-UEdGraphNode* FFSMSchemaAction_NewMachine::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
+UEdGraphNode* FFSMSchemaAction_NewState::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
 	const FVector2D Location, bool bSelectNewNode)
 {
 	UEdGraphNode* Node = NewObject<UEdGraphNode>(ParentGraph, NodeParentClass);
@@ -24,6 +24,28 @@ UEdGraphNode* FFSMSchemaAction_NewMachine::PerformAction(UEdGraph* ParentGraph, 
 	return Node;
 }
 
+UEdGraphNode* FFSMSchemaAction_NewMachine::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin,
+	const FVector2D Location, bool bSelectNewNode)
+{
+	UEdGraphNode* Node = NewObject<UEdGraphNode>(ParentGraph, NodeParentClass);
+	Node->CreateNewGuid();
+	Node->NodePosX = Location.X;
+	Node->NodePosY = Location.Y;
+
+	// TODO::创建输入输出引脚
+	UEdGraphPin* Input = Node->CreatePin(EGPD_Input, "InputPin", "From");
+	Node->CreatePin(EGPD_Output, "OutputPin", "Output");
+
+	// From引脚有效时会尝试将引脚连接至新建的节点
+	if (FromPin)
+	{
+		Node->GetSchema()->TryCreateConnection(FromPin, Input);
+	}
+	ParentGraph->Modify();
+	ParentGraph->AddNode(Node);
+	return Node;
+}
+
 void UEdGraphSchema_FSM::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 {
 	Super::CreateDefaultNodesForGraph(Graph);
@@ -33,15 +55,30 @@ void UEdGraphSchema_FSM::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 
 void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
-	TSharedPtr<FFSMSchemaAction_NewMachine> NewMachineAction = MakeShareable(new FFSMSchemaAction_NewMachine(
+	TSharedPtr<FFSMSchemaAction_NewState> NewStateAction = MakeShareable(new FFSMSchemaAction_NewState(
 		// TODO::需要在后续修改该部分的类型
 		UEdGraphNode::StaticClass(),
-		FText::FromString("Flow State Machine"),
-		FText::FromString("New state machine"),
-		FText::FromString("Create a new state machine"),
+		FText::FromString("Flow State"),
+		FText::FromString("New state"),
+		FText::FromString("Create a new state"),
 		0
 	));
-	ContextMenuBuilder.AddAction(NewMachineAction);
+	ContextMenuBuilder.AddAction(NewStateAction);
+
+	TSharedPtr<FFSMSchemaAction_NewMachine> NewStateMachineAction = MakeShareable(new FFSMSchemaAction_NewMachine(
+			// TODO::需要在后续修改该部分的类型
+			UEdGraphNode::StaticClass(),
+			FText::FromString("Flow State Machine"),
+			FText::FromString("New state machine"),
+			FText::FromString("Create a new state machine"),
+			0
+		));
+	ContextMenuBuilder.AddAction(NewStateMachineAction);
+
+	// Add New State
+
+	// Add New State Machine
+	
 	/*const FName PinCategory = ContextMenuBuilder.FromPin ?
 		ContextMenuBuilder.FromPin->PinType.PinCategory : 
 		UBehaviorTreeEditorTypes::PinCategory_MultipleNodes;

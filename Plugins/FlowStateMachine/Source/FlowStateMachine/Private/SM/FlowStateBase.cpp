@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SM/FlowState.h"
+#include "SM/FlowStateBase.h"
 
 #include "Components/SlateWrapperTypes.h"
 #include "Components/Widget.h"
@@ -10,7 +10,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "SM/FlowStateContext.h"
 
-UWorld* UFlowState::GetWorld() const
+// UFlowStateBase::UFlowStateBase(UFlowStateContext* InContext):
+// 	IFlowStateInterface(InContext)
+// {
+// }
+
+UWorld* UFlowStateBase::GetWorld() const
 {
 	if (!HasAnyFlags(RF_ClassDefaultObject) && ensureMsgf(GetOuter(),
 		TEXT("Actor: %s has a null OuterPrivate in AActor::GetWorld()"), *GetFullName())
@@ -24,30 +29,30 @@ UWorld* UFlowState::GetWorld() const
 	return nullptr;
 }
 
-ULevel* UFlowState::GetLevel() const
+ULevel* UFlowStateBase::GetLevel() const
 {
 	return GetTypedOuter<ULevel>();
 }
 
-void UFlowState::Tick(float DeltaTime)
+void UFlowStateBase::Tick(float DeltaTime)
 {
 	Private_DeltaTime = DeltaTime;
 	OnTick(DeltaTime); 
 }
 
-void UFlowState::OnEnter()
+void UFlowStateBase::OnEnter()
 {
 	NativeOnEnter();
 }
 
-void UFlowState::OnInitWidget(UFlowStateLayoutWidget* Layout)
+void UFlowStateBase::OnInitWidget(UFlowStateLayoutWidget* Layout)
 {
 	NativeOnInitWidget(Layout);
 }
 
-void UFlowState::OnInitialize(UFlowStateContext* Context)
+void UFlowStateBase::OnInitialize(UFlowStateContext* Context)
 {
-	StateContext = Context;
+	ParentContext = Context;
 	// 预初始化状态
 	OnPreInitialize(Context->CurState);
 	// TODO::获取当前新节点的Action并执行它们！！！
@@ -58,12 +63,12 @@ void UFlowState::OnInitialize(UFlowStateContext* Context)
 	OnEnter();
 }
 
-void UFlowState::OnExit()
+void UFlowStateBase::OnExit()
 {
 	NativeOnExit();
 }
 
-void UFlowState::PreIniProperties(UFlowState* LastState)
+void UFlowStateBase::PreIniProperties(UFlowStateBase* LastState)
 {
 	OnPreInitProperties(LastState);
 }

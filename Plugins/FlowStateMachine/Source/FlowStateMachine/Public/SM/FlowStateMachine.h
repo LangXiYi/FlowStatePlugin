@@ -7,7 +7,7 @@
 #include "FlowStateMachine.generated.h"
 
 class UFSMMetaDataAsset;
-class UFlowState;
+class UFlowStateBase;
 /**
  * 
  */
@@ -21,7 +21,7 @@ public:
 
 public:
 #if WITH_EDITORONLY_DATA
-	/** Graph for Behavior Tree */
+	/** Graph For State Machine */
 	UPROPERTY()
 	class UEdGraph*	FSMGraph;
 

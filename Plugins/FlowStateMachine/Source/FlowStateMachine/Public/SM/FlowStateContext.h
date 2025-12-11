@@ -3,12 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FlowStateBase.h"
 #include "FSMGC.h"
 #include "UObject/Object.h"
 #include "Utility/FSMUtility.h"
 #include "FlowStateContext.generated.h"
 
-class UFlowState;
+class UFlowStateBase;
 class UFlowStateMachine;
 class UFSMMetaDataAsset;
 
@@ -20,21 +21,31 @@ class FLOWSTATEMACHINE_API UFlowStateContext : public UObject
 {
 	GENERATED_BODY()
 
-	friend class UFlowState;
+	friend class UFlowStateBase;
 
+public:
+	UFlowStateContext();
+	
 public:
 	virtual void RegisterFlowStateMachine(UFlowStateMachine* FlowStateMachine);
 
 	// TODO::由程序自动处理状态切换而不是用户定义
 
+	////////////////////////////////////////////////////////////////////////
+	/// IFlowStateInterface Event
+	////////////////////////////////////////////////////////////////////////
+public:
+	// virtual void OnEnter() override {}
+	// virtual void OnExit() override {}
+	// virtual void OnInitWidget(UFlowStateLayoutWidget* Layout) override {}
+	// virtual void OnInitialize(UFlowStateContext* Context) override {}
+	// virtual void OnPreInitialize(IFlowStateInterface* LastState) override {}
+	// virtual void OnPostInitialize() override {}
+
 protected:
-	UFUNCTION(BlueprintCallable, Category="Flow State Context")
-	virtual UFlowState* SwitchTo(UFlowState* NewState);
-
-	UFUNCTION(BlueprintCallable, Category="Flow State Context", meta = (DeterminesOutputType = "NewState"))
-	UFlowState* SwitchToByClass(const TSubclassOf<UFlowState>& NewState);
-
-	template<class StateType>
+	UFlowStateBase* SwitchTo(UFlowStateBase* NewState);
+	UFlowStateBase* SwitchTo(const TSubclassOf<UFlowStateBase>& NewStateClass);
+	template<class StateType = UFlowStateBase>
 	StateType* SwitchTo() { return (StateType*)SwitchToByClass(StateType::StaticClass()); }
 
 	// 获取下一组将要进入的节点
@@ -47,7 +58,7 @@ public:
 	virtual ULevel* GetLevel() const;
 	
 	UFUNCTION(BlueprintCallable, Category="FlowStateContext")
-	FORCEINLINE UFlowState* GetCurrentState() { return CurState; }
+	FORCEINLINE UFlowStateBase* GetCurrentState() { return CurState; }
 	template<class T>
 	FORCEINLINE T* GetCurrentState() const { return static_cast<T*>(CurState); }
 
@@ -104,7 +115,7 @@ private:
 
 protected:
 	UPROPERTY()
-	UFlowState* CurState;
+	UFlowStateBase* CurState;
 
 private:
 	UPROPERTY()
