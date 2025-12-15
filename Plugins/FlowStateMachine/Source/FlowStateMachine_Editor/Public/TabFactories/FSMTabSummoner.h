@@ -4,27 +4,27 @@
 #include "WorkflowOrientedApp/WorkflowTabFactory.h"
 #include "WorkflowOrientedApp/WorkflowUObjectDocuments.h"
 
-class FFSMEditor;
+class FFSMGraphEditor;
 
 /** 状态机图表的细节面板 */
 class FFSMGraphDetailSummoner: public FWorkflowTabFactory
 {
 public:
-	FFSMGraphDetailSummoner(TSharedPtr<FFSMEditor> InEditor);
+	FFSMGraphDetailSummoner(TSharedPtr<FFSMGraphEditor> InEditor);
 
 	// Begin FWorkflowTabFactory
 	virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
 	virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 	
 protected:
-	TWeakPtr<FFSMEditor> FlowStateMachineEditor;
+	TWeakPtr<FFSMGraphEditor> FlowStateMachineEditor;
 };
 
 /** 状态机图表的编辑面板 */
 class FFSMGraphEditorSummoner: public FDocumentTabFactoryForObjects<UFSMGraph>
 {
 public:
-	FFSMGraphEditorSummoner(TSharedPtr<FFSMEditor> InEditor);
+	FFSMGraphEditorSummoner(TSharedPtr<FFSMGraphEditor> InEditor);
 
 protected:
 	virtual TAttribute<FText> ConstructTabNameForObject(UFSMGraph* DocumentID) const override;
@@ -38,20 +38,20 @@ private:
 
 protected:
 
-	TWeakPtr<FFSMEditor> FlowStateMachineEditor;
+	TWeakPtr<FFSMGraphEditor> FlowStateMachineEditor;
 };
 
 /** 状态机图表的节点列表 */
 class FFSMGraphNodeListSummoner: public FWorkflowTabFactory
 {
 public:
-	FFSMGraphNodeListSummoner(TSharedPtr<FFSMEditor> InEditor);
+	FFSMGraphNodeListSummoner(TSharedPtr<FFSMGraphEditor> InEditor);
 
 	virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 	virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
 
 protected:
-	TWeakPtr<FFSMEditor> FlowStateMachineEditor;
+	TWeakPtr<FFSMGraphEditor> FlowStateMachineEditor;
 };
 
 /** 状态机图表的搜索界面 */
@@ -59,7 +59,7 @@ protected:
 class FFSMSearchSummoner : public FWorkflowTabFactory
 {
 public:
-	FFSMSearchSummoner(TSharedPtr<FFSMEditor> InEditor);
+	FFSMSearchSummoner(TSharedPtr<FFSMGraphEditor> InEditor);
 
 protected:
 	// Begin FWorkflowTabFactory
@@ -67,6 +67,6 @@ protected:
 	// virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 	
 protected:
-	TWeakPtr<FFSMEditor> FlowStateMachineEditor;
+	TWeakPtr<FFSMGraphEditor> FlowStateMachineEditor;
 };
 */

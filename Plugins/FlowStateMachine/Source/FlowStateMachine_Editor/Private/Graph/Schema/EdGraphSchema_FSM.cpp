@@ -1,49 +1,28 @@
 ﻿#include "Graph/Schema/EdGraphSchema_FSM.h"
 
-UEdGraphNode* FFSMSchemaAction_NewState::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
-	const FVector2D Location, bool bSelectNewNode)
+#include "Graph/Node/FSMGraphNode.h"
+#include "Graph/Node/FSMGraphNode_State.h"
+#include "Graph/Node/FSMGraphNode_StateMachine.h"
+#include "SM/FSMRuntimeNode.h"
+
+UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode)
 {
-	UEdGraphNode* Node = NewObject<UEdGraphNode>(ParentGraph, NodeParentClass);
-	Node->CreateNewGuid();
-	Node->NodePosX = Location.X;
-	Node->NodePosY = Location.Y;
-
-	// TODO::创建输入输出引脚
-	UEdGraphPin* Input = Node->CreatePin(EGPD_Input, "InputPin", "From");
-	Node->CreatePin(EGPD_Output, "OutputPin", "Output_1");
-	Node->CreatePin(EGPD_Output, "OutputPin", "Output_2");
-	Node->CreatePin(EGPD_Output, "OutputPin", "Output_3");
-
-	// From引脚有效时会尝试将引脚连接至新建的节点
-	if (FromPin)
-	{
-		Node->GetSchema()->TryCreateConnection(FromPin, Input);
-	}
-	ParentGraph->Modify();
-	ParentGraph->AddNode(Node);
-	return Node;
+	ParentGraphNode->AddSubNode(NodeTemplate, ParentGraph);
+	return NULL;
 }
 
-UEdGraphNode* FFSMSchemaAction_NewMachine::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin,
-	const FVector2D Location, bool bSelectNewNode)
+UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentGraph, TArray<UEdGraphPin*>& FromPins, const FVector2D Location, bool bSelectNewNode)
 {
-	UEdGraphNode* Node = NewObject<UEdGraphNode>(ParentGraph, NodeParentClass);
-	Node->CreateNewGuid();
-	Node->NodePosX = Location.X;
-	Node->NodePosY = Location.Y;
+	return PerformAction(ParentGraph, NULL, Location, bSelectNewNode);
+}
 
-	// TODO::创建输入输出引脚
-	UEdGraphPin* Input = Node->CreatePin(EGPD_Input, "InputPin", "From");
-	Node->CreatePin(EGPD_Output, "OutputPin", "Output");
+void FFSMSchemaAction_NewSubNode::AddReferencedObjects(FReferenceCollector& Collector)
+{
+	FEdGraphSchemaAction::AddReferencedObjects(Collector);
 
-	// From引脚有效时会尝试将引脚连接至新建的节点
-	if (FromPin)
-	{
-		Node->GetSchema()->TryCreateConnection(FromPin, Input);
-	}
-	ParentGraph->Modify();
-	ParentGraph->AddNode(Node);
-	return Node;
+	// These don't get saved to disk, but we want to make sure the objects don't get GC'd while the action array is around
+	Collector.AddReferencedObject(NodeTemplate);
+	Collector.AddReferencedObject(ParentGraphNode);
 }
 
 void UEdGraphSchema_FSM::CreateDefaultNodesForGraph(UEdGraph& Graph) const
@@ -55,14 +34,22 @@ void UEdGraphSchema_FSM::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 
 void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
-	TSharedPtr<FFSMSchemaAction_NewState> NewStateAction = MakeShareable(new FFSMSchemaAction_NewState(
+
+	// TODO::仅测试
+	GetGraphNodeContextActions(ContextMenuBuilder, EFSMNodeType::State);
+	GetGraphNodeContextActions(ContextMenuBuilder, EFSMNodeType::StateMachine);
+	
+	/*TSharedPtr<FFSMSchemaAction_NewState> NewStateAction = MakeShareable(new FFSMSchemaAction_NewState(
 		// TODO::需要在后续修改该部分的类型
-		UEdGraphNode::StaticClass(),
+		UFSMGraphNode::StaticClass(),
 		FText::FromString("Flow State"),
 		FText::FromString("New state"),
 		FText::FromString("Create a new state"),
 		0
 	));
+
+	NewStateAction;
+	
 	ContextMenuBuilder.AddAction(NewStateAction);
 
 	TSharedPtr<FFSMSchemaAction_NewMachine> NewStateMachineAction = MakeShareable(new FFSMSchemaAction_NewMachine(
@@ -73,7 +60,9 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 			FText::FromString("Create a new state machine"),
 			0
 		));
-	ContextMenuBuilder.AddAction(NewStateMachineAction);
+	ContextMenuBuilder.AddAction(NewStateMachineAction);*/
+
+	
 
 	// Add New State
 
@@ -190,6 +179,68 @@ int32 UEdGraphSchema_FSM::GetCurrentVisualizationCacheID() const
 void UEdGraphSchema_FSM::ForceVisualizationCacheClear() const
 {
 	Super::ForceVisualizationCacheClear();
+}
+
+void UEdGraphSchema_FSM::GetGraphNodeContextActions(FGraphContextMenuBuilder& ContextMenuBuilder,
+	int32 SubNodeFlags) const
+{
+	UEdGraph* Graph = (UEdGraph*)ContextMenuBuilder.CurrentGraph;
+	UClass* GraphNodeClass = nullptr;
+	TArray<FFSMGraphNodeClassData> NodeClasses;
+	GetSubNodeClasses(SubNodeFlags, NodeClasses, GraphNodeClass);
+
+	if (GraphNodeClass)
+	{
+		for (const auto& NodeClass : NodeClasses)
+		{
+			const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClass.ToString(), false));
+
+			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(Graph, GraphNodeClass);
+			OpNode->ClassData = NodeClass;
+
+			TSharedPtr<FFSMSchemaAction_NewSubNode> AddOpAction = UEdGraphSchema_FSM::AddNewSubNodeAction(ContextMenuBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
+			AddOpAction->ParentGraphNode = Cast<UFSMGraphNode>(ContextMenuBuilder.SelectedObjects[0]);
+			AddOpAction->NodeTemplate = OpNode;
+		}
+	}
+}
+
+void UEdGraphSchema_FSM::GetSubNodeClasses(int32 SubNodeFlags, TArray<FFSMGraphNodeClassData>& ClassData,
+                                           UClass*& GraphNodeClass) const
+{
+	if (SubNodeFlags == EFSMNodeType::State)
+	{
+		FFSMGraphNodeClassData Data(UFSMRuntimeNode_State::StaticClass(), "");
+		ClassData = {Data};
+		GraphNodeClass = UFSMGraphNode_State::StaticClass();
+	}
+	else if (SubNodeFlags == EFSMNodeType::StateMachine)
+	{
+		FFSMGraphNodeClassData Data(UFSMRuntimeNode_StateMachine::StaticClass(), "");
+		ClassData = {Data};
+		GraphNodeClass = UFSMGraphNode_StateMachine::StaticClass();
+	}
+	/*FBehaviorTreeEditorModule& EditorModule = FModuleManager::GetModuleChecked<FBehaviorTreeEditorModule>(TEXT("BehaviorTreeEditor"));
+	FGraphNodeClassHelper* ClassCache = EditorModule.GetClassCache().Get();
+
+	if (SubNodeFlags == ESubNode::Decorator)
+	{
+		ClassCache->GatherClasses(UBTDecorator::StaticClass(), ClassData);
+		GraphNodeClass = UBehaviorTreeGraphNode_Decorator::StaticClass();
+	}
+	else
+	{
+		ClassCache->GatherClasses(UBTService::StaticClass(), ClassData);
+		GraphNodeClass = UBehaviorTreeGraphNode_Service::StaticClass();
+	}*/
+}
+
+TSharedPtr<FFSMSchemaAction_NewSubNode> UEdGraphSchema_FSM::AddNewSubNodeAction(
+	FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip)
+{
+	TSharedPtr<FFSMSchemaAction_NewSubNode> NewAction = TSharedPtr<FFSMSchemaAction_NewSubNode>(new FFSMSchemaAction_NewSubNode(Category, MenuDesc, Tooltip, 0));
+	ContextMenuBuilder.AddAction(NewAction);
+	return NewAction;
 }
 
 const FPinConnectionResponse UEdGraphSchema_FSM::CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const

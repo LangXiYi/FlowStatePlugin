@@ -6,10 +6,10 @@ struct FFSMEditorToolbar;
 class UFSMCommonData;
 class UFlowStateMachine;
 
-class FFSMEditor: public IFlowStateMachineEditor
+class FFSMGraphEditor: public IFlowStateMachineEditor
 {
 public:
-	FFSMEditor();
+	FFSMGraphEditor();
 	
 	void InitFlowStateMachineEditor(EToolkitMode::Type Mode,
 		const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject);
@@ -57,6 +57,9 @@ public:
 	 * @return the localized text representation of the mode
 	 */
 	static FText GetLocalizedMode(FName InMode);
+
+protected:
+	virtual void SaveAsset_Execute() override;
 
 public:
 	static FName const FlowStateMachineMode; 

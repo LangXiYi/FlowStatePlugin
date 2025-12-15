@@ -76,3 +76,10 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+Plugins/DialogAssetEditor/
+Plugins/DialogAssetEditor/*
+Source/TutorialProject/
+Source/TutorialProject/*
+Content/TutorialProject/
+Content/TutorialProject/*

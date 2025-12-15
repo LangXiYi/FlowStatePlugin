@@ -1,10 +1,10 @@
 #include "TabFactories/CommonDataTabSummoner.h"
 
 #include "Data/FSMCommonData.h"
-#include "FSMEditor.h"
+#include "FSMGraphEditor.h"
 #include "TabFactories/FSMEditorTabsHelper.h"
 
-FCommonDataEditorSummoner::FCommonDataEditorSummoner(TSharedPtr<FFSMEditor> InEditor):
+FCommonDataEditorSummoner::FCommonDataEditorSummoner(TSharedPtr<FFSMGraphEditor> InEditor):
 	FWorkflowTabFactory(FFSMEditorTabsHelper::CommonDataEditorID, InEditor),
 	FlowStateMachineEditor(InEditor)
 
@@ -22,7 +22,7 @@ FText FCommonDataEditorSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& 
 }
 
 
-FCommonDataDetailSummoner::FCommonDataDetailSummoner(TSharedPtr<FFSMEditor> InEditor):
+FCommonDataDetailSummoner::FCommonDataDetailSummoner(TSharedPtr<FFSMGraphEditor> InEditor):
 	FWorkflowTabFactory(FFSMEditorTabsHelper::CommonDataDetailsID, InEditor),
 	FlowStateMachineEditor(InEditor)
 {
@@ -30,7 +30,7 @@ FCommonDataDetailSummoner::FCommonDataDetailSummoner(TSharedPtr<FFSMEditor> InEd
 
 TSharedRef<SWidget> FCommonDataDetailSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
 {
-	TSharedPtr<FFSMEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMGraphEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
 	
 	FPropertyEditorModule& PropertyEditor = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	FDetailsViewArgs PropertyViewArgs(false, false, true, FDetailsViewArgs::HideNameArea);

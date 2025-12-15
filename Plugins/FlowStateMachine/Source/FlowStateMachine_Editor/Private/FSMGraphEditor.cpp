@@ -1,4 +1,4 @@
-﻿#include "FSMEditor.h"
+﻿#include "FSMGraphEditor.h"
 
 #include "BlueprintEditorModes.h"
 #include "FlowStateMachine_Editor.h"
@@ -12,16 +12,16 @@
 #include "SM/FlowStateMachine.h"
 #include "TabFactories/FSMTabSummoner.h"
 
-FName const FFSMEditor::FlowStateMachineMode = FName("FlowStateMachine");
-FName const FFSMEditor::CommonDataMode = FName("CommonData");
+FName const FFSMGraphEditor::FlowStateMachineMode = FName("FlowStateMachine");
+FName const FFSMGraphEditor::CommonDataMode = FName("CommonData");
 
 #define LOCTEXT_NAMESPACE "FlowStateMachineEditor"
 
-FFSMEditor::FFSMEditor()
+FFSMGraphEditor::FFSMGraphEditor()
 {
 }
 
-void FFSMEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode,
+void FFSMGraphEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode,
                                                          const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject)
 {
 	UFlowStateMachine* FlowStateMachineInEditor = Cast<UFlowStateMachine>(InObject);
@@ -116,28 +116,28 @@ void FFSMEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode,
 	RegenerateMenusAndToolbars();
 }
 
-void FFSMEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager)
+void FFSMGraphEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager)
 {
 	DocumentManager->SetTabManager(InTabManager);
 	IFlowStateMachineEditor::RegisterTabSpawners(InTabManager);
 }
 
-void FFSMEditor::UnregisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager)
+void FFSMGraphEditor::UnregisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager)
 {
 	IFlowStateMachineEditor::UnregisterTabSpawners(InTabManager);
 }
 
-void FFSMEditor::RegisterToolbarTab(const TSharedRef<class FTabManager>& InTabManager)
+void FFSMGraphEditor::RegisterToolbarTab(const TSharedRef<class FTabManager>& InTabManager)
 {
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 }
 
-void FFSMEditor::SaveEditedObjectState()
+void FFSMGraphEditor::SaveEditedObjectState()
 {
 	// todo::Save Object State
 }
 
-void FFSMEditor::RestoreFlowStateMachine()
+void FFSMGraphEditor::RestoreFlowStateMachine()
 {
 	// 根据保存的图形更新 FSM 资产数据，使编辑器中有正确的数据
 	UFSMGraph* MyGraph = Cast<UFSMGraph>(FlowStateMachine->FSMGraph);
@@ -193,17 +193,17 @@ void FFSMEditor::RestoreFlowStateMachine()
 	MyGraph->UpdateAbortHighlight(EmptyMode, EmptyMode);*/
 }
 
-bool FFSMEditor::CanAccessFlowStateMachineMode() const
+bool FFSMGraphEditor::CanAccessFlowStateMachineMode() const
 {
 	return FlowStateMachine != nullptr;
 }
 
-bool FFSMEditor::CanAccessCommonDataMode() const
+bool FFSMGraphEditor::CanAccessCommonDataMode() const
 {
 	return CommonData != nullptr;
 }
 
-FText FFSMEditor::GetLocalizedMode(FName InMode)
+FText FFSMGraphEditor::GetLocalizedMode(FName InMode)
 {
 	static TMap< FName, FText > LocModes;
 
@@ -217,6 +217,19 @@ FText FFSMEditor::GetLocalizedMode(FName InMode)
 	const FText* OutDesc = LocModes.Find( InMode );
 	check( OutDesc );
 	return *OutDesc;
+}
+
+void FFSMGraphEditor::SaveAsset_Execute()
+{
+	if (FlowStateMachine)
+	{
+		UFSMGraph* Graph = Cast<UFSMGraph>(FlowStateMachine->FSMGraph);
+		if (Graph)
+		{
+			Graph->OnSave();
+		}
+	}
+	IFlowStateMachineEditor::SaveAsset_Execute();
 }
 
 #undef LOCTEXT_NAMESPACE

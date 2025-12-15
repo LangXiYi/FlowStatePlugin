@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FSMRuntimeNode.h"
 #include "UObject/Object.h"
 #include "FlowStateMachine.generated.h"
 
@@ -20,6 +21,10 @@ public:
 	FORCEINLINE const FPrimaryAssetId& GetMetaDataID() const { return MetaDataID; }
 
 public:
+	/** 状态机的根节点 */
+	UPROPERTY()
+	UFSMRuntimeNode* RootRuntimeNode;
+
 #if WITH_EDITORONLY_DATA
 	/** Graph For State Machine */
 	UPROPERTY()

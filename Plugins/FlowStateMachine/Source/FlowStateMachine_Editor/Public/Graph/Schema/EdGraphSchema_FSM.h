@@ -1,50 +1,53 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
+#include "Graph/Node/FSMGraphNode.h"
 #include "UObject/Object.h"
 #include "EdGraphSchema_FSM.generated.h"
 
-/** Action to auto arrange the graph */
+UENUM()
+namespace EFSMNodeType
+{
+	enum Type
+	{
+		State,
+		StateMachine,
+	};
+}
+
+
+/** Action to add a subnode to the selected node */
 USTRUCT()
-struct FFSMSchemaAction_NewState : public FEdGraphSchemaAction
+struct FLOWSTATEMACHINE_EDITOR_API FFSMSchemaAction_NewSubNode : public FEdGraphSchemaAction
 {
 	GENERATED_USTRUCT_BODY();
 
-	FFSMSchemaAction_NewState() 
-		: FEdGraphSchemaAction() {}
+	/** Template of node we want to create */
+	UPROPERTY()
+	class UFSMGraphNode* NodeTemplate;
 
-	FFSMSchemaAction_NewState(UClass* InNodeParentClass, FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping):
-		FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping),
-		NodeParentClass(InNodeParentClass)
-	{
-	}
+	/** parent node */
+	UPROPERTY()
+	class UFSMGraphNode* ParentGraphNode;
 
-	//~ Begin FEdGraphSchemaAction Interface
-	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
-	//~ End FEdGraphSchemaAction Interface
-private:
-	UClass* NodeParentClass = nullptr;
-};
+	FFSMSchemaAction_NewSubNode()
+		: FEdGraphSchemaAction()
+		, NodeTemplate(nullptr)
+		, ParentGraphNode(nullptr)
+	{}
 
-USTRUCT()
-struct FFSMSchemaAction_NewMachine : public FEdGraphSchemaAction
-{
-	GENERATED_USTRUCT_BODY();
-
-	FFSMSchemaAction_NewMachine() 
-		: FEdGraphSchemaAction() {}
-
-	FFSMSchemaAction_NewMachine(UClass* InNodeParentClass, FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping):
-		FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping),
-		NodeParentClass(InNodeParentClass)
-	{
-	}
+	FFSMSchemaAction_NewSubNode(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping)
+		: FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping)
+		, NodeTemplate(nullptr)
+		, ParentGraphNode(nullptr)
+	{}
 
 	//~ Begin FEdGraphSchemaAction Interface
 	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
+	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, TArray<UEdGraphPin*>& FromPins, const FVector2D Location, bool bSelectNewNode = true) override;
+	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 	//~ End FEdGraphSchemaAction Interface
-private:
-	UClass* NodeParentClass = nullptr;
 };
+
 
 UCLASS()
 class UEdGraphSchema_FSM : public UEdGraphSchema
@@ -65,7 +68,10 @@ public:
 	virtual void ForceVisualizationCacheClear() const override;
 	//~ End EdGraphSchema Interface
 
+	virtual void GetGraphNodeContextActions(FGraphContextMenuBuilder& ContextMenuBuilder, int32 SubNodeFlags) const;
+	virtual void GetSubNodeClasses(int32 SubNodeFlags, TArray<FFSMGraphNodeClassData>& ClassData, UClass*& GraphNodeClass) const;
+
 protected:
 	// static TSharedPtr<FAISchemaAction_NewNode> AddNewNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
-	// static TSharedPtr<FAISchemaAction_NewSubNode> AddNewSubNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
+	static TSharedPtr<FFSMSchemaAction_NewSubNode> AddNewSubNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
 };

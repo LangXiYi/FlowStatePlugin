@@ -1,12 +1,12 @@
 ﻿#include "Mode/CommonDataEditorAppMode.h"
 
-#include "FSMEditor.h"
+#include "FSMGraphEditor.h"
 #include "FSMEditorToolbar.h"
 #include "TabFactories/CommonDataTabSummoner.h"
 #include "TabFactories/FSMEditorTabsHelper.h"
 
-FCommonDataEditorAppMode::FCommonDataEditorAppMode(TSharedPtr<FFSMEditor> InEditor) :
-	FApplicationMode(FFSMEditor::CommonDataMode),
+FCommonDataEditorAppMode::FCommonDataEditorAppMode(TSharedPtr<FFSMGraphEditor> InEditor) :
+	FApplicationMode(FFSMGraphEditor::CommonDataMode),
 	FlowStateMachineEditor(InEditor)
 {
 	CommonDataTabFactories.RegisterFactory(MakeShareable(new FCommonDataEditorSummoner(InEditor)));
@@ -48,7 +48,7 @@ FCommonDataEditorAppMode::FCommonDataEditorAppMode(TSharedPtr<FFSMEditor> InEdit
 void FCommonDataEditorAppMode::RegisterTabFactories(TSharedPtr<FTabManager> InTabManager)
 {
 	check(FlowStateMachineEditor.IsValid());
-	TSharedPtr<FFSMEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMGraphEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
 	// Create Editor Toolbar Tab
 	FlowStateMachineEditorPtr->RegisterToolbarTab(InTabManager.ToSharedRef());
 	// Push our tabs
@@ -60,7 +60,7 @@ void FCommonDataEditorAppMode::PostActivateMode()
 {
 	// Reopen any documents that were open when the blueprint was last saved
 	check(FlowStateMachineEditor.IsValid());
-	TSharedPtr<FFSMEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMGraphEditor> FlowStateMachineEditorPtr = FlowStateMachineEditor.Pin();
 	// FlowStateMachineEditorPtr->RestoreFlowStateMachine();
 
 	FApplicationMode::PostActivateMode();

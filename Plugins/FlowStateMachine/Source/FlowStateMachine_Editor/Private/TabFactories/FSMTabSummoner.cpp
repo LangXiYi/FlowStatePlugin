@@ -1,11 +1,11 @@
 #include "TabFactories/FSMTabSummoner.h"
 #include "TabFactories/FSMEditorTabsHelper.h"
-#include "FSMEditor.h"
+#include "FSMGraphEditor.h"
 #include "SM/FlowStateMachine.h"
 
 #define LOCTEXT_NAMESPACE "FlowStateMachineDetailSummoner"
 
-FFSMGraphDetailSummoner::FFSMGraphDetailSummoner(TSharedPtr<FFSMEditor> InEditor)
+FFSMGraphDetailSummoner::FFSMGraphDetailSummoner(TSharedPtr<FFSMGraphEditor> InEditor)
 	:FWorkflowTabFactory(FFSMEditorTabsHelper::GraphDetailsID, InEditor) , FlowStateMachineEditor(InEditor)
 {
 	TabLabel = LOCTEXT("DetailSummonerLabel", "GraphDetailView");
@@ -21,7 +21,7 @@ FText FFSMGraphDetailSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& In
 
 TSharedRef<SWidget> FFSMGraphDetailSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
 {
-	TSharedPtr<FFSMEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMGraphEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
 	
 	FPropertyEditorModule& PropertyEditor = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	FDetailsViewArgs PropertyViewArgs(false, false, true, FDetailsViewArgs::HideNameArea);
@@ -52,7 +52,7 @@ TSharedRef<SWidget> FFSMGraphDetailSummoner::CreateTabBody(const FWorkflowTabSpa
 
 #define LOCTEXT_NAMESPACE "FSMGraphEditorSummoner"
 
-FFSMGraphEditorSummoner::FFSMGraphEditorSummoner(TSharedPtr<FFSMEditor> InEditor):
+FFSMGraphEditorSummoner::FFSMGraphEditorSummoner(TSharedPtr<FFSMGraphEditor> InEditor):
 	FDocumentTabFactoryForObjects(FFSMEditorTabsHelper::GraphEditorID, InEditor),
 	FlowStateMachineEditor(InEditor)
 {
@@ -69,7 +69,7 @@ TAttribute<FText> FFSMGraphEditorSummoner::ConstructTabNameForObject(UFSMGraph* 
 
 TSharedRef<SWidget> FFSMGraphEditorSummoner::CreateTabBodyForObject(const FWorkflowTabSpawnInfo& Info, UFSMGraph* InGraph) const
 {
-	TSharedPtr<FFSMEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMGraphEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
 	
 	check(InGraph != NULL);
 	
@@ -178,7 +178,7 @@ FGraphAppearanceInfo FFSMGraphEditorSummoner::GetGraphAppearance() const
 
 /*TSharedRef<SWidget> FFSMGraphEditorSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
 {
-	TSharedPtr<FFSMEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
+	TSharedPtr<FFSMGraphEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
 	check(StateMachineEditor);
 
 	SGraphEditor::FGraphEditorEvents InEvents;
@@ -205,7 +205,7 @@ FGraphAppearanceInfo FFSMGraphEditorSummoner::GetGraphAppearance() const
 
 #define LOCTEXT_NAMESPACE "FSMGraphNodeListSummoner"
 
-FFSMGraphNodeListSummoner::FFSMGraphNodeListSummoner(TSharedPtr<FFSMEditor> InEditor):
+FFSMGraphNodeListSummoner::FFSMGraphNodeListSummoner(TSharedPtr<FFSMGraphEditor> InEditor):
 	FWorkflowTabFactory(FFSMEditorTabsHelper::GraphNodeListID, InEditor),
 	FlowStateMachineEditor(InEditor)
 {
