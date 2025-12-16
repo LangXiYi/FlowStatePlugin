@@ -20,7 +20,8 @@ public:
 	FFSMGraphNodeClassData(const FString& InAssetName, const FString& InGeneratedClassPackage, const FString& InClassName, UClass* InClass);
 
 	UClass* GetClass() const;
-	const FString& ToString() const;
+	FString ToString() const;
+	FText GetCategory() const { return FText::FromString("Default"); }
 
 private:
 	TWeakObjectPtr<UClass> RuntimeNodeClass;
@@ -35,7 +36,7 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode : public UEdGraphNode
 	GENERATED_BODY()
 
 public:
-	// 当节点被放置后调用，创建 RuntimeNode 实例
+	/** 当节点被放置后调用，创建 RuntimeNode 实例 */
 	virtual void PostPasteNode() override;
 
 	/** 初始化运行时节点实例时调用  */
@@ -56,5 +57,32 @@ public:
 	UPROPERTY()
 	UFSMGraphNode* ParentNode;
 
+	// DEPRECATED
 	TArray<UFSMGraphNode*> SubNodes;
+
+	// 仅存储装饰器
+	UPROPERTY()
+	TArray<UFSMGraphNode*> Decorators;
+
+	// 仅存储行为
+	UPROPERTY()
+	TArray<UFSMGraphNode*> Actions;
+	
+	bool bIsRootNode = false;
+};
+
+UCLASS()
+class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_Decorator : public UEdGraphNode
+{
+	GENERATED_BODY()
+
+public:
+};
+
+UCLASS()
+class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_Action : public UEdGraphNode
+{
+	GENERATED_BODY()
+
+public:
 };

@@ -14,6 +14,39 @@ namespace EFSMNodeType
 	};
 }
 
+/** Action to add a subnode to the selected node */
+USTRUCT()
+struct FLOWSTATEMACHINE_EDITOR_API FFSMSchemaAction_NewNode : public FEdGraphSchemaAction
+{
+	GENERATED_USTRUCT_BODY();
+
+	/** Template of node we want to create */
+	UPROPERTY()
+	class UFSMGraphNode* NodeTemplate;
+
+	/** parent node */
+	UPROPERTY()
+	class UFSMGraphNode* ParentGraphNode;
+
+	FFSMSchemaAction_NewNode()
+		: FEdGraphSchemaAction()
+		, NodeTemplate(nullptr)
+		, ParentGraphNode(nullptr)
+	{}
+
+	FFSMSchemaAction_NewNode(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping)
+		: FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping)
+		, NodeTemplate(nullptr)
+		, ParentGraphNode(nullptr)
+	{}
+
+	//~ Begin FEdGraphSchemaAction Interface
+	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
+	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, TArray<UEdGraphPin*>& FromPins, const FVector2D Location, bool bSelectNewNode = true) override;
+	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
+	//~ End FEdGraphSchemaAction Interface
+};
+
 
 /** Action to add a subnode to the selected node */
 USTRUCT()
@@ -68,10 +101,11 @@ public:
 	virtual void ForceVisualizationCacheClear() const override;
 	//~ End EdGraphSchema Interface
 
+	// 添加节点的行为，如为节点添加装饰器、添加行为等等
 	virtual void GetGraphNodeContextActions(FGraphContextMenuBuilder& ContextMenuBuilder, int32 SubNodeFlags) const;
 	virtual void GetSubNodeClasses(int32 SubNodeFlags, TArray<FFSMGraphNodeClassData>& ClassData, UClass*& GraphNodeClass) const;
 
 protected:
-	// static TSharedPtr<FAISchemaAction_NewNode> AddNewNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
+	static TSharedPtr<FFSMSchemaAction_NewNode> AddNewNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
 	static TSharedPtr<FFSMSchemaAction_NewSubNode> AddNewSubNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
 };

@@ -43,7 +43,7 @@ private:
 };
 
 UCLASS()
-class UFSMRuntimeNode_State : public UFSMRuntimeNode
+class FLOWSTATEMACHINE_API UFSMRuntimeNode_State : public UFSMRuntimeNode
 {
 	GENERATED_BODY()
 
@@ -52,7 +52,36 @@ public:
 };
 
 UCLASS()
-class UFSMRuntimeNode_StateMachine : public UFSMRuntimeNode
+class FLOWSTATEMACHINE_API UFSMRuntimeNode_StateMachine : public UFSMRuntimeNode
+{
+	GENERATED_BODY()
+
+public:
+	
+};
+
+
+/**
+ * 运行时节点---------行为
+ * 作为 State 节点的子节点
+ * 会在每次进入 State 之前执行一次，单个 State 节点可以添加多个 Action，但每个 Action 只能添加一个。
+ */
+UCLASS()
+class FLOWSTATEMACHINE_API UFSMRuntimeNode_Action : public UFSMRuntimeNode
+{
+	GENERATED_BODY()
+
+public:
+	
+};
+
+/**
+ * 运行时节点---------装饰器
+ * 作为 State 节点的子节点
+ * 会在每帧执行，与 BehaviorTree 执行流程相同，会中断当前 State 的执行或限制进入某 State。
+ */
+UCLASS()
+class FLOWSTATEMACHINE_API UFSMRuntimeNode_Decorator : public UFSMRuntimeNode
 {
 	GENERATED_BODY()
 

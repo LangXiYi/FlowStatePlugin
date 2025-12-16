@@ -22,7 +22,7 @@ UClass* FFSMGraphNodeClassData::GetClass() const
 	return RuntimeNodeClass.Get();
 }
 
-const FString& FFSMGraphNodeClassData::ToString() const
+FString FFSMGraphNodeClassData::ToString() const
 {
 	if (RuntimeNodeClass.IsValid())
 	{
@@ -44,7 +44,9 @@ void UFSMGraphNode::PostPasteNode()
 		UObject* GraphOwner = MyGraph ? MyGraph->GetOuter() : nullptr;
 		if (GraphOwner)
 		{
+			// 该 RuntimeNode 会在其他阶段赋予实际意义
 			NodeInstance = NewObject<UFSMRuntimeNode>(GraphOwner, NodeClass);
+			// “transactional”这个词确实与编辑器的撤销/重做系统有关。
 			NodeInstance->SetFlags(RF_Transactional);
 			InitializeInstance();
 		}
@@ -57,6 +59,7 @@ void UFSMGraphNode::InitializeInstance()
 	if (NodeInstance && FSMAsset)
 	{
 		NodeInstance->InitializeFromAsset(*FSMAsset);
+		// 初始化节点信息，如父级节点、节点深度、执行优先级等等，此时无实际意义。
 		NodeInstance->InitializeNode(NULL, MAX_uint16, 0, 0);
 		NodeInstance->OnNodeCreated();
 	}

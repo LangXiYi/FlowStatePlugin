@@ -19,6 +19,7 @@ public:
 	virtual void OnSave();
 	/** 更新资产 */
 	virtual void UpdateAsset(int32 UpdateFlags = 0);
+
 	/** 根据图表得到内容创建状态机 */
 	virtual void CreateFSMFromGraph(UFSMGraphNode* RootEdNode);
 
@@ -27,5 +28,17 @@ public:
 protected:
 	/** 生成缺少的节点，在图表被创建后调用 */
 	void SpawnMissingNodes();
+
+	void ClearRootNodeFlags();
+
+	/** 移除孤儿节点（无父级节点且不是根节点的节点） */
+	void RemoveOrphanedNodes();
+
+	/** 收集所有的节点实例 */
+	virtual void CollectAllNodeInstances(TSet<UObject*>& NodeInstances);
+	virtual bool CanRemoveNestedObject(UObject* TestObject) const;
+	virtual void OnNodeInstanceRemoved(UObject* NodeInstance) {}
+
+
 };
 

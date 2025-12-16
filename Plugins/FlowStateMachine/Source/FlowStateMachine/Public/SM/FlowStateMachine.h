@@ -21,9 +21,17 @@ public:
 	FORCEINLINE const FPrimaryAssetId& GetMetaDataID() const { return MetaDataID; }
 
 public:
-	/** 状态机的根节点 */
-	UPROPERTY()
+	/** 状态机的根节点 (是实际进入的第一个节点而不是图表根节点) */
+	UPROPERTY(VisibleAnywhere)
 	UFSMRuntimeNode* RootRuntimeNode;
+
+	/** 状态机根节点的装饰器子节点 */
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMRuntimeNode_Decorator*> RootDecorators;
+
+	/** 状态机根节点的行为子节点 */
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMRuntimeNode_Action*> RootActions;
 
 #if WITH_EDITORONLY_DATA
 	/** Graph For State Machine */

@@ -29,23 +29,19 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 	for (int Index = 0; Index < Nodes.Num(); ++Index)
 	{
 		UFSMGraphNode* Node = Cast<UFSMGraphNode>(Nodes[Index]);
-		if (Node == nullptr)
-		{
-			continue;
-		}
-
-
-
+		if (Node == nullptr) continue;
 		// 当根节点为空时，尝试更新根节点
 		if (RootNode == nullptr)
 		{
 			RootNode = Cast<UFSMGraphNode_Root>(Node);
 		}
+		// TODO::这里可以对其他节点执行其他操作，如为节点的 Decorators/Actions 设置它们的父级
 	}
 
 	// 确保根节点连接了至少一个其他节点
 	if (RootNode && RootNode->Pins.Num() > 0 && RootNode->Pins[0]->LinkedTo.Num() > 0)
 	{
+		// 使用图表根节点的下一级节点作为运行时根节点
 		UFSMGraphNode* Node = Cast<UFSMGraphNode>(RootNode->Pins[0]->LinkedTo[0]->GetOwningNode());
 		if (Node)
 		{
@@ -142,57 +138,43 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 {
 	UFlowStateMachine* FSMAsset = Cast<UFlowStateMachine>(GetOuter());
-	FSMAsset->RootRuntimeNode = nullptr; // 丢弃旧数据
+	FSMAsset->RootRuntimeNode = nullptr; // 解除旧资产保存的数据引用
 
 	// 根据图表中创建新数据
 	uint16 ExecutionIndex = 0;
 	uint8 TreeDepth = 0;
 
 	FSMAsset->RootRuntimeNode = RootEdNode->NodeInstance;
-	
-	/*UBehaviorTree* BTAsset = Cast<UBehaviorTree>(GetOuter());
-	BTAsset->RootNode = NULL; //discard old tree
-
-	// let's create new tree from graph
-	uint16 ExecutionIndex = 0;
-	uint8 TreeDepth = 0;
-
-	BTAsset->RootNode = Cast<UBTCompositeNode>(RootEdNode->NodeInstance);
-	if (BTAsset->RootNode)
+	if (FSMAsset->RootRuntimeNode)
 	{
-		BTAsset->RootNode->InitializeNode(NULL, ExecutionIndex, 0, TreeDepth);
-		ExecutionIndex++;
+		// 对 RuntimeNode 赋予实际意义
+		FSMAsset->RootRuntimeNode->InitializeNode(nullptr, ExecutionIndex, 0, TreeDepth);
+		++ExecutionIndex;
 	}
 
-	// collect root level decorators
-	uint16 DummyIndex = MAX_uint16;
-	BTAsset->RootDecorators.Empty();
-	BTAsset->RootDecoratorOps.Empty();
-	BTGraphHelpers::CollectDecorators(BTAsset, RootEdNode, BTAsset->RootDecorators, BTAsset->RootDecoratorOps, false, NULL, &DummyIndex, 0, 0);
+	// TODO::初始化 RuntimeDecorators/RuntimeActions
+	uint16 DummyIndex = MAX_uint16; // 暂时未知实际意义
+	FSMAsset->RootDecorators.Empty();
+	FSMAsset->RootActions.Empty();
 
-	// connect tree nodes
-	BTGraphHelpers::CreateChildren(BTAsset, BTAsset->RootNode, RootEdNode, &ExecutionIndex, TreeDepth + 1); //-V595
-
-	// mark root level nodes
-	BTGraphHelpers::ClearRootLevelFlags(this);
-
-	RootEdNode->bRootLevel = true;
-	for (int32 Index = 0; Index < RootEdNode->Decorators.Num(); Index++)
+	// 对根节点进行标记
+	ClearRootNodeFlags();
+	RootEdNode->bIsRootNode = true;
+	RootEdNode->Decorators;
+	for (int i = 0; i < RootEdNode->Decorators.Num(); ++i)
 	{
-		UBehaviorTreeGraphNode* Node = RootEdNode->Decorators[Index];
+		UFSMGraphNode* Node = RootEdNode->Decorators[i];
 		if (Node)
 		{
-			Node->bRootLevel = true;
+			Node->bIsRootNode = true;
 		}
 	}
-
-	if (BTAsset->RootNode)
+	if (FSMAsset->RootRuntimeNode)
 	{
-		BTAsset->RootNode->InitializeComposite(ExecutionIndex - 1);
+		// FSMAsset->RootRuntimeNode->InitializeComposite(ExecutionIndex - 1);
 	}
-
-	// Now remove any orphaned nodes left behind after regeneration
-	RemoveOrphanedNodes();*/
+	// 移除孤儿节点
+	RemoveOrphanedNodes();
 }
 
 void UFSMGraph::SpawnMissingNodes()
@@ -234,4 +216,80 @@ void UFSMGraph::SpawnMissingNodes()
 			RootOutPin->MakeLinkTo(SpawnedInPin);
 		}
 	}*/
+}
+
+void UFSMGraph::ClearRootNodeFlags()
+{
+	// TO
+	for (UEdGraphNode* Node : Nodes)
+	{
+	}
+	for (int i = 0; i < Nodes.Num(); ++i)
+	{
+		UFSMGraphNode* GraphNode = Cast<UFSMGraphNode>(Nodes[i]);
+		if (GraphNode)
+		{
+			GraphNode->bIsRootNode = false;
+			// TODO::同时对子节点进行清除
+		}
+	}
+}
+
+void UFSMGraph::RemoveOrphanedNodes()
+{
+	TSet<UObject*> NodeInstances;
+	CollectAllNodeInstances(NodeInstances);
+
+	NodeInstances.Remove(nullptr);
+
+	// Obtain a list of all nodes actually in the asset and discard unused nodes
+	TArray<UObject*> AllInners;
+	const bool bIncludeNestedObjects = false;
+	GetObjectsWithOuter(GetOuter(), AllInners, bIncludeNestedObjects);
+	for (auto InnerIt = AllInners.CreateConstIterator(); InnerIt; ++InnerIt)
+	{
+		UObject* TestObject = *InnerIt;
+		if (!NodeInstances.Contains(TestObject) && CanRemoveNestedObject(TestObject))
+		{
+			OnNodeInstanceRemoved(TestObject);
+
+			TestObject->SetFlags(RF_Transient);
+			TestObject->Rename(NULL, GetTransientPackage(), REN_DontCreateRedirectors | REN_NonTransactional | REN_ForceNoResetLoaders);
+		}
+	}
+}
+
+void UFSMGraph::CollectAllNodeInstances(TSet<UObject*>& NodeInstances)
+{
+	for (int32 Idx = 0; Idx < Nodes.Num(); Idx++)
+	{
+		UFSMGraphNode* MyNode = Cast<UFSMGraphNode>(Nodes[Idx]);
+		if (MyNode)
+		{
+			NodeInstances.Add(MyNode->NodeInstance);
+
+			for (int32 SubIdx = 0; SubIdx < MyNode->SubNodes.Num(); SubIdx++)
+			{
+				if (MyNode->SubNodes[SubIdx])
+				{
+					NodeInstances.Add(MyNode->SubNodes[SubIdx]->NodeInstance);
+				}
+			}
+		}
+	}
+}
+
+bool UFSMGraph::CanRemoveNestedObject(UObject* TestObject) const
+{
+	return !TestObject->IsA(UEdGraphNode::StaticClass()) &&
+	!TestObject->IsA(UEdGraph::StaticClass()) &&
+	!TestObject->IsA(UEdGraphSchema::StaticClass());
+}
+
+
+namespace FSMGraphHelper
+{
+	// TODO::收集装饰及以及行为子节点
+	// void CollectDecorators();
+	// void CollectActions();
 }

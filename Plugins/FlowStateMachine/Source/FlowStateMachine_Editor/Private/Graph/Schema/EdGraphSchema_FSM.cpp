@@ -5,6 +5,48 @@
 #include "Graph/Node/FSMGraphNode_StateMachine.h"
 #include "SM/FSMRuntimeNode.h"
 
+UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
+	const FVector2D Location, bool bSelectNewNode)
+{
+	UEdGraphNode* ResultNode = nullptr;
+	// 创建图表节点
+	if (NodeTemplate != nullptr)
+	{
+		ParentGraph->Modify();
+		if (FromPin)
+		{
+			FromPin->Modify();
+		}
+
+		ParentGraph->AddNode(NodeTemplate);
+
+		NodeTemplate->CreateNewGuid();
+		NodeTemplate->PostPasteNode();
+
+		NodeTemplate->NodePosX = Location.X;
+		NodeTemplate->NodePosY = Location.Y;
+		
+		NodeTemplate->AllocateDefaultPins();
+		NodeTemplate->AutowireNewNode(FromPin);
+
+		ResultNode = NodeTemplate;
+
+	}
+	return ResultNode;
+}
+
+UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, TArray<UEdGraphPin*>& FromPins,
+	const FVector2D Location, bool bSelectNewNode)
+{
+	// TODO::
+	return FEdGraphSchemaAction::PerformAction(ParentGraph, FromPins, Location, bSelectNewNode);
+}
+
+void FFSMSchemaAction_NewNode::AddReferencedObjects(FReferenceCollector& Collector)
+{
+	FEdGraphSchemaAction::AddReferencedObjects(Collector);
+}
+
 UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode)
 {
 	ParentGraphNode->AddSubNode(NodeTemplate, ParentGraph);
@@ -36,9 +78,15 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 {
 
 	// TODO::仅测试
-	GetGraphNodeContextActions(ContextMenuBuilder, EFSMNodeType::State);
-	GetGraphNodeContextActions(ContextMenuBuilder, EFSMNodeType::StateMachine);
-	
+	// GetGraphNodeContextActions(ContextMenuBuilder, EFSMNodeType::State);
+	// GetGraphNodeContextActions(ContextMenuBuilder, EFSMNodeType::StateMachine);
+	UEdGraph* Graph = (UEdGraph*)ContextMenuBuilder.CurrentGraph;
+	UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(Graph, UFSMGraphNode_State::StaticClass());
+	// OpNode->ClassData = NodeClass;
+	 TSharedPtr<FFSMSchemaAction_NewNode>  NewAction = AddNewNodeAction(ContextMenuBuilder, FText::FromString("Default"), FText::FromString("AddNode"), FText::FromString("Tooltip"));	
+	NewAction->NodeTemplate = OpNode;
+
+
 	/*TSharedPtr<FFSMSchemaAction_NewState> NewStateAction = MakeShareable(new FFSMSchemaAction_NewState(
 		// TODO::需要在后续修改该部分的类型
 		UFSMGraphNode::StaticClass(),
@@ -199,7 +247,7 @@ void UEdGraphSchema_FSM::GetGraphNodeContextActions(FGraphContextMenuBuilder& Co
 			OpNode->ClassData = NodeClass;
 
 			TSharedPtr<FFSMSchemaAction_NewSubNode> AddOpAction = UEdGraphSchema_FSM::AddNewSubNodeAction(ContextMenuBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
-			AddOpAction->ParentGraphNode = Cast<UFSMGraphNode>(ContextMenuBuilder.SelectedObjects[0]);
+			// AddOpAction->ParentGraphNode = Cast<UFSMGraphNode>(ContextMenuBuilder.SelectedObjects[0]);
 			AddOpAction->NodeTemplate = OpNode;
 		}
 	}
@@ -235,10 +283,18 @@ void UEdGraphSchema_FSM::GetSubNodeClasses(int32 SubNodeFlags, TArray<FFSMGraphN
 	}*/
 }
 
+TSharedPtr<FFSMSchemaAction_NewNode> UEdGraphSchema_FSM::AddNewNodeAction(
+	FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip)
+{
+	TSharedPtr<FFSMSchemaAction_NewNode> NewAction = MakeShareable(new FFSMSchemaAction_NewNode(Category, MenuDesc, Tooltip, 0));
+	ContextMenuBuilder.AddAction(NewAction);
+	return NewAction;
+}
+
 TSharedPtr<FFSMSchemaAction_NewSubNode> UEdGraphSchema_FSM::AddNewSubNodeAction(
 	FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip)
 {
-	TSharedPtr<FFSMSchemaAction_NewSubNode> NewAction = TSharedPtr<FFSMSchemaAction_NewSubNode>(new FFSMSchemaAction_NewSubNode(Category, MenuDesc, Tooltip, 0));
+	TSharedPtr<FFSMSchemaAction_NewSubNode> NewAction = MakeShareable(new FFSMSchemaAction_NewSubNode(Category, MenuDesc, Tooltip, 0));
 	ContextMenuBuilder.AddAction(NewAction);
 	return NewAction;
 }
