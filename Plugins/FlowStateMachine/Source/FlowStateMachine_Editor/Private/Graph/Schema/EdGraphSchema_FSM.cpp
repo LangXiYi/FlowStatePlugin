@@ -76,15 +76,20 @@ void UEdGraphSchema_FSM::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 
 void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
+	// 搜集所有的 FlowState 类型并添加该节点行为
 
+	// TODO::CollectAllFlowState(OutClassArray)
+
+	// TODO:: for(int i = 0; i < OutClassArray.Num(); ++i) AddNewNodeAction();
+	
 	// TODO::仅测试
 	// GetGraphNodeContextActions(ContextMenuBuilder, EFSMNodeType::State);
 	// GetGraphNodeContextActions(ContextMenuBuilder, EFSMNodeType::StateMachine);
-	UEdGraph* Graph = (UEdGraph*)ContextMenuBuilder.CurrentGraph;
+	/*UEdGraph* Graph = const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph);
 	UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(Graph, UFSMGraphNode_State::StaticClass());
 	// OpNode->ClassData = NodeClass;
 	 TSharedPtr<FFSMSchemaAction_NewNode>  NewAction = AddNewNodeAction(ContextMenuBuilder, FText::FromString("Default"), FText::FromString("AddNode"), FText::FromString("Tooltip"));	
-	NewAction->NodeTemplate = OpNode;
+	NewAction->NodeTemplate = OpNode;*/
 
 
 	/*TSharedPtr<FFSMSchemaAction_NewState> NewStateAction = MakeShareable(new FFSMSchemaAction_NewState(
@@ -232,6 +237,8 @@ void UEdGraphSchema_FSM::ForceVisualizationCacheClear() const
 void UEdGraphSchema_FSM::GetGraphNodeContextActions(FGraphContextMenuBuilder& ContextMenuBuilder,
 	int32 SubNodeFlags) const
 {
+	// TODO::由节点自身的行为调用
+	
 	UEdGraph* Graph = (UEdGraph*)ContextMenuBuilder.CurrentGraph;
 	UClass* GraphNodeClass = nullptr;
 	TArray<FFSMGraphNodeClassData> NodeClasses;

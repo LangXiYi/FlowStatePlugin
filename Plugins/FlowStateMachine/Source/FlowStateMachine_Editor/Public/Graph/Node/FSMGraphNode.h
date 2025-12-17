@@ -39,6 +39,9 @@ public:
 	/** 当节点被放置后调用，创建 RuntimeNode 实例 */
 	virtual void PostPasteNode() override;
 
+	/** 获得当前操作节点的上下文菜单行为，当右键节点时触发该函数 */
+	virtual void GetNodeContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const override;
+
 	/** 初始化运行时节点实例时调用  */
 	virtual void InitializeInstance();
 
@@ -47,12 +50,14 @@ public:
 	void AddSubNode(UFSMGraphNode* SubNode, class UEdGraph* ParentGraph);
 	void RemoveSubNode(UFSMGraphNode* SubNode);
 	virtual void OnSubNodeAdded(UFSMGraphNode* SubNode) {}
+
 	
 public:
 	FFSMGraphNodeClassData ClassData;
-	
+
+	/**	RuntimeNode 一般会随图表节点的创建一起创建。 */
 	UPROPERTY()
-	UFSMRuntimeNode* NodeInstance;
+	UFSMRuntimeNode* RuntimeNode;
 
 	UPROPERTY()
 	UFSMGraphNode* ParentNode;
@@ -69,6 +74,13 @@ public:
 	TArray<UFSMGraphNode*> Actions;
 	
 	bool bIsRootNode = false;
+
+protected:
+	/** creates add decorator... submenu */
+	void CreateAddDecoratorSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const;
+
+	/** creates add service... submenu */
+	void CreateAddActionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const;
 };
 
 UCLASS()

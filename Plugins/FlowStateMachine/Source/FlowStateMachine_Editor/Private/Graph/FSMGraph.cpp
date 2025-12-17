@@ -144,18 +144,20 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	uint16 ExecutionIndex = 0;
 	uint8 TreeDepth = 0;
 
-	FSMAsset->RootRuntimeNode = RootEdNode->NodeInstance;
+	FSMAsset->RootRuntimeNode = RootEdNode->RuntimeNode;
 	if (FSMAsset->RootRuntimeNode)
 	{
-		// 对 RuntimeNode 赋予实际意义
-		FSMAsset->RootRuntimeNode->InitializeNode(nullptr, ExecutionIndex, 0, TreeDepth);
-		++ExecutionIndex;
+		// 赋予节点实际意义
+		FSMAsset->RootRuntimeNode->InitializeNode(nullptr, ExecutionIndex++, 0, TreeDepth);
 	}
 
 	// TODO::初始化 RuntimeDecorators/RuntimeActions
 	uint16 DummyIndex = MAX_uint16; // 暂时未知实际意义
 	FSMAsset->RootDecorators.Empty();
 	FSMAsset->RootActions.Empty();
+
+	// 创建所有子节点
+	CreateChildrenNodes(FSMAsset, FSMAsset->RootRuntimeNode, RootEdNode, ExecutionIndex, TreeDepth + 1);
 
 	// 对根节点进行标记
 	ClearRootNodeFlags();
@@ -266,13 +268,13 @@ void UFSMGraph::CollectAllNodeInstances(TSet<UObject*>& NodeInstances)
 		UFSMGraphNode* MyNode = Cast<UFSMGraphNode>(Nodes[Idx]);
 		if (MyNode)
 		{
-			NodeInstances.Add(MyNode->NodeInstance);
+			NodeInstances.Add(MyNode->RuntimeNode);
 
 			for (int32 SubIdx = 0; SubIdx < MyNode->SubNodes.Num(); SubIdx++)
 			{
 				if (MyNode->SubNodes[SubIdx])
 				{
-					NodeInstances.Add(MyNode->SubNodes[SubIdx]->NodeInstance);
+					NodeInstances.Add(MyNode->SubNodes[SubIdx]->RuntimeNode);
 				}
 			}
 		}
@@ -286,6 +288,49 @@ bool UFSMGraph::CanRemoveNestedObject(UObject* TestObject) const
 	!TestObject->IsA(UEdGraphSchema::StaticClass());
 }
 
+void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode,
+	UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth)
+{
+	// 递归结束条件1：确保传入的运行时节点以及图表节点为空
+	if (RuntimeRootNode == nullptr || GraphRootNode == nullptr)
+	{
+		return;
+	}
+	// 递归结束条件2：GraphRootNode 的输出引脚数量为 0 或 引脚未连接其他节点
+	for (int32 Idx = 0; Idx < GraphRootNode->Pins.Num(); ++Idx)
+	{
+		UEdGraphPin* Pin = GraphRootNode->Pins[Idx];
+		// 过滤非输出引脚
+		if (Pin->Direction != EGPD_Output)
+		{
+			continue;
+		}
+
+		// 遍历节点引脚获得当前节点下的所有子节点
+		for (int i = 0; i < Pin->LinkedTo.Num(); ++i)
+		{
+			UFSMGraphNode* GraphNode = Cast<UFSMGraphNode>(Pin->LinkedTo[i]->GetOwningNode());
+			if (GraphNode == nullptr)
+			{
+				continue;
+			}
+			UFSMRuntimeNode* RuntimeNode = Cast<UFSMRuntimeNode>(GraphNode->RuntimeNode);
+			if (RuntimeNode == nullptr)
+			{
+				continue;
+			}
+			// 重设 RuntimeNode 的 Outer 为资产对象，RuntimeNode 在编辑中实际是由 GraphNode 在函数 PostPasteNode 中设置的。
+			RuntimeNode->Rename(nullptr, FSMAsset);
+			RuntimeRootNode->AddChildNode(RuntimeNode);
+			
+			// 更新执行顺序
+			RuntimeNode->InitializeNode(RuntimeRootNode, ExecuteIndex++, 0, TreeDepth);
+
+			// 递归添加子节点
+			CreateChildrenNodes(FSMAsset, RuntimeNode, GraphNode, ExecuteIndex, TreeDepth + 1);
+		}
+	}
+}
 
 namespace FSMGraphHelper
 {

@@ -7,8 +7,9 @@
 #include "FSMRuntimeNode.generated.h"
 
 class UFlowStateMachine;
+
 /**
- * 
+ * 状态机运行时节点，保存图表中编辑的各个节点的关系。
  */
 UCLASS()
 class FLOWSTATEMACHINE_API UFSMRuntimeNode : public UObject
@@ -22,15 +23,30 @@ public:
 #if WITH_EDITOR
 	/** 【Only Editor】 在创建新的图表节点后调用 */
 	virtual void OnNodeCreated() {}
+
+	/** 【Only Editor】 只在编辑阶段可以调用添加子节点 */
+	virtual void AddChildNode(UFSMRuntimeNode* ChildNode)
+	{
+		if (ChildNode == nullptr)
+		{
+			return;
+		}
+		ChildrenNodes.Add(ChildNode);
+	}
 #endif
 
 private:
 	// Asset Ptr
 	UPROPERTY()
 	UFlowStateMachine* FSMAsset;
-	
+
+	/** 父级节点 */
 	UPROPERTY()
 	UFSMRuntimeNode* ParentNode;
+
+	/** 子级节点 */
+	UPROPERTY()
+	TArray<UFSMRuntimeNode*> ChildrenNodes;
 
 	/** depth first index (execution order) */
 	uint16 ExecutionIndex;

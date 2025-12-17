@@ -3,6 +3,7 @@
 #include "UObject/Object.h"
 #include "FSMGraph.generated.h"
 
+class UFSMRuntimeNode;
 class UFSMGraphNode;
 
 UCLASS()
@@ -39,6 +40,7 @@ protected:
 	virtual bool CanRemoveNestedObject(UObject* TestObject) const;
 	virtual void OnNodeInstanceRemoved(UObject* NodeInstance) {}
 
-
+	/** 创建所有的子级节点 */
+	void CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode, UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth);
 };
 
