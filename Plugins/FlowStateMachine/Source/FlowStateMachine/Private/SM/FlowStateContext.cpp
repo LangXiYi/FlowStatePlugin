@@ -24,11 +24,11 @@ void UFlowStateContext::Initialize()
 
 	check(StateMachine)
 	// 加载数据资产至内存并在完成后调用 BeginPlay
-	LoadingFlowStateData(StateMachine->GetMetaDataID(), [this]()
-	{
+	// LoadingFlowStateData(StateMachine->GetMetaDataID(), [this]()
+	// {
 		// Loading Success Callback
-		BeginPlay();
-	});
+		// BeginPlay();
+	// });
 }
 
 void UFlowStateContext::BeginPlay()

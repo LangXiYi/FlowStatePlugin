@@ -1,8 +1,10 @@
 ﻿#include "Graph/Schema/EdGraphSchema_FSM.h"
 
+#include "FlowStateMachine_Editor.h"
+#include "GraphEditorActions.h"
+#include "ToolMenu.h"
+#include "AIGraph/Classes/AIGraphTypes.h"
 #include "Graph/Node/FSMGraphNode.h"
-#include "Graph/Node/FSMGraphNode_State.h"
-#include "Graph/Node/FSMGraphNode_StateMachine.h"
 #include "SM/FSMRuntimeNode.h"
 
 UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
@@ -18,7 +20,9 @@ UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEd
 			FromPin->Modify();
 		}
 
-		ParentGraph->AddNode(NodeTemplate);
+		// 通过 Rename 函数重设节点模板的 Outer，之前的 Outer 为临时图表
+		NodeTemplate->Rename(NULL, ParentGraph, REN_NonTransactional);
+		ParentGraph->AddNode(NodeTemplate, true);
 
 		NodeTemplate->CreateNewGuid();
 		NodeTemplate->PostPasteNode();
@@ -70,118 +74,42 @@ void FFSMSchemaAction_NewSubNode::AddReferencedObjects(FReferenceCollector& Coll
 void UEdGraphSchema_FSM::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 {
 	Super::CreateDefaultNodesForGraph(Graph);
-	// TODO:: Create Root Node
-
+	FGraphNodeCreator<UFSMGraphNode_Root> NodeCreator(Graph);
+	UFSMGraphNode_Root* RootNode = NodeCreator.CreateNode();
+	NodeCreator.Finalize();
+	SetNodeMetaData(RootNode, FNodeMetadata::DefaultGraphNode);
 }
 
 void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
 	// 搜集所有的 FlowState 类型并添加该节点行为
 
-	// TODO::CollectAllFlowState(OutClassArray)
+	FFlowStateMachine_EditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateMachine_EditorModule>("FlowStateMachine_Editor");
+	TSharedPtr<FGraphNodeClassHelper> ClassCache = FSMEditorModule.GetClassCache();
 
-	// TODO:: for(int i = 0; i < OutClassArray.Num(); ++i) AddNewNodeAction();
-	
-	// TODO::仅测试
-	// GetGraphNodeContextActions(ContextMenuBuilder, EFSMNodeType::State);
-	// GetGraphNodeContextActions(ContextMenuBuilder, EFSMNodeType::StateMachine);
-	/*UEdGraph* Graph = const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph);
-	UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(Graph, UFSMGraphNode_State::StaticClass());
-	// OpNode->ClassData = NodeClass;
-	 TSharedPtr<FFSMSchemaAction_NewNode>  NewAction = AddNewNodeAction(ContextMenuBuilder, FText::FromString("Default"), FText::FromString("AddNode"), FText::FromString("Tooltip"));	
-	NewAction->NodeTemplate = OpNode;*/
+	bool bIsAllowCreateState = true;
 
-
-	/*TSharedPtr<FFSMSchemaAction_NewState> NewStateAction = MakeShareable(new FFSMSchemaAction_NewState(
-		// TODO::需要在后续修改该部分的类型
-		UFSMGraphNode::StaticClass(),
-		FText::FromString("Flow State"),
-		FText::FromString("New state"),
-		FText::FromString("Create a new state"),
-		0
-	));
-
-	NewStateAction;
-	
-	ContextMenuBuilder.AddAction(NewStateAction);
-
-	TSharedPtr<FFSMSchemaAction_NewMachine> NewStateMachineAction = MakeShareable(new FFSMSchemaAction_NewMachine(
-			// TODO::需要在后续修改该部分的类型
-			UEdGraphNode::StaticClass(),
-			FText::FromString("Flow State Machine"),
-			FText::FromString("New state machine"),
-			FText::FromString("Create a new state machine"),
-			0
-		));
-	ContextMenuBuilder.AddAction(NewStateMachineAction);*/
-
-	
-
-	// Add New State
-
-	// Add New State Machine
-	
-	/*const FName PinCategory = ContextMenuBuilder.FromPin ?
-		ContextMenuBuilder.FromPin->PinType.PinCategory : 
-		UBehaviorTreeEditorTypes::PinCategory_MultipleNodes;
-
-	const bool bNoParent = (ContextMenuBuilder.FromPin == NULL);
-	const bool bOnlyTasks = (PinCategory == UBehaviorTreeEditorTypes::PinCategory_SingleTask);
-	const bool bOnlyComposites = (PinCategory == UBehaviorTreeEditorTypes::PinCategory_SingleComposite);
-	const bool bAllowComposites = bNoParent || !bOnlyTasks || bOnlyComposites;
-	const bool bAllowTasks = bNoParent || !bOnlyComposites || bOnlyTasks;
-
-	FBehaviorTreeEditorModule& EditorModule = FModuleManager::GetModuleChecked<FBehaviorTreeEditorModule>(TEXT("BehaviorTreeEditor"));
-	FGraphNodeClassHelper* ClassCache = EditorModule.GetClassCache().Get();
-
-	if (bAllowComposites)
+	// 收集所有状态节点
+	if (bIsAllowCreateState)
 	{
-		FCategorizedGraphActionListBuilder CompositesBuilder(TEXT("Composites"));
+		FCategorizedGraphActionListBuilder TasksBuilder(TEXT("FlowState"));
 
 		TArray<FGraphNodeClassData> NodeClasses;
-		ClassCache->GatherClasses(UBTCompositeNode::StaticClass(), NodeClasses);
-
-		const FString ParallelClassName = UBTComposite_SimpleParallel::StaticClass()->GetName();
-		for (const auto& NodeClass : NodeClasses)
-		{
-			const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClass.ToString(), false));
-
-			TSharedPtr<FAISchemaAction_NewNode> AddOpAction = UAIGraphSchema::AddNewNodeAction(CompositesBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
-
-			UClass* GraphNodeClass = UBehaviorTreeGraphNode_Composite::StaticClass();
-			if (NodeClass.GetClassName() == ParallelClassName)
-			{
-				GraphNodeClass = UBehaviorTreeGraphNode_SimpleParallel::StaticClass();
-			}
-
-			UBehaviorTreeGraphNode* OpNode = NewObject<UBehaviorTreeGraphNode>(ContextMenuBuilder.OwnerOfTemporaries, GraphNodeClass);
-			OpNode->ClassData = NodeClass;
-			AddOpAction->NodeTemplate = OpNode;
-		}
-
-		ContextMenuBuilder.Append(CompositesBuilder);
-	}
-
-	if (bAllowTasks)
-	{
-		FCategorizedGraphActionListBuilder TasksBuilder(TEXT("Tasks"));
-
-		TArray<FGraphNodeClassData> NodeClasses;
-		ClassCache->GatherClasses(UBTTaskNode::StaticClass(), NodeClasses);
+		ClassCache->GatherClasses(UFSMRuntimeNode_State::StaticClass(), NodeClasses);
 
 		for (const auto& NodeClass : NodeClasses)
 		{
 			const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClass.ToString(), false));
 
-			TSharedPtr<FAISchemaAction_NewNode> AddOpAction = UAIGraphSchema::AddNewNodeAction(TasksBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
+			TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
 			
-			UClass* GraphNodeClass = UBehaviorTreeGraphNode_Task::StaticClass();
-			if (NodeClass.GetClassName() == UBTTask_RunBehavior::StaticClass()->GetName())
+			UClass* GraphNodeClass = UFSMGraphNode_State::StaticClass();
+			/*if (NodeClass.GetClassName() == UBTTask_RunBehavior::StaticClass()->GetName())
 			{
 				GraphNodeClass = UBehaviorTreeGraphNode_SubtreeTask::StaticClass();
-			}
+			}*/
 
-			UBehaviorTreeGraphNode* OpNode = NewObject<UBehaviorTreeGraphNode>(ContextMenuBuilder.OwnerOfTemporaries, GraphNodeClass);
+			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(ContextMenuBuilder.OwnerOfTemporaries, GraphNodeClass);
 			OpNode->ClassData = NodeClass;
 			AddOpAction->NodeTemplate = OpNode;
 		}
@@ -189,14 +117,6 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 		ContextMenuBuilder.Append(TasksBuilder);
 	}
 	
-	if (bNoParent)
-	{
-		TSharedPtr<FBehaviorTreeSchemaAction_AutoArrange> Action = TSharedPtr<FBehaviorTreeSchemaAction_AutoArrange>(
-			new FBehaviorTreeSchemaAction_AutoArrange(FText::GetEmpty(), LOCTEXT("AutoArrange", "Auto Arrange"), FText::GetEmpty(), 0)
-			);
-
-		ContextMenuBuilder.AddAction(Action);
-	}*/
 	Super::GetGraphContextActions(ContextMenuBuilder);
 }
 
@@ -241,7 +161,7 @@ void UEdGraphSchema_FSM::GetGraphNodeContextActions(FGraphContextMenuBuilder& Co
 	
 	UEdGraph* Graph = (UEdGraph*)ContextMenuBuilder.CurrentGraph;
 	UClass* GraphNodeClass = nullptr;
-	TArray<FFSMGraphNodeClassData> NodeClasses;
+	TArray<FGraphNodeClassData> NodeClasses;
 	GetSubNodeClasses(SubNodeFlags, NodeClasses, GraphNodeClass);
 
 	if (GraphNodeClass)
@@ -260,20 +180,14 @@ void UEdGraphSchema_FSM::GetGraphNodeContextActions(FGraphContextMenuBuilder& Co
 	}
 }
 
-void UEdGraphSchema_FSM::GetSubNodeClasses(int32 SubNodeFlags, TArray<FFSMGraphNodeClassData>& ClassData,
+void UEdGraphSchema_FSM::GetSubNodeClasses(int32 SubNodeFlags, TArray<FGraphNodeClassData>& ClassData,
                                            UClass*& GraphNodeClass) const
 {
 	if (SubNodeFlags == EFSMNodeType::State)
 	{
-		FFSMGraphNodeClassData Data(UFSMRuntimeNode_State::StaticClass(), "");
+		FGraphNodeClassData Data(UFSMRuntimeNode_State::StaticClass(), "");
 		ClassData = {Data};
 		GraphNodeClass = UFSMGraphNode_State::StaticClass();
-	}
-	else if (SubNodeFlags == EFSMNodeType::StateMachine)
-	{
-		FFSMGraphNodeClassData Data(UFSMRuntimeNode_StateMachine::StaticClass(), "");
-		ClassData = {Data};
-		GraphNodeClass = UFSMGraphNode_StateMachine::StaticClass();
 	}
 	/*FBehaviorTreeEditorModule& EditorModule = FModuleManager::GetModuleChecked<FBehaviorTreeEditorModule>(TEXT("BehaviorTreeEditor"));
 	FGraphNodeClassHelper* ClassCache = EditorModule.GetClassCache().Get();

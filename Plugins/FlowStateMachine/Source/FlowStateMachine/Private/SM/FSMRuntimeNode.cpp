@@ -16,3 +16,9 @@ void UFSMRuntimeNode::InitializeNode(UFSMRuntimeNode* InParentNode, uint16 InExe
 	TreeDepth = InTreeDepth;
 }
 
+FString UFSMRuntimeNode::GetNodeName() const
+{
+	// TODO::后续可以改为其他名称，而不是对象的名称
+	return NodeName.Len() ? NodeName : GetName();
+}
+

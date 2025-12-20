@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "IFlowStateMachineEditor.h"
+#include "Graph/FSMGraph.h"
 #include "WorkflowOrientedApp/WorkflowTabManager.h"
 
 struct FFSMEditorToolbar;
@@ -40,6 +41,12 @@ public:
 	/** Check whether the blackboard mode can be accessed (i.e whether we have a valid blackboard to edit) */
 	bool CanAccessCommonDataMode() const;
 
+	/** 创建状态机图表编辑器 */
+	TSharedRef<SWidget> CreateFlowStateMachineGraphEditor(const FWorkflowTabSpawnInfo& Info, UFSMGraph* InGraph);
+
+	/** 创建状态机细节面板 */
+	TSharedRef<SWidget> CreateFlowStateMachineDetailView(const FWorkflowTabSpawnInfo& Info);
+
 	//////////////////////////////////////////////////////////////
 	/// Get Or Set
 	//////////////////////////////////////////////////////////////
@@ -58,8 +65,17 @@ public:
 	 */
 	static FText GetLocalizedMode(FName InMode);
 
+	bool InEditingMode(bool bGraphIsEditable) const { return bGraphIsEditable; }
+	FGraphAppearanceInfo GetGraphAppearance() const;
+
+public:
+	// Graph Events
+	virtual void OnSelectedNodesChanged(const TSet<UObject*>& NewSelection);
+	
 protected:
 	virtual void SaveAsset_Execute() override;
+
+	// OnSelect
 
 public:
 	static FName const FlowStateMachineMode; 
@@ -75,4 +91,9 @@ private:
 
 	// 工具栏扩展器 FFSMEditorToolbar
 	TSharedPtr<FFSMEditorToolbar> ToolbarBuilder;
+
+	// 资产的细节面板
+	TSharedPtr<IDetailsView> AssetDetailsView;
+	// 节点的细节面板
+	TSharedPtr<IDetailsView> DetailsView;
 };

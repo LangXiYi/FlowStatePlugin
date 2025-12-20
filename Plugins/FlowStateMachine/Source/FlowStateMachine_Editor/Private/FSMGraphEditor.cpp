@@ -203,6 +203,102 @@ bool FFSMGraphEditor::CanAccessCommonDataMode() const
 	return CommonData != nullptr;
 }
 
+TSharedRef<SWidget> FFSMGraphEditor::CreateFlowStateMachineGraphEditor(const FWorkflowTabSpawnInfo& Info, UFSMGraph* InGraph)
+{
+	/*if (!GraphEditorCommands.IsValid())
+	{
+		CreateCommandList();
+
+		GraphEditorCommands->MapAction( FGraphEditorCommands::Get().RemoveExecutionPin,
+			FExecuteAction::CreateSP( this, &FBehaviorTreeEditor::OnRemoveInputPin ),
+			FCanExecuteAction::CreateSP( this, &FBehaviorTreeEditor::CanRemoveInputPin )
+			);
+
+		GraphEditorCommands->MapAction( FGraphEditorCommands::Get().AddExecutionPin,
+			FExecuteAction::CreateSP( this, &FBehaviorTreeEditor::OnAddInputPin ),
+			FCanExecuteAction::CreateSP( this, &FBehaviorTreeEditor::CanAddInputPin )
+			);
+
+		// Debug actions
+		GraphEditorCommands->MapAction( FGraphEditorCommands::Get().AddBreakpoint,
+			FExecuteAction::CreateSP( this, &FBehaviorTreeEditor::OnAddBreakpoint ),
+			FCanExecuteAction::CreateSP( this, &FBehaviorTreeEditor::CanAddBreakpoint ),
+			FIsActionChecked(),
+			FIsActionButtonVisible::CreateSP( this, &FBehaviorTreeEditor::CanAddBreakpoint )
+			);
+
+		GraphEditorCommands->MapAction( FGraphEditorCommands::Get().RemoveBreakpoint,
+			FExecuteAction::CreateSP( this, &FBehaviorTreeEditor::OnRemoveBreakpoint ),
+			FCanExecuteAction::CreateSP( this, &FBehaviorTreeEditor::CanRemoveBreakpoint ),
+			FIsActionChecked(),
+			FIsActionButtonVisible::CreateSP( this, &FBehaviorTreeEditor::CanRemoveBreakpoint )
+			);
+
+		GraphEditorCommands->MapAction( FGraphEditorCommands::Get().EnableBreakpoint,
+			FExecuteAction::CreateSP( this, &FBehaviorTreeEditor::OnEnableBreakpoint ),
+			FCanExecuteAction::CreateSP( this, &FBehaviorTreeEditor::CanEnableBreakpoint ),
+			FIsActionChecked(),
+			FIsActionButtonVisible::CreateSP( this, &FBehaviorTreeEditor::CanEnableBreakpoint )
+			);
+
+		GraphEditorCommands->MapAction( FGraphEditorCommands::Get().DisableBreakpoint,
+			FExecuteAction::CreateSP( this, &FBehaviorTreeEditor::OnDisableBreakpoint ),
+			FCanExecuteAction::CreateSP( this, &FBehaviorTreeEditor::CanDisableBreakpoint ),
+			FIsActionChecked(),
+			FIsActionButtonVisible::CreateSP( this, &FBehaviorTreeEditor::CanDisableBreakpoint )
+			);
+
+		GraphEditorCommands->MapAction( FGraphEditorCommands::Get().ToggleBreakpoint,
+			FExecuteAction::CreateSP( this, &FBehaviorTreeEditor::OnToggleBreakpoint ),
+			FCanExecuteAction::CreateSP( this, &FBehaviorTreeEditor::CanToggleBreakpoint ),
+			FIsActionChecked(),
+			FIsActionButtonVisible::CreateSP( this, &FBehaviorTreeEditor::CanToggleBreakpoint )
+			);
+	}*/
+
+	
+	SGraphEditor::FGraphEditorEvents InEvents;
+	// TODO::绑定Graph图表的事件
+	InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FFSMGraphEditor::OnSelectedNodesChanged);
+	// InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FBehaviorTreeEditor::OnNodeDoubleClicked);
+	// InEvents.OnTextCommitted = FOnNodeTextCommitted::CreateSP(this, &FBehaviorTreeEditor::OnNodeTitleCommitted);
+	
+	// Make full graph editor
+	const bool bGraphIsEditable = InGraph->bEditable;
+	return SNew(SGraphEditor)
+		// .AdditionalCommands(GraphEditorCommands)
+		.IsEditable(this, &FFSMGraphEditor::InEditingMode, bGraphIsEditable)
+		.Appearance(this, &FFSMGraphEditor::GetGraphAppearance)
+		.GraphToEdit(InGraph)
+		.GraphEvents(InEvents);
+}
+
+TSharedRef<SWidget> FFSMGraphEditor::CreateFlowStateMachineDetailView(const FWorkflowTabSpawnInfo& Info)
+{
+	FPropertyEditorModule& PropertyEditor = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	FDetailsViewArgs PropertyViewArgs(false, false, true, FDetailsViewArgs::HideNameArea);
+	
+	DetailsView = PropertyEditor.CreateDetailView(PropertyViewArgs);
+	AssetDetailsView = PropertyEditor.CreateDetailView(PropertyViewArgs);
+
+	AssetDetailsView->SetObject(nullptr);
+	DetailsView->SetObject(nullptr);
+
+	// TODO::绑定属性改变事件，监听RootNode是否创建成功，并更新显示内容
+
+	return SNew(SVerticalBox)
+		+SVerticalBox::Slot()
+		.FillHeight(1.f)
+		[
+			AssetDetailsView.ToSharedRef()
+		]
+		+SVerticalBox::Slot()
+		.FillHeight(1.f)
+		[
+			DetailsView.ToSharedRef()
+		];
+}
+
 FText FFSMGraphEditor::GetLocalizedMode(FName InMode)
 {
 	static TMap< FName, FText > LocModes;
@@ -217,6 +313,56 @@ FText FFSMGraphEditor::GetLocalizedMode(FName InMode)
 	const FText* OutDesc = LocModes.Find( InMode );
 	check( OutDesc );
 	return *OutDesc;
+}
+
+FGraphAppearanceInfo FFSMGraphEditor::GetGraphAppearance() const
+{
+	FGraphAppearanceInfo AppearanceInfo;
+	AppearanceInfo.CornerText = LOCTEXT("AppearanceCornerText", "FLOW STATE MACHINE");
+
+	return AppearanceInfo;
+}
+
+void FFSMGraphEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSelection)
+{
+	UFSMGraph* MyGraph = Cast<UFSMGraph>(FlowStateMachine->FSMGraph);
+
+	
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::FromInt(NewSelection.Num()));
+	}
+	// TODO::需要对选中的目标进行筛选，确认其类型是 FSMGraphNode
+	TArray<UObject*> SelectionNodes;
+	SelectionNodes.Reserve(NewSelection.Num());
+	for (UObject* Selection : NewSelection)
+	{
+		if (Selection->IsA<UFSMGraphNode>())
+		{
+			SelectionNodes.Add(Selection);
+		}
+	}
+	// 若选中数量为 1 则改变 DetailView 的显示对象
+	if (SelectionNodes.Num() == 1)
+	{
+		AssetDetailsView->SetObject(SelectionNodes[0]);
+		// 设置细节面板显示的对象为运行时节点
+		DetailsView->SetObject(static_cast<UFSMGraphNode*>(SelectionNodes[0])->RuntimeNode);
+	}
+	else
+	{
+		UFSMGraphNode_Root* RootNode = nullptr;
+		for (UEdGraphNode* Node : MyGraph->Nodes)
+		{
+			RootNode = Cast<UFSMGraphNode_Root>(Node);
+			if (RootNode != nullptr)
+			{
+				break;
+			}
+		}
+		AssetDetailsView->SetObject(FlowStateMachine);
+		DetailsView->SetObject(RootNode);
+	}
 }
 
 void FFSMGraphEditor::SaveAsset_Execute()

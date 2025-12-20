@@ -3,29 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AIGraph/Classes/AIGraphTypes.h"
 #include "EdGraph/EdGraphNode.h"
 #include "FSMGraphNode.generated.h"
 
+class UFSMCommonData;
 class UFSMGraph;
 class UFSMRuntimeNode;
-
-USTRUCT()
-struct FFSMGraphNodeClassData
-{
-	GENERATED_BODY()
-
-public:
-	FFSMGraphNodeClassData() {}
-	FFSMGraphNodeClassData(UClass* InClass, const FString& InDeprecatedMessage);
-	FFSMGraphNodeClassData(const FString& InAssetName, const FString& InGeneratedClassPackage, const FString& InClassName, UClass* InClass);
-
-	UClass* GetClass() const;
-	FString ToString() const;
-	FText GetCategory() const { return FText::FromString("Default"); }
-
-private:
-	TWeakObjectPtr<UClass> RuntimeNodeClass;
-};
 
 /**
  * 
@@ -42,6 +26,11 @@ public:
 	/** 获得当前操作节点的上下文菜单行为，当右键节点时触发该函数 */
 	virtual void GetNodeContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const override;
 
+	/** 是否可以删除该节点 */
+	virtual bool CanUserDeleteNode() const override { return true; }
+
+	virtual void AutowireNewNode(UEdGraphPin* FromPin) override;
+	
 	/** 初始化运行时节点实例时调用  */
 	virtual void InitializeInstance();
 
@@ -51,40 +40,88 @@ public:
 	void RemoveSubNode(UFSMGraphNode* SubNode);
 	virtual void OnSubNodeAdded(UFSMGraphNode* SubNode) {}
 
-	
-public:
-	FFSMGraphNodeClassData ClassData;
+protected:
+	UEdGraphPin* GetInputPin() const;
+	TArray<UEdGraphPin*> GetOutputPins() const;
 
-	/**	RuntimeNode 一般会随图表节点的创建一起创建。 */
-	UPROPERTY()
+public:
+	/** 类型数据，目前使用的是 AIGraphType 中定义的类型，后续可以考虑使用自定义的类型 */
+	FGraphNodeClassData ClassData;
+
+	/**	运行时会随图表节点一起创建。 */
+	UPROPERTY(VisibleAnywhere)
 	UFSMRuntimeNode* RuntimeNode;
 
-	UPROPERTY()
+	/** ParentNode 是指 SubNode 的父级，SubNode 一般指 Action、Condition 等类型 */
+	UPROPERTY(VisibleAnywhere)
 	UFSMGraphNode* ParentNode;
 
 	// DEPRECATED
 	TArray<UFSMGraphNode*> SubNodes;
-
-	// 仅存储装饰器
-	UPROPERTY()
-	TArray<UFSMGraphNode*> Decorators;
-
-	// 仅存储行为
-	UPROPERTY()
-	TArray<UFSMGraphNode*> Actions;
 	
 	bool bIsRootNode = false;
 
 protected:
-	/** creates add decorator... submenu */
-	void CreateAddDecoratorSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const;
+	/** 创建添加条件子菜单 */
+	void CreateAddConditionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const;
 
-	/** creates add service... submenu */
+	/** 创建添加行为子菜单 */
 	void CreateAddActionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const;
 };
 
+/**
+ * 
+ */
 UCLASS()
-class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_Decorator : public UEdGraphNode
+class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_Root : public UFSMGraphNode
+{
+	GENERATED_BODY()
+
+public:
+	virtual void AllocateDefaultPins() override;
+	virtual bool CanDuplicateNode() const override { return false; }
+	virtual bool CanUserDeleteNode() const override{ return false; }
+	virtual bool IsSelectedInEditor() const override { return false; }
+	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override { return FText::FromString(TEXT("Root Node")); }
+
+	// TODO::监听 CommonData 改变事件
+public:
+	UPROPERTY(EditAnywhere)
+	UFSMCommonData* CommonData;
+};
+
+/**
+ * 状态节点
+ * 至少有一个输入以及零个或多个输出
+ */
+UCLASS()
+class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_State : public UFSMGraphNode
+{
+	GENERATED_BODY()
+
+public:
+	virtual void AllocateDefaultPins() override;
+	/** 获得节点的标题 */
+	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
+
+	virtual void GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const override;
+
+	void CreateCustomPin(EEdGraphPinDirection Direction, const FString& PinName);
+
+private:
+	// 仅存储装饰器
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMGraphNode*> Condition;
+
+	// 仅存储行为
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMGraphNode*> Actions;
+};
+
+// 更改 Decorator 名称为 Condition
+// 用于标识由当前状态切换至下一状态的条件
+UCLASS()
+class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_Condition : public UFSMGraphNode
 {
 	GENERATED_BODY()
 
@@ -92,7 +129,7 @@ public:
 };
 
 UCLASS()
-class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_Action : public UEdGraphNode
+class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_Action : public UFSMGraphNode
 {
 	GENERATED_BODY()
 

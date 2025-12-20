@@ -1,7 +1,6 @@
 ﻿#include "Graph/FSMGraph.h"
 
 #include "Graph/Node/FSMGraphNode.h"
-#include "Graph/Node/FSMGraphNode_Root.h"
 #include "SM/FlowStateMachine.h"
 
 void UFSMGraph::Initialize()
@@ -20,6 +19,8 @@ void UFSMGraph::OnLoadedGraph()
 void UFSMGraph::OnSave()
 {
 	UpdateAsset();
+
+
 }
 
 void UFSMGraph::UpdateAsset(int32 UpdateFlags)
@@ -36,6 +37,11 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 			RootNode = Cast<UFSMGraphNode_Root>(Node);
 		}
 		// TODO::这里可以对其他节点执行其他操作，如为节点的 Decorators/Actions 设置它们的父级
+	}
+
+	if (RootNode == nullptr)
+	{
+		checkNoEntry();
 	}
 
 	// 确保根节点连接了至少一个其他节点
@@ -162,7 +168,7 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	// 对根节点进行标记
 	ClearRootNodeFlags();
 	RootEdNode->bIsRootNode = true;
-	RootEdNode->Decorators;
+	/*RootEdNode->Condition;
 	for (int i = 0; i < RootEdNode->Decorators.Num(); ++i)
 	{
 		UFSMGraphNode* Node = RootEdNode->Decorators[i];
@@ -174,9 +180,9 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	if (FSMAsset->RootRuntimeNode)
 	{
 		// FSMAsset->RootRuntimeNode->InitializeComposite(ExecutionIndex - 1);
-	}
+	}*/
 	// 移除孤儿节点
-	RemoveOrphanedNodes();
+	// RemoveOrphanedNodes();
 }
 
 void UFSMGraph::SpawnMissingNodes()
@@ -296,6 +302,10 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 	{
 		return;
 	}
+
+	// 清理上次添加的对象
+	RuntimeRootNode->ClearChildren();
+
 	// 递归结束条件2：GraphRootNode 的输出引脚数量为 0 或 引脚未连接其他节点
 	for (int32 Idx = 0; Idx < GraphRootNode->Pins.Num(); ++Idx)
 	{
@@ -319,7 +329,7 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 			{
 				continue;
 			}
-			// 重设 RuntimeNode 的 Outer 为资产对象，RuntimeNode 在编辑中实际是由 GraphNode 在函数 PostPasteNode 中设置的。
+			// 重命名运行时节点，确保节点的 Outer 为资产对象而非其他。
 			RuntimeNode->Rename(nullptr, FSMAsset);
 			RuntimeRootNode->AddChildNode(RuntimeNode);
 			

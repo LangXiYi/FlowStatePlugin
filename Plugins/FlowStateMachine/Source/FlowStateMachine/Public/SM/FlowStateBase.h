@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FSMRuntimeNode.h"
 #include "UObject/Object.h"
 #include "FlowStateBase.generated.h"
 
@@ -49,8 +50,8 @@ protected:
 /**
  * 
  */
-UCLASS(Blueprintable, BlueprintType)
-class FLOWSTATEMACHINE_API UFlowStateBase : public UObject, public IFlowStateInterface
+UCLASS(Blueprintable, BlueprintType, Abstract)
+class FLOWSTATEMACHINE_API UFlowStateBase : public UFSMRuntimeNode_State, public IFlowStateInterface
 {
 	GENERATED_BODY()
 

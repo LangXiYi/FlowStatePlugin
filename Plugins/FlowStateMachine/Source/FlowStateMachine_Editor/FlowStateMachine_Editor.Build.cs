@@ -24,6 +24,9 @@ public class FlowStateMachine_Editor : ModuleRules
                 "UnrealEd",
                 "PropertyEditor",
                 "EditorStyle",
+                "AIGraph",
+                "ToolMenus",
+                "GraphEditor",
             }
         );
     }

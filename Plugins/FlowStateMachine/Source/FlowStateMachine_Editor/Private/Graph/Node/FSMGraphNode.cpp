@@ -8,29 +8,6 @@
 #include "SM/FSMRuntimeNode.h"
 #include "SM/FlowStateMachine.h"
 
-FFSMGraphNodeClassData::FFSMGraphNodeClassData(UClass* InClass, const FString& InDeprecatedMessage):
-	RuntimeNodeClass(InClass)
-{
-}
-
-FFSMGraphNodeClassData::FFSMGraphNodeClassData(const FString& InAssetName, const FString& InGeneratedClassPackage,
-	const FString& InClassName, UClass* InClass)
-{
-}
-
-UClass* FFSMGraphNodeClassData::GetClass() const
-{
-	return RuntimeNodeClass.Get();
-}
-
-FString FFSMGraphNodeClassData::ToString() const
-{
-	if (RuntimeNodeClass.IsValid())
-	{
-		return RuntimeNodeClass->GetName();
-	}
-	return "None";
-}
 #define LOCTEXT_NAMESPACE "FSMGraphNode"
 
 void UFSMGraphNode::PostPasteNode()
@@ -43,10 +20,11 @@ void UFSMGraphNode::PostPasteNode()
 	if (NodeClass && (RuntimeNode == nullptr))
 	{
 		UEdGraph* MyGraph = GetGraph();
+		// Graph 的 Outer 为 FlowStateMachine
 		UObject* GraphOwner = MyGraph ? MyGraph->GetOuter() : nullptr;
 		if (GraphOwner)
 		{
-			// 该 RuntimeNode 会在其他阶段赋予实际意义
+			// 该 RuntimeNode 会在保存图表时赋予实际意义
 			RuntimeNode = NewObject<UFSMRuntimeNode>(GraphOwner, NodeClass);
 			// “transactional”这个词确实与编辑器的撤销/重做系统有关。
 			RuntimeNode->SetFlags(RF_Transactional);
@@ -64,13 +42,32 @@ void UFSMGraphNode::GetNodeContextMenuActions(class UToolMenu* Menu, class UGrap
 		"AddDecorator",
 		LOCTEXT("Label", "Add Decorator...") ,
 		LOCTEXT("ToolTip", "Adds new decorator as a subnode"),
-		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddDecoratorSubMenu, (UEdGraph*)Context->Graph));
+		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddConditionSubMenu, (UEdGraph*)Context->Graph));
 	
 	Section.AddSubMenu(
 		"AddAction",
 		LOCTEXT("Label", "Add Action...") ,
 		LOCTEXT("ToolTip", "Adds new action as a subnode"),
 		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddActionSubMenu, (UEdGraph*)Context->Graph));
+}
+
+void UFSMGraphNode::AutowireNewNode(UEdGraphPin* FromPin)
+{
+	Super::AutowireNewNode(FromPin);
+
+	if (FromPin != nullptr)
+	{
+		// UEdGraphPin* OutputPin = GetOutputPins(EGPD_Output);
+		
+		if (GetSchema()->TryCreateConnection(FromPin, GetInputPin()))
+		{
+			FromPin->GetOwningNode()->NodeConnectionListChanged();
+		}
+		// else if (OutputPin != nullptr && GetSchema()->TryCreateConnection(OutputPin, FromPin))
+		// {
+			// NodeConnectionListChanged();
+		// }
+	}
 }
 
 void UFSMGraphNode::InitializeInstance()
@@ -121,7 +118,34 @@ void UFSMGraphNode::RemoveSubNode(UFSMGraphNode* SubNode)
 {
 }
 
-void UFSMGraphNode::CreateAddDecoratorSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const
+UEdGraphPin* UFSMGraphNode::GetInputPin() const
+{
+	TArray<UEdGraphPin*> OutPins;
+	for (UEdGraphPin* Pin : Pins)
+	{
+		if (Pin && Pin->Direction == EGPD_Input)
+		{
+			return Pin;
+		}
+	}
+	checkNoEntry();
+	return nullptr;;
+}
+
+TArray<UEdGraphPin*> UFSMGraphNode::GetOutputPins() const
+{
+	TArray<UEdGraphPin*> OutPins;
+	for (UEdGraphPin* Pin : Pins)
+	{
+		if (Pin && Pin->Direction == EGPD_Output)
+		{
+			OutPins.Add(Pin);
+		}
+	}
+	return OutPins;
+}
+
+void UFSMGraphNode::CreateAddConditionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const
 {
 	/*
 	TSharedRef<SGraphEditorActionMenuAI> Widget =
@@ -143,3 +167,89 @@ void UFSMGraphNode::CreateAddActionSubMenu(class UToolMenu* Menu, UEdGraph* Grap
 }
 
 #undef LOCTEXT_NAMESPACE
+
+
+void UFSMGraphNode_Root::AllocateDefaultPins()
+{
+	Super::AllocateDefaultPins();
+	CreatePin(EGPD_Output, "DefaultOutput", "Root");
+}
+
+void UFSMGraphNode_State::AllocateDefaultPins()
+{
+	CreatePin(EGPD_Input, "DefaultInput", TEXT("In"));
+	CreatePin(EGPD_Output, "DefaultOutput", TEXT("Out"));
+}
+
+FText UFSMGraphNode_State::GetNodeTitle(ENodeTitleType::Type TitleType) const
+{
+	if (RuntimeNode != NULL)
+	{
+		return FText::FromString(RuntimeNode->GetNodeName());
+	}
+	else if (!ClassData.GetClassName().IsEmpty())
+	{
+		FString StoredClassName = ClassData.GetClassName();
+		StoredClassName.RemoveFromEnd(TEXT("_C"));
+
+		return FText::Format(NSLOCTEXT("FSMGraph", "NodeClassError", "Class {0} not found, make sure it's saved!"), FText::FromString(StoredClassName));
+	}
+
+	return Super::GetNodeTitle(TitleType);
+}
+
+void UFSMGraphNode_State::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
+{
+	Super::GetNodeContextMenuActions(Menu, Context);
+	FToolMenuSection& section = Menu->AddSection(TEXT("SectionName"), FText::FromString(TEXT("Custom Node Actions")));
+   
+	UFSMGraphNode_State* node = (UFSMGraphNode_State*)this;
+	section.AddMenuEntry(
+		TEXT("AddPinEntry"),
+		FText::FromString(TEXT("Add Pin")),
+		FText::FromString(TEXT("Creates a new pin")),
+		FSlateIcon(TEXT("FlowStateMachineStyleSet"), TEXT("FlowStateMachineEditor.NodeAddPinIcon")),
+		FUIAction(FExecuteAction::CreateLambda(
+			[node] () {
+				node->CreatePin(EGPD_Output, TEXT("FlowStatePins"), TEXT("OutputPin"));
+				// node->CreateCustomPin(EEdGraphPinDirection::EGPD_Output, TEXT("AnotherOutput"));
+				node->GetGraph()->NotifyGraphChanged();
+				node->GetGraph()->Modify();
+			}
+		))
+	);
+
+	section.AddMenuEntry(
+		TEXT("DeletePinEntry"),
+		FText::FromString(TEXT("Delete Pin")),
+		FText::FromString(TEXT("Deletes the last pin")),
+		FSlateIcon(TEXT("FlowStateMachineStyleSet"), TEXT("FlowStateMachineEditor.NodeDeletePinIcon")),
+		FUIAction(FExecuteAction::CreateLambda(
+			[node] () {
+				UEdGraphPin* pin = node->GetPinAt(node->Pins.Num() - 1);
+				if (pin->Direction != EEdGraphPinDirection::EGPD_Input) {
+					node->RemovePin(pin);
+
+					node->GetGraph()->NotifyGraphChanged();
+					node->GetGraph()->Modify();
+				}
+			}
+		))
+	);
+
+	section.AddMenuEntry(
+		TEXT("DeleteEntry"),
+		FText::FromString(TEXT("Delete Node")),
+		FText::FromString(TEXT("Deletes the node")),
+		FSlateIcon(TEXT("FlowStateMachineStyleSet"), TEXT("FlowStateMachineEditor.NodeDeleteNodeIcon")),
+		FUIAction(FExecuteAction::CreateLambda(
+			[node] () {
+				node->GetGraph()->RemoveNode(node);
+			}
+		))
+	);
+}
+
+void UFSMGraphNode_State::CreateCustomPin(EEdGraphPinDirection Direction, const FString& PinName)
+{
+}

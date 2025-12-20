@@ -18,16 +18,13 @@ class FLOWSTATEMACHINE_API UFlowStateMachine : public UObject
 	GENERATED_BODY()
 
 public:
-	FORCEINLINE const FPrimaryAssetId& GetMetaDataID() const { return MetaDataID; }
-
-public:
-	/** 状态机的根节点 (是实际进入的第一个节点而不是图表根节点) */
+	/** 状态机的运行时根节点 */
 	UPROPERTY(VisibleAnywhere)
 	UFSMRuntimeNode* RootRuntimeNode;
 
 	/** 状态机根节点的装饰器子节点 */
 	UPROPERTY(VisibleAnywhere)
-	TArray<UFSMRuntimeNode_Decorator*> RootDecorators;
+	TArray<UFSMRuntimeNode_Condition*> RootDecorators;
 
 	/** 状态机根节点的行为子节点 */
 	UPROPERTY(VisibleAnywhere)
@@ -39,12 +36,10 @@ public:
 	class UEdGraph*	FSMGraph;
 
 #endif
+
+	/** 黑板 */
 	UPROPERTY()
 	class UFSMCommonData* CommonData = nullptr;
-	
-protected:
-	UPROPERTY(EditAnywhere)
-	FPrimaryAssetId MetaDataID;
 
 	// 状态机的切换映射
 	/**
