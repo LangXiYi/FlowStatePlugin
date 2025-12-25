@@ -1,18 +1,9 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
+#include "FlowStateMachineEditorTypes.h"
 #include "Graph/Node/FSMGraphNode.h"
 #include "UObject/Object.h"
 #include "EdGraphSchema_FSM.generated.h"
-
-UENUM()
-namespace EFSMNodeType
-{
-	enum Type
-	{
-		State,
-		StateMachine,
-	};
-}
 
 /** Action to add a subnode to the selected node */
 USTRUCT()
@@ -56,7 +47,7 @@ struct FLOWSTATEMACHINE_EDITOR_API FFSMSchemaAction_NewSubNode : public FEdGraph
 
 	/** Template of node we want to create */
 	UPROPERTY()
-	class UFSMGraphNode* NodeTemplate;
+	class UFSMGraphSubNode* NodeTemplate;
 
 	/** parent node */
 	UPROPERTY()
@@ -89,21 +80,28 @@ class UEdGraphSchema_FSM : public UEdGraphSchema
 
 public:
 	//~ Begin EdGraphSchema Interface
+	/** 为图表创建默认根节点 */
 	virtual void CreateDefaultNodesForGraph(UEdGraph& Graph) const override;
+	/** 收集所有的状态类（UFSMRuntimeNode_State）构建图表行为，右键图表空白区域 */
 	virtual void GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
+	/** 构建当前图表下所有节点的右键菜单 */
 	virtual void GetContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const override;
+	/** 两节点间连接的条件 */
 	virtual const FPinConnectionResponse CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const override;
+	/** 两节点是否可以合并（未完成） */
 	virtual const FPinConnectionResponse CanMergeNodes(const UEdGraphNode* A, const UEdGraphNode* B) const override;
+	/** 设置当前图表模式下所有引脚及连线的颜色 */
 	virtual FLinearColor GetPinTypeColor(const FEdGraphPinType& PinType) const override;
+	// TODO::完善后续函数注释
 	virtual class FConnectionDrawingPolicy* CreateConnectionDrawingPolicy(int32 InBackLayerID, int32 InFrontLayerID, float InZoomFactor, const FSlateRect& InClippingRect, class FSlateWindowElementList& InDrawElements, class UEdGraph* InGraphObj) const override;
 	virtual bool IsCacheVisualizationOutOfDate(int32 InVisualizationCacheID) const override;
 	virtual int32 GetCurrentVisualizationCacheID() const override;
 	virtual void ForceVisualizationCacheClear() const override;
 	//~ End EdGraphSchema Interface
 
-	// 添加节点的行为，如为节点添加装饰器、添加行为等等，该函数由 GetContextMenuActions 调用
-	virtual void GetGraphNodeContextActions(FGraphContextMenuBuilder& ContextMenuBuilder, int32 SubNodeFlags) const;
-	virtual void GetSubNodeClasses(int32 SubNodeFlags, TArray<FGraphNodeClassData>& ClassData, UClass*& GraphNodeClass) const;
+	/* 扩展节点右键菜单，如为节点添加装饰器、添加行为等等 */
+	virtual void GetGraphNodeContextActions(FGraphContextMenuBuilder& ContextMenuBuilder, EFSMSubNodeType SubNodeFlags) const;
+	virtual void GetSubNodeClasses(EFSMSubNodeType SubNodeFlags, TArray<FGraphNodeClassData>& ClassData, UClass*& GraphNodeClass) const;
 
 protected:
 	static TSharedPtr<FFSMSchemaAction_NewNode> AddNewNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);

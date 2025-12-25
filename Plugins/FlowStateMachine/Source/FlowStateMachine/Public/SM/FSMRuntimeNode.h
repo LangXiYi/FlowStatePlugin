@@ -77,7 +77,22 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNode_State : public UFSMRuntimeNode
 	GENERATED_BODY()
 
 public:
-	
+
+
+protected:
+	/** 尝试切换至其他状态 */
+};
+
+/**
+ * 运行时子节点
+ */
+UCLASS(Abstract)
+class FLOWSTATEMACHINE_API UFSMRuntimeSubNode : public UFSMRuntimeNode
+{
+	GENERATED_BODY()
+
+public:
+
 };
 
 /**
@@ -86,7 +101,7 @@ public:
  * 会在每次进入 State 之前执行一次，单个 State 节点可以添加多个 Action，但每个 Action 只能添加一个。
  */
 UCLASS(Abstract)
-class FLOWSTATEMACHINE_API UFSMRuntimeNode_Action : public UFSMRuntimeNode
+class FLOWSTATEMACHINE_API UFSMRuntimeNode_Action : public UFSMRuntimeSubNode
 {
 	GENERATED_BODY()
 
@@ -100,7 +115,7 @@ public:
  * 表示从当前状态切换至该状态所需要的前置条件
  */
 UCLASS(Abstract)
-class FLOWSTATEMACHINE_API UFSMRuntimeNode_Condition : public UFSMRuntimeNode
+class FLOWSTATEMACHINE_API UFSMRuntimeNode_Condition : public UFSMRuntimeSubNode
 {
 	GENERATED_BODY()
 

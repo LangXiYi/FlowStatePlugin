@@ -3,52 +3,39 @@
 
 #include "Graph/Node/FSMGraphNode.h"
 
+#include "FlowStateMachineEditorTypes.h"
 #include "ToolMenu.h"
 #include "Graph/FSMGraph.h"
+#include "Graph/Node/FSMGraphSubNode.h"
+#include "Slate/SGraphEditorActionMenu_FSM.h"
 #include "SM/FSMRuntimeNode.h"
 #include "SM/FlowStateMachine.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphNode"
 
-void UFSMGraphNode::PostPasteNode()
-{
-	Super::PostPasteNode();
-
-	// NodeInstance can be already spawned by paste operation, don't override it
-
-	UClass* NodeClass = ClassData.GetClass();
-	if (NodeClass && (RuntimeNode == nullptr))
-	{
-		UEdGraph* MyGraph = GetGraph();
-		// Graph 的 Outer 为 FlowStateMachine
-		UObject* GraphOwner = MyGraph ? MyGraph->GetOuter() : nullptr;
-		if (GraphOwner)
-		{
-			// 该 RuntimeNode 会在保存图表时赋予实际意义
-			RuntimeNode = NewObject<UFSMRuntimeNode>(GraphOwner, NodeClass);
-			// “transactional”这个词确实与编辑器的撤销/重做系统有关。
-			RuntimeNode->SetFlags(RF_Transactional);
-			InitializeInstance();
-		}
-	}
-}
-
-
 void UFSMGraphNode::GetNodeContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const
 {
-	FToolMenuSection& Section = Menu->FindOrAddSection("FlowStateMachineGraphNode");
+	FToolMenuSection& Section = Menu->FindOrAddSection("FSMGraphNode");
 
+	// 添加子菜单
 	Section.AddSubMenu(
-		"AddDecorator",
-		LOCTEXT("Label", "Add Decorator...") ,
-		LOCTEXT("ToolTip", "Adds new decorator as a subnode"),
+		"AddCondition",
+		LOCTEXT("ConditionLabel", "Add Condition...") ,
+		LOCTEXT("ConditionToolTip", "Adds new decorator as a subnode"),
 		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddConditionSubMenu, (UEdGraph*)Context->Graph));
 	
 	Section.AddSubMenu(
 		"AddAction",
-		LOCTEXT("Label", "Add Action...") ,
-		LOCTEXT("ToolTip", "Adds new action as a subnode"),
+		LOCTEXT("ActionLabel", "Add Action...") ,
+		LOCTEXT("ActionToolTip", "Adds new action as a subnode"),
 		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddActionSubMenu, (UEdGraph*)Context->Graph));
+
+	// TODO::Add Server SubMenu
+}
+
+bool UFSMGraphNode::CanUserDeleteNode() const
+{
+	return Super::CanUserDeleteNode();
 }
 
 void UFSMGraphNode::AutowireNewNode(UEdGraphPin* FromPin)
@@ -72,50 +59,48 @@ void UFSMGraphNode::AutowireNewNode(UEdGraphPin* FromPin)
 
 void UFSMGraphNode::InitializeInstance()
 {
-	UFlowStateMachine* FSMAsset = RuntimeNode ? Cast<UFlowStateMachine>(RuntimeNode->GetOuter()) : nullptr;
-	if (RuntimeNode && FSMAsset)
-	{
-		RuntimeNode->InitializeFromAsset(*FSMAsset);
-		// 初始化节点信息，如父级节点、节点深度、执行优先级等等，此时无实际意义。
-		RuntimeNode->InitializeNode(NULL, MAX_uint16, 0, 0);
-		RuntimeNode->OnNodeCreated();
-	}
+	Super::InitializeInstance();
 }
 
-UFSMGraph* UFSMGraphNode::GetFSMGraph() const
-{
-	return CastChecked<UFSMGraph>(GetGraph());
-}
-
-void UFSMGraphNode::AddSubNode(UFSMGraphNode* SubNode, UEdGraph* ParentGraph)
+void UFSMGraphNode::AddSubNode( UFSMGraphSubNode* SubNode, UEdGraph* ParentGraph)
 {
 	// const FScopedTransaction Transaction(LOCTEXT("AddNode", "Add Node"));
 	ParentGraph->Modify();
 	Modify();
 
-	SubNode->SetFlags(RF_Transactional);
+	UFSMGraphSubNode* GraphSubNode = Cast<UFSMGraphSubNode>(SubNode);
+	if (GraphSubNode == nullptr)
+	{
+		return;
+	}
 
-	// set outer to be the graph so it doesn't go away
-	SubNode->Rename(nullptr, ParentGraph, REN_NonTransactional);
-	SubNode->ParentNode = this;
+	GraphSubNode->SetFlags(RF_Transactional);
 
-	SubNode->CreateNewGuid();
-	SubNode->PostPlacedNewNode();
-	SubNode->AllocateDefaultPins();
-	SubNode->AutowireNewNode(nullptr);
+	// 设置节点 Outer 为 Graph 确保其不会被回收
+	GraphSubNode->Rename(nullptr, ParentGraph, REN_NonTransactional);
+	GraphSubNode->ParentNode = this;
 
-	SubNode->NodePosX = 0;
-	SubNode->NodePosY = 0;
+	GraphSubNode->CreateNewGuid();
+	GraphSubNode->PostPlacedNewNode();
+	GraphSubNode->AllocateDefaultPins();
+	GraphSubNode->AutowireNewNode(nullptr);
 
-	SubNodes.Add(SubNode);
-	OnSubNodeAdded(SubNode);
+	GraphSubNode->NodePosX = 0;
+	GraphSubNode->NodePosY = 0;
+
+	SubNodes.Add(GraphSubNode);
+	OnSubNodeAdded(GraphSubNode);
 
 	ParentGraph->NotifyGraphChanged();
 	GetFSMGraph()->UpdateAsset();
 }
 
-void UFSMGraphNode::RemoveSubNode(UFSMGraphNode* SubNode)
+void UFSMGraphNode::RemoveSubNode(UFSMGraphSubNode* SubNode)
 {
+	SubNodes.RemoveSingle(SubNode);
+	Modify();
+
+	OnSubNodeRemoved(SubNode);
 }
 
 UEdGraphPin* UFSMGraphNode::GetInputPin() const
@@ -147,17 +132,17 @@ TArray<UEdGraphPin*> UFSMGraphNode::GetOutputPins() const
 
 void UFSMGraphNode::CreateAddConditionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const
 {
-	/*
-	TSharedRef<SGraphEditorActionMenuAI> Widget =
-		SNew(SGraphEditorActionMenuAI)
+
+	TSharedRef<SGraphEditorActionMenu_FSM> Widget =
+		SNew(SGraphEditorActionMenu_FSM)
 		.GraphObj( Graph )
-		.GraphNode((UBehaviorTreeGraphNode*)this)
-		.SubNodeFlags(ESubNode::Decorator)
+		.GraphNode(const_cast<UFSMGraphNode*>(this))
+		.SubNodeFlags(EFSMSubNodeType::Condition)
 		.AutoExpandActionMenu(true);
 
 	FToolMenuSection& Section = Menu->FindOrAddSection("Section");
 	Section.AddEntry(FToolMenuEntry::InitWidget("DecoratorWidget", Widget, FText(), true));
-	*/
+
 	// TODO::创建并添加节点行为列表
 }
 

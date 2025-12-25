@@ -1,10 +1,12 @@
 ﻿#include "Graph/Schema/EdGraphSchema_FSM.h"
 
+#include "FlowStateMachineEditorTypes.h"
 #include "FlowStateMachine_Editor.h"
 #include "GraphEditorActions.h"
 #include "ToolMenu.h"
 #include "AIGraph/Classes/AIGraphTypes.h"
 #include "Graph/Node/FSMGraphNode.h"
+#include "Graph/Node/FSMGraphSubNode.h"
 #include "SM/FSMRuntimeNode.h"
 
 UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
@@ -100,16 +102,11 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 		for (const auto& NodeClass : NodeClasses)
 		{
 			const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClass.ToString(), false));
-
+			// 添加操作行为到图表右键菜单
 			TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
-			
-			UClass* GraphNodeClass = UFSMGraphNode_State::StaticClass();
-			/*if (NodeClass.GetClassName() == UBTTask_RunBehavior::StaticClass()->GetName())
-			{
-				GraphNodeClass = UBehaviorTreeGraphNode_SubtreeTask::StaticClass();
-			}*/
 
-			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(ContextMenuBuilder.OwnerOfTemporaries, GraphNodeClass);
+			// 创建一个图表节点的模板给操作类
+			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(ContextMenuBuilder.OwnerOfTemporaries, UFSMGraphNode_State::StaticClass());
 			OpNode->ClassData = NodeClass;
 			AddOpAction->NodeTemplate = OpNode;
 		}
@@ -122,6 +119,10 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 
 void UEdGraphSchema_FSM::GetContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
 {
+	// TODO::添加刷新节点操作
+
+	// TODO::添加 Debug 功能
+	
 	Super::GetContextMenuActions(Menu, Context);
 }
 
@@ -155,11 +156,11 @@ void UEdGraphSchema_FSM::ForceVisualizationCacheClear() const
 }
 
 void UEdGraphSchema_FSM::GetGraphNodeContextActions(FGraphContextMenuBuilder& ContextMenuBuilder,
-	int32 SubNodeFlags) const
+	EFSMSubNodeType SubNodeFlags) const
 {
-	// TODO::由节点自身的行为调用
-	
-	UEdGraph* Graph = (UEdGraph*)ContextMenuBuilder.CurrentGraph;
+	/*
+	 * 收集所有的子节点加入到节点右键菜单中
+	 */
 	UClass* GraphNodeClass = nullptr;
 	TArray<FGraphNodeClassData> NodeClasses;
 	GetSubNodeClasses(SubNodeFlags, NodeClasses, GraphNodeClass);
@@ -170,38 +171,40 @@ void UEdGraphSchema_FSM::GetGraphNodeContextActions(FGraphContextMenuBuilder& Co
 		{
 			const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClass.ToString(), false));
 
-			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(Graph, GraphNodeClass);
+			// 创建一个子节点模板
+			UFSMGraphSubNode* OpNode = NewObject<UFSMGraphSubNode>(ContextMenuBuilder.OwnerOfTemporaries, GraphNodeClass);
 			OpNode->ClassData = NodeClass;
 
 			TSharedPtr<FFSMSchemaAction_NewSubNode> AddOpAction = UEdGraphSchema_FSM::AddNewSubNodeAction(ContextMenuBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
-			// AddOpAction->ParentGraphNode = Cast<UFSMGraphNode>(ContextMenuBuilder.SelectedObjects[0]);
+			// 记录操作的父级节点为当前图表选中的首个节点
+			AddOpAction->ParentGraphNode = Cast<UFSMGraphNode>(ContextMenuBuilder.SelectedObjects[0]);
 			AddOpAction->NodeTemplate = OpNode;
 		}
 	}
 }
 
-void UEdGraphSchema_FSM::GetSubNodeClasses(int32 SubNodeFlags, TArray<FGraphNodeClassData>& ClassData,
+void UEdGraphSchema_FSM::GetSubNodeClasses(EFSMSubNodeType SubNodeFlags, TArray<FGraphNodeClassData>& ClassData,
                                            UClass*& GraphNodeClass) const
 {
-	if (SubNodeFlags == EFSMNodeType::State)
-	{
-		FGraphNodeClassData Data(UFSMRuntimeNode_State::StaticClass(), "");
-		ClassData = {Data};
-		GraphNodeClass = UFSMGraphNode_State::StaticClass();
-	}
-	/*FBehaviorTreeEditorModule& EditorModule = FModuleManager::GetModuleChecked<FBehaviorTreeEditorModule>(TEXT("BehaviorTreeEditor"));
+	FFlowStateMachine_EditorModule& EditorModule = FModuleManager::GetModuleChecked<FFlowStateMachine_EditorModule>(TEXT("FlowStateMachine_Editor"));
 	FGraphNodeClassHelper* ClassCache = EditorModule.GetClassCache().Get();
-
-	if (SubNodeFlags == ESubNode::Decorator)
+	switch (SubNodeFlags)
 	{
-		ClassCache->GatherClasses(UBTDecorator::StaticClass(), ClassData);
-		GraphNodeClass = UBehaviorTreeGraphNode_Decorator::StaticClass();
+	case EFSMSubNodeType::None:
+		checkNoEntry()
+		break;
+	case EFSMSubNodeType::Condition:
+		ClassCache->GatherClasses(UFSMRuntimeNode_Condition::StaticClass(), ClassData);
+		GraphNodeClass = UFSMGraphNode_Condition::StaticClass();
+		break;
+	case EFSMSubNodeType::Action:
+		ClassCache->GatherClasses(UFSMRuntimeNode_Action::StaticClass(), ClassData);
+		GraphNodeClass = UFSMGraphNode_Action::StaticClass();
+		break;
+	case EFSMSubNodeType::Service:
+		checkNoEntry()
+		break;
 	}
-	else
-	{
-		ClassCache->GatherClasses(UBTService::StaticClass(), ClassData);
-		GraphNodeClass = UBehaviorTreeGraphNode_Service::StaticClass();
-	}*/
 }
 
 TSharedPtr<FFSMSchemaAction_NewNode> UEdGraphSchema_FSM::AddNewNodeAction(
@@ -242,5 +245,24 @@ const FPinConnectionResponse UEdGraphSchema_FSM::CanCreateConnection(const UEdGr
 
 const FPinConnectionResponse UEdGraphSchema_FSM::CanMergeNodes(const UEdGraphNode* A, const UEdGraphNode* B) const
 {
-	return Super::CanMergeNodes(A, B);
+	// TODO::合并子节点与父节点
+	if (A == B)
+	{
+		return FPinConnectionResponse(ECanCreateConnectionResponse::CONNECT_RESPONSE_DISALLOW, TEXT("Both are the same node."));
+	}
+
+	const bool bNodeAIsCondition = A->IsA(UFSMGraphNode_Condition::StaticClass());
+	const bool bNodeAIsAction = A->IsA(UFSMRuntimeNode_Action::StaticClass());
+
+	const bool bNodeBIsState = B->IsA(UFSMGraphNode_State::StaticClass());
+	const bool bNodeBIsCondition = B->IsA(UFSMGraphNode_Condition::StaticClass());
+	const bool bNodeBIsAction = B->IsA(UFSMRuntimeNode_Action::StaticClass());
+
+	if ((bNodeAIsCondition && (bNodeBIsState || bNodeBIsCondition))
+		|| (bNodeAIsAction && (bNodeBIsState || bNodeAIsAction)))
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_MAKE, TEXT("Merge"));
+	}
+
+	return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT(""));
 }

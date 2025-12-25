@@ -1,6 +1,7 @@
 ﻿#include "Graph/FSMGraph.h"
 
 #include "Graph/Node/FSMGraphNode.h"
+#include "Graph/Node/FSMGraphSubNode.h"
 #include "SM/FlowStateMachine.h"
 
 void UFSMGraph::Initialize()

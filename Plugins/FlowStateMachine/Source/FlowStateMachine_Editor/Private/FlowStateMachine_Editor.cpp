@@ -1,7 +1,12 @@
 ﻿#include "FlowStateMachine_Editor.h"
 
+#include "EdGraphUtilities.h"
 #include "FSMGraphEditor.h"
 #include "AIGraph/Classes/AIGraphTypes.h"
+#include "Graph/Node/FSMGraphNode.h"
+#include "Graph/Node/FSMGraphSubNode.h"
+#include "Slate/SGraphNode_FSM.h"
+#include "Slate/SGraphNode_Sub.h"
 #include "SM/FSMRuntimeNode.h"
 #include "Styling/SlateStyle.h"
 
@@ -9,9 +14,28 @@
 
 const FName FFlowStateMachine_EditorModule::FlowStateMachineAppIdentifier = "FlowStateMachineEditor";
 
+class FGraphPanelNodeFactory_FSM : public FGraphPanelNodeFactory
+{
+public:
+	virtual TSharedPtr<class SGraphNode> CreateNode(class UEdGraphNode* Node) const override
+	{
+		if (UFSMGraphNode* FSMNode = Cast<UFSMGraphNode>(Node))
+		{
+			return SNew(SGraphNode_FSM, FSMNode);
+		}
+		if (UFSMGraphSubNode* SubNode = Cast<UFSMGraphSubNode>(Node))
+		{
+			return SNew(SGraphNode_Sub, SubNode);
+		}
+		return nullptr;
+	}	
+};
+
 void FFlowStateMachine_EditorModule::StartupModule()
 {
 
+	// 注册自定义的图表节点
+	FEdGraphUtilities::RegisterVisualNodeFactory(MakeShareable(new FGraphPanelNodeFactory_FSM));
 
 	StyleSet = MakeShareable(new FSlateStyleSet("FlowStateMachineStyleSet"));
 
