@@ -27,6 +27,7 @@ public class FlowStateMachine_Editor : ModuleRules
                 "AIGraph",
                 "ToolMenus",
                 "GraphEditor",
+                "KismetWidgets"
             }
         );
     }

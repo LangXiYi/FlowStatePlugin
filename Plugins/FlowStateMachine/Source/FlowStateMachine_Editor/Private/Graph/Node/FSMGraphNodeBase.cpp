@@ -48,3 +48,5 @@ UFSMGraph* UFSMGraphNodeBase::GetFSMGraph() const
 {
 	return CastChecked<UFSMGraph>(GetGraph());
 }
+
+#undef LOCTEXT_NAMESPACE

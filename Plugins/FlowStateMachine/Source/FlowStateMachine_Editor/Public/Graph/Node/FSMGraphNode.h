@@ -35,7 +35,7 @@ public:
 	virtual void InitializeInstance() override;
 
 	/** 为节点添加一个子节点 */
-	void AddSubNode( UFSMGraphSubNode* SubNode, class UEdGraph* ParentGraph);
+	virtual void AddSubNode( UFSMGraphSubNode* SubNode, class UEdGraph* ParentGraph);
 	virtual void OnSubNodeAdded( UFSMGraphSubNode* SubNode) {}
 
 	/** 将一个子节点从当前节点中移除 */
@@ -56,6 +56,9 @@ protected:
 
 	/** 创建添加行为子菜单 */
 	void CreateAddActionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const;
+
+	/** 创建添加行为子菜单 */
+	void CreateAddServiceSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const;
 };
 
 
@@ -99,12 +102,18 @@ public:
 
 	void CreateCustomPin(EEdGraphPinDirection Direction, const FString& PinName);
 
-private:
+	virtual void AddSubNode(UFSMGraphSubNode* SubNode, class UEdGraph* ParentGraph) override;
+
+public:
 	// 仅存储装饰器
 	UPROPERTY(VisibleAnywhere)
-	TArray<UFSMGraphSubNode*> Condition;
+	TArray<UFSMGraphSubNode*> Conditions;
 
 	// 仅存储行为
 	UPROPERTY(VisibleAnywhere)
 	TArray<UFSMGraphSubNode*> Actions;
+
+	// 仅存储行为
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMGraphSubNode*> Services;
 };

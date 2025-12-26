@@ -110,7 +110,21 @@ public:
 };
 
 /**
- * 运行时节点---------装饰器
+ * 运行时节点---------服务
+ * 作为 State 节点的子节点
+ * 会按照固定间隔执行一次
+ */
+UCLASS(Abstract)
+class FLOWSTATEMACHINE_API UFSMRuntimeNode_Service : public UFSMRuntimeSubNode
+{
+	GENERATED_BODY()
+
+public:
+	
+};
+
+/**
+ * 运行时节点---------条件
  * 作为 State 节点的子节点
  * 表示从当前状态切换至该状态所需要的前置条件
  */
@@ -121,4 +135,14 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNode_Condition : public UFSMRuntimeSubNode
 
 public:
 	
+};
+
+UCLASS()
+class FLOWSTATEMACHINE_API UFSMRuntimeNode_Condition_Test : public UFSMRuntimeNode_Condition
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere)
+	FString TestCondition;
 };

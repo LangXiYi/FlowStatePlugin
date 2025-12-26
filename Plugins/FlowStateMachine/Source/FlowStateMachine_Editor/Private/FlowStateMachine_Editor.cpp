@@ -2,10 +2,12 @@
 
 #include "EdGraphUtilities.h"
 #include "FSMGraphEditor.h"
+#include "SGraphPin.h"
 #include "AIGraph/Classes/AIGraphTypes.h"
 #include "Graph/Node/FSMGraphNode.h"
 #include "Graph/Node/FSMGraphSubNode.h"
 #include "Slate/SGraphNode_FSM.h"
+#include "Slate/SGraphNode_Root.h"
 #include "Slate/SGraphNode_Sub.h"
 #include "SM/FSMRuntimeNode.h"
 #include "Styling/SlateStyle.h"
@@ -19,23 +21,40 @@ class FGraphPanelNodeFactory_FSM : public FGraphPanelNodeFactory
 public:
 	virtual TSharedPtr<class SGraphNode> CreateNode(class UEdGraphNode* Node) const override
 	{
-		if (UFSMGraphNode* FSMNode = Cast<UFSMGraphNode>(Node))
+		if (UFSMGraphNode_Root* RootNode = Cast<UFSMGraphNode_Root>(Node))
 		{
-			return SNew(SGraphNode_FSM, FSMNode);
+			return SNew(SGraphNode_Root, RootNode);
+		}
+		if (UFSMGraphNode_State* StateNode = Cast<UFSMGraphNode_State>(Node))
+		{
+			return SNew(SGraphNode_FSM, StateNode);
 		}
 		if (UFSMGraphSubNode* SubNode = Cast<UFSMGraphSubNode>(Node))
 		{
 			return SNew(SGraphNode_Sub, SubNode);
 		}
 		return nullptr;
-	}	
+	}
 };
+/*class FGraphPanelPinFactory_FSM: public FGraphPanelPinFactory
+{
+	virtual TSharedPtr<class SGraphPin> CreatePin(class UEdGraphPin* Pin) const override
+	{
+		if (UFSMGraphPin* FSMPin = Cast<UFSMGraphPin>(Pin))
+		{
+			return SNew(SGraphPin);
+		}
+		return nullptr;
+	}
+};*/
 
 void FFlowStateMachine_EditorModule::StartupModule()
 {
 
 	// 注册自定义的图表节点
 	FEdGraphUtilities::RegisterVisualNodeFactory(MakeShareable(new FGraphPanelNodeFactory_FSM));
+	// 注册自定义的图表引脚
+	// FEdGraphUtilities::RegisterVisualPinFactory(MakeShareable(new FGraphPanelPinFactory_FSM));
 
 	StyleSet = MakeShareable(new FSlateStyleSet("FlowStateMachineStyleSet"));
 

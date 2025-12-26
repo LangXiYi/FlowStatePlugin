@@ -4,7 +4,7 @@
 
 class UFSMGraphSubNode;
 
-class SGraphNode_Sub : public SGraphNode
+class FLOWSTATEMACHINE_EDITOR_API SGraphNode_Sub : public SGraphNode
 {
 public:
 	SLATE_BEGIN_ARGS(SGraphNode_Sub)

@@ -30,7 +30,12 @@ void UFSMGraphNode::GetNodeContextMenuActions(class UToolMenu* Menu, class UGrap
 		LOCTEXT("ActionToolTip", "Adds new action as a subnode"),
 		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddActionSubMenu, (UEdGraph*)Context->Graph));
 
-	// TODO::Add Server SubMenu
+	Section.AddSubMenu(
+			"AddService",
+			LOCTEXT("ServiceLabel", "Add Service...") ,
+			LOCTEXT("ServiceToolTip", "Adds new service as a subnode"),
+			FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddServiceSubMenu, (UEdGraph*)Context->Graph));
+
 }
 
 bool UFSMGraphNode::CanUserDeleteNode() const
@@ -132,7 +137,6 @@ TArray<UEdGraphPin*> UFSMGraphNode::GetOutputPins() const
 
 void UFSMGraphNode::CreateAddConditionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const
 {
-
 	TSharedRef<SGraphEditorActionMenu_FSM> Widget =
 		SNew(SGraphEditorActionMenu_FSM)
 		.GraphObj( Graph )
@@ -141,14 +145,33 @@ void UFSMGraphNode::CreateAddConditionSubMenu(class UToolMenu* Menu, UEdGraph* G
 		.AutoExpandActionMenu(true);
 
 	FToolMenuSection& Section = Menu->FindOrAddSection("Section");
-	Section.AddEntry(FToolMenuEntry::InitWidget("DecoratorWidget", Widget, FText(), true));
-
-	// TODO::创建并添加节点行为列表
+	Section.AddEntry(FToolMenuEntry::InitWidget("ConditionWidget", Widget, FText(), true));
 }
 
 void UFSMGraphNode::CreateAddActionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const
 {
-	// TODO::创建并添加节点行为列表
+	TSharedRef<SGraphEditorActionMenu_FSM> Widget =
+		SNew(SGraphEditorActionMenu_FSM)
+		.GraphObj( Graph )
+		.GraphNode(const_cast<UFSMGraphNode*>(this))
+		.SubNodeFlags(EFSMSubNodeType::Action)
+		.AutoExpandActionMenu(true);
+
+	FToolMenuSection& Section = Menu->FindOrAddSection("Section");
+	Section.AddEntry(FToolMenuEntry::InitWidget("ActionWidget", Widget, FText(), true));
+}
+
+void UFSMGraphNode::CreateAddServiceSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const
+{
+	TSharedRef<SGraphEditorActionMenu_FSM> Widget =
+	SNew(SGraphEditorActionMenu_FSM)
+	.GraphObj( Graph )
+	.GraphNode(const_cast<UFSMGraphNode*>(this))
+	.SubNodeFlags(EFSMSubNodeType::Service)
+	.AutoExpandActionMenu(true);
+
+	FToolMenuSection& Section = Menu->FindOrAddSection("Section");
+	Section.AddEntry(FToolMenuEntry::InitWidget("ServiceWidget", Widget, FText(), true));
 }
 
 #undef LOCTEXT_NAMESPACE
@@ -237,4 +260,21 @@ void UFSMGraphNode_State::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeC
 
 void UFSMGraphNode_State::CreateCustomPin(EEdGraphPinDirection Direction, const FString& PinName)
 {
+}
+
+void UFSMGraphNode_State::AddSubNode(UFSMGraphSubNode* SubNode, class UEdGraph* ParentGraph)
+{
+	Super::AddSubNode(SubNode, ParentGraph);
+	if (UFSMGraphNode_Condition* ConditionNode = Cast<UFSMGraphNode_Condition>(SubNode))
+	{
+		Conditions.Add(ConditionNode);
+	}
+	else if (UFSMGraphNode_Service* ServiceNode = Cast<UFSMGraphNode_Service>(SubNode))
+	{
+		Services.Add(ServiceNode);
+	}
+	else if (UFSMGraphNode_Action* ActionNode = Cast<UFSMGraphNode_Action>(SubNode))
+	{
+		Actions.Add(ActionNode);
+	}
 }

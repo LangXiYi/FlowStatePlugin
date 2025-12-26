@@ -45,3 +45,11 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_Action : public UFSMGraphSubNode
 
 public:
 };
+
+UCLASS()
+class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_Service : public UFSMGraphSubNode
+{
+	GENERATED_BODY()
+
+public:
+};

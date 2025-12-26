@@ -202,7 +202,8 @@ void UEdGraphSchema_FSM::GetSubNodeClasses(EFSMSubNodeType SubNodeFlags, TArray<
 		GraphNodeClass = UFSMGraphNode_Action::StaticClass();
 		break;
 	case EFSMSubNodeType::Service:
-		checkNoEntry()
+		ClassCache->GatherClasses(UFSMRuntimeNode_Service::StaticClass(), ClassData);
+		GraphNodeClass = UFSMGraphNode_Service::StaticClass();
 		break;
 	}
 }

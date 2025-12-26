@@ -4,7 +4,11 @@
 
 void SGraphNode_Sub::Construct(const FArguments& InArgs, UFSMGraphSubNode* InGraphNode)
 {
-	GraphNode = InGraphNode;
+	this->GraphNode = InGraphNode;
+
+	this->SetCursor(EMouseCursor::CardinalCross);
+
+	this->UpdateGraphNode();
 }
 
 FString SGraphNode_Sub::GetNodeComment() const
