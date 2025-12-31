@@ -6,10 +6,10 @@
 
 class UFSMGraphNode;
 
-class FLOWSTATEMACHINE_EDITOR_API SGraphNode_FSM : public SGraphNode
+class FLOWSTATEMACHINE_EDITOR_API SGraphNode_State : public SGraphNode
 {
 public:
-	SLATE_BEGIN_ARGS(SGraphNode_FSM)
+	SLATE_BEGIN_ARGS(SGraphNode_State)
 		{}
 		
 	SLATE_END_ARGS()
@@ -17,6 +17,7 @@ public:
 	void Construct(const FArguments& InArgs, UFSMGraphNode* InGraphNode);
 
 	// SGraphNode interface
+	virtual void SetOwner(const TSharedRef<SGraphPanel>& OwnerPanel) override;
 	virtual void UpdateGraphNode() override;
 	virtual TSharedPtr<SToolTip> GetComplexTooltip() override;
 	virtual void GetOverlayBrushes(bool bSelected, const FVector2D WidgetSize, TArray<FOverlayBrushInfo>& Brushes) const override;
@@ -55,6 +56,9 @@ private:
 	TArray<TSharedPtr<SGraphNode>> ActionWidgets;
 	TArray<TSharedPtr<SGraphNode>> ServiceWidgets;
 	TArray<TSharedPtr<SGraphNode>> ConditionWidgets;
+
+	/** 统计所有子节点 */
+	TArray<TSharedPtr<SGraphNode>> SubNodes;
 };
 
 class FLOWSTATEMACHINE_EDITOR_API SGraphPin_FSM : public SGraphPin

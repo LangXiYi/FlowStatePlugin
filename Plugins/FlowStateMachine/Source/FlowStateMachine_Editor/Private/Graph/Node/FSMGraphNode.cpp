@@ -13,54 +13,12 @@
 
 #define LOCTEXT_NAMESPACE "FSMGraphNode"
 
-void UFSMGraphNode::GetNodeContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const
-{
-	FToolMenuSection& Section = Menu->FindOrAddSection("FSMGraphNode");
-
-	// 添加子菜单
-	Section.AddSubMenu(
-		"AddCondition",
-		LOCTEXT("ConditionLabel", "Add Condition...") ,
-		LOCTEXT("ConditionToolTip", "Adds new decorator as a subnode"),
-		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddConditionSubMenu, (UEdGraph*)Context->Graph));
-	
-	Section.AddSubMenu(
-		"AddAction",
-		LOCTEXT("ActionLabel", "Add Action...") ,
-		LOCTEXT("ActionToolTip", "Adds new action as a subnode"),
-		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddActionSubMenu, (UEdGraph*)Context->Graph));
-
-	Section.AddSubMenu(
-			"AddService",
-			LOCTEXT("ServiceLabel", "Add Service...") ,
-			LOCTEXT("ServiceToolTip", "Adds new service as a subnode"),
-			FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddServiceSubMenu, (UEdGraph*)Context->Graph));
-
-}
-
 bool UFSMGraphNode::CanUserDeleteNode() const
 {
 	return Super::CanUserDeleteNode();
 }
 
-void UFSMGraphNode::AutowireNewNode(UEdGraphPin* FromPin)
-{
-	Super::AutowireNewNode(FromPin);
 
-	if (FromPin != nullptr)
-	{
-		// UEdGraphPin* OutputPin = GetOutputPins(EGPD_Output);
-		
-		if (GetSchema()->TryCreateConnection(FromPin, GetInputPin()))
-		{
-			FromPin->GetOwningNode()->NodeConnectionListChanged();
-		}
-		// else if (OutputPin != nullptr && GetSchema()->TryCreateConnection(OutputPin, FromPin))
-		// {
-			// NodeConnectionListChanged();
-		// }
-	}
-}
 
 void UFSMGraphNode::InitializeInstance()
 {
@@ -108,33 +66,6 @@ void UFSMGraphNode::RemoveSubNode(UFSMGraphSubNode* SubNode)
 	OnSubNodeRemoved(SubNode);
 }
 
-UEdGraphPin* UFSMGraphNode::GetInputPin() const
-{
-	TArray<UEdGraphPin*> OutPins;
-	for (UEdGraphPin* Pin : Pins)
-	{
-		if (Pin && Pin->Direction == EGPD_Input)
-		{
-			return Pin;
-		}
-	}
-	checkNoEntry();
-	return nullptr;;
-}
-
-TArray<UEdGraphPin*> UFSMGraphNode::GetOutputPins() const
-{
-	TArray<UEdGraphPin*> OutPins;
-	for (UEdGraphPin* Pin : Pins)
-	{
-		if (Pin && Pin->Direction == EGPD_Output)
-		{
-			OutPins.Add(Pin);
-		}
-	}
-	return OutPins;
-}
-
 void UFSMGraphNode::CreateAddConditionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const
 {
 	TSharedRef<SGraphEditorActionMenu_FSM> Widget =
@@ -177,6 +108,8 @@ void UFSMGraphNode::CreateAddServiceSubMenu(class UToolMenu* Menu, UEdGraph* Gra
 #undef LOCTEXT_NAMESPACE
 
 
+#define LOCTEXT_NAMESPACE "FSMGraphNode_State"
+
 void UFSMGraphNode_Root::AllocateDefaultPins()
 {
 	Super::AllocateDefaultPins();
@@ -208,9 +141,29 @@ FText UFSMGraphNode_State::GetNodeTitle(ENodeTitleType::Type TitleType) const
 
 void UFSMGraphNode_State::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
 {
+	FToolMenuSection& Section = Menu->FindOrAddSection("FSMGraphNode");
+	// 添加子菜单
+	Section.AddSubMenu(
+		"AddCondition",
+		LOCTEXT("ConditionLabel", "Add Condition...") ,
+		LOCTEXT("ConditionToolTip", "Adds new decorator as a subnode"),
+		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddConditionSubMenu, (UEdGraph*)Context->Graph));
+	
+	Section.AddSubMenu(
+		"AddAction",
+		LOCTEXT("ActionLabel", "Add Action...") ,
+		LOCTEXT("ActionToolTip", "Adds new action as a subnode"),
+		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddActionSubMenu, (UEdGraph*)Context->Graph));
+
+	Section.AddSubMenu(
+			"AddService",
+			LOCTEXT("ServiceLabel", "Add Service...") ,
+			LOCTEXT("ServiceToolTip", "Adds new service as a subnode"),
+			FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddServiceSubMenu, (UEdGraph*)Context->Graph));
+
+
 	Super::GetNodeContextMenuActions(Menu, Context);
 	FToolMenuSection& section = Menu->AddSection(TEXT("SectionName"), FText::FromString(TEXT("Custom Node Actions")));
-   
 	UFSMGraphNode_State* node = (UFSMGraphNode_State*)this;
 	section.AddMenuEntry(
 		TEXT("AddPinEntry"),
@@ -265,6 +218,7 @@ void UFSMGraphNode_State::CreateCustomPin(EEdGraphPinDirection Direction, const 
 void UFSMGraphNode_State::AddSubNode(UFSMGraphSubNode* SubNode, class UEdGraph* ParentGraph)
 {
 	Super::AddSubNode(SubNode, ParentGraph);
+	
 	if (UFSMGraphNode_Condition* ConditionNode = Cast<UFSMGraphNode_Condition>(SubNode))
 	{
 		Conditions.Add(ConditionNode);
@@ -278,3 +232,4 @@ void UFSMGraphNode_State::AddSubNode(UFSMGraphSubNode* SubNode, class UEdGraph* 
 		Actions.Add(ActionNode);
 	}
 }
+#undef LOCTEXT_NAMESPACE

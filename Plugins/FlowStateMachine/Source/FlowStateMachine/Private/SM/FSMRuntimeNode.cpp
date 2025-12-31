@@ -3,12 +3,9 @@
 
 #include "SM/FSMRuntimeNode.h"
 
-void UFSMRuntimeNode::InitializeFromAsset(UFlowStateMachine& Asset)
-{
-	FSMAsset = &Asset;
-}
+#include "SM/FSMRuntimeSubNode.h"
 
-void UFSMRuntimeNode::InitializeNode(UFSMRuntimeNode* InParentNode, uint16 InExecutionIndex, uint16 InMemoryOffset, uint8 InTreeDepth)
+void UFSMRuntimeNode::InitializeNode(UFSMRuntimeNodeBase* InParentNode, uint16 InExecutionIndex, uint16 InMemoryOffset, uint8 InTreeDepth)
 {
 	ParentNode = InParentNode;
 	ExecutionIndex = InExecutionIndex;
@@ -16,9 +13,9 @@ void UFSMRuntimeNode::InitializeNode(UFSMRuntimeNode* InParentNode, uint16 InExe
 	TreeDepth = InTreeDepth;
 }
 
-FString UFSMRuntimeNode::GetNodeName() const
-{
-	// TODO::后续可以改为其他名称，而不是对象的名称
-	return NodeName.Len() ? NodeName : GetName();
-}
+#if WITH_EDITOR
+
+
+
+#endif
 

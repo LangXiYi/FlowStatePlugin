@@ -3,6 +3,7 @@
 #include "UObject/Object.h"
 #include "FSMGraph.generated.h"
 
+class UFSMRuntimeNodeBase;
 class UFSMRuntimeNode;
 class UFSMGraphNode;
 
@@ -41,6 +42,6 @@ protected:
 	virtual void OnNodeInstanceRemoved(UObject* NodeInstance) {}
 
 	/** 创建所有的子级节点 */
-	void CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode, UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth);
+	void CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNodeBase* RuntimeRootNode, UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth);
 };
 

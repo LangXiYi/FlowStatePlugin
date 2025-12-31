@@ -1,4 +1,6 @@
 ﻿#include "Slate/SGraphNode_Sub.h"
+
+#include "SGraphPanel.h"
 #include "Graph/Node/FSMGraphSubNode.h"
 #include "SM/FSMRuntimeNode.h"
 
@@ -22,4 +24,16 @@ FString SGraphNode_Sub::GetNodeComment() const
 	}
 
 	return SGraphNode::GetNodeComment();
+}
+
+FReply SGraphNode_Sub::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	UFSMGraphSubNode* SubNode = Cast<UFSMGraphSubNode>(GraphNode);
+	if (SubNode != nullptr)
+	{
+		// OwnerGraphPanel is nullptr
+		GetOwnerPanel()->SelectionManager.ClickedOnNode(GraphNode, MouseEvent);
+		return FReply::Handled();
+	}
+	return FReply::Unhandled();
 }

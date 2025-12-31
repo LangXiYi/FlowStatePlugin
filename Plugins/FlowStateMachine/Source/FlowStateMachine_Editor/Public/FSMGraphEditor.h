@@ -71,6 +71,8 @@ public:
 public:
 	// Graph Events
 	virtual void OnSelectedNodesChanged(const TSet<UObject*>& NewSelection);
+
+	virtual void OnNodeDoubleClicked(UEdGraphNode* EdGraphNode);
 	
 protected:
 	virtual void SaveAsset_Execute() override;

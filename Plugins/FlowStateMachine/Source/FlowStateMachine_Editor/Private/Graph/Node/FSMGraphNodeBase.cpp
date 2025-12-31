@@ -32,6 +32,46 @@ void UFSMGraphNodeBase::PostPasteNode()
 	}
 }
 
+void UFSMGraphNodeBase::PostPlacedNewNode()
+{
+	// NodeInstance can be already spawned by paste operation, don't override it
+
+	UClass* NodeClass = ClassData.GetClass();
+	if (NodeClass && (RuntimeNode == nullptr))
+	{
+		UEdGraph* MyGraph = GetGraph();
+		// Graph 的 Outer 为 FlowStateMachine
+		UObject* GraphOwner = MyGraph ? MyGraph->GetOuter() : nullptr;
+		if (GraphOwner)
+		{
+			// 该 RuntimeNode 会在保存图表时赋予实际意义
+			RuntimeNode = NewObject<UFSMRuntimeNode>(GraphOwner, NodeClass);
+			// “transactional”这个词确实与编辑器的撤销/重做系统有关。
+			RuntimeNode->SetFlags(RF_Transactional);
+			InitializeInstance();
+		}
+	}
+}
+
+void UFSMGraphNodeBase::AutowireNewNode(UEdGraphPin* FromPin)
+{
+	Super::AutowireNewNode(FromPin);
+
+	if (FromPin != nullptr)
+	{
+		// UEdGraphPin* OutputPin = GetOutputPins(EGPD_Output);
+		
+		if (GetSchema()->TryCreateConnection(FromPin, GetInputPin()))
+		{
+			FromPin->GetOwningNode()->NodeConnectionListChanged();
+		}
+		// else if (OutputPin != nullptr && GetSchema()->TryCreateConnection(OutputPin, FromPin))
+		// {
+		// NodeConnectionListChanged();
+		// }
+	}
+}
+
 void UFSMGraphNodeBase::InitializeInstance()
 {
 	UFlowStateMachine* FSMAsset = RuntimeNode ? Cast<UFlowStateMachine>(RuntimeNode->GetOuter()) : nullptr;
@@ -47,6 +87,34 @@ void UFSMGraphNodeBase::InitializeInstance()
 UFSMGraph* UFSMGraphNodeBase::GetFSMGraph() const
 {
 	return CastChecked<UFSMGraph>(GetGraph());
+}
+
+
+UEdGraphPin* UFSMGraphNodeBase::GetInputPin() const
+{
+	TArray<UEdGraphPin*> OutPins;
+	for (UEdGraphPin* Pin : Pins)
+	{
+		if (Pin && Pin->Direction == EGPD_Input)
+		{
+			return Pin;
+		}
+	}
+	checkNoEntry();
+	return nullptr;;
+}
+
+TArray<UEdGraphPin*> UFSMGraphNodeBase::GetOutputPins() const
+{
+	TArray<UEdGraphPin*> OutPins;
+	for (UEdGraphPin* Pin : Pins)
+	{
+		if (Pin && Pin->Direction == EGPD_Output)
+		{
+			OutPins.Add(Pin);
+		}
+	}
+	return OutPins;
 }
 
 #undef LOCTEXT_NAMESPACE

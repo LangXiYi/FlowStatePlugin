@@ -20,15 +20,15 @@ class FLOWSTATEMACHINE_API UFlowStateMachine : public UObject
 public:
 	/** 状态机的运行时根节点 */
 	UPROPERTY(VisibleAnywhere)
-	UFSMRuntimeNode* RootRuntimeNode;
+	UFSMRuntimeNodeBase* RootRuntimeNode;
 
 	/** 状态机根节点的装饰器子节点 */
 	UPROPERTY(VisibleAnywhere)
-	TArray<UFSMRuntimeNode_Condition*> RootDecorators;
+	TArray<class UFSMRuntimeNode_Condition*> RootDecorators;
 
 	/** 状态机根节点的行为子节点 */
 	UPROPERTY(VisibleAnywhere)
-	TArray<UFSMRuntimeNode_Action*> RootActions;
+	TArray<class UFSMRuntimeNode_Action*> RootActions;
 
 #if WITH_EDITORONLY_DATA
 	/** Graph For State Machine */

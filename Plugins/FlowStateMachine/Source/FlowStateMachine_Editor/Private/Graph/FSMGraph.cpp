@@ -152,10 +152,10 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	uint8 TreeDepth = 0;
 
 	FSMAsset->RootRuntimeNode = RootEdNode->RuntimeNode;
-	if (FSMAsset->RootRuntimeNode)
+	if (auto RootStateNode = Cast<UFSMRuntimeNode_State>(FSMAsset->RootRuntimeNode))
 	{
 		// 赋予节点实际意义
-		FSMAsset->RootRuntimeNode->InitializeNode(nullptr, ExecutionIndex++, 0, TreeDepth);
+		RootStateNode->InitializeNode(nullptr, ExecutionIndex++, 0, TreeDepth);
 	}
 
 	// TODO::初始化 RuntimeDecorators/RuntimeActions
@@ -295,7 +295,7 @@ bool UFSMGraph::CanRemoveNestedObject(UObject* TestObject) const
 	!TestObject->IsA(UEdGraphSchema::StaticClass());
 }
 
-void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode,
+void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNodeBase* RuntimeRootNode,
 	UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth)
 {
 	// 递归结束条件1：确保传入的运行时节点以及图表节点为空
@@ -304,8 +304,10 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 		return;
 	}
 
+	
+
 	// 清理上次添加的对象
-	RuntimeRootNode->ClearChildren();
+	RuntimeRootNode->ChildrenNodes.Empty();
 
 	// 递归结束条件2：GraphRootNode 的输出引脚数量为 0 或 引脚未连接其他节点
 	for (int32 Idx = 0; Idx < GraphRootNode->Pins.Num(); ++Idx)
@@ -332,7 +334,7 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 			}
 			// 重命名运行时节点，确保节点的 Outer 为资产对象而非其他。
 			RuntimeNode->Rename(nullptr, FSMAsset);
-			RuntimeRootNode->AddChildNode(RuntimeNode);
+			RuntimeRootNode->ChildrenNodes.Add(RuntimeNode);
 			
 			// 更新执行顺序
 			RuntimeNode->InitializeNode(RuntimeRootNode, ExecuteIndex++, 0, TreeDepth);

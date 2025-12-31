@@ -23,13 +23,9 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode : public UFSMGraphNodeBase
 
 public:
 	/** 获得当前操作节点的上下文菜单行为，当右键节点时触发该函数 */
-	virtual void GetNodeContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const override;
 
 	/** 是否可以删除该节点 */
 	virtual bool CanUserDeleteNode() const override;
-
-	/** 自动连接创建的新节点 */
-	virtual void AutowireNewNode(UEdGraphPin* FromPin) override;
 	
 	/** 初始化运行时节点实例时调用  */
 	virtual void InitializeInstance() override;
@@ -41,10 +37,6 @@ public:
 	/** 将一个子节点从当前节点中移除 */
 	void RemoveSubNode(UFSMGraphSubNode* SubNode);
 	virtual void OnSubNodeRemoved(UFSMGraphSubNode* SubNode) {}
-
-protected:
-	UEdGraphPin* GetInputPin() const;
-	TArray<UEdGraphPin*> GetOutputPins() const;
 
 public:
 	/** 所有子节点 */

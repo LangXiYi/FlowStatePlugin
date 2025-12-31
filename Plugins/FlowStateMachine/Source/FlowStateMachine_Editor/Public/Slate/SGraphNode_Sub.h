@@ -15,5 +15,7 @@ public:
 	void Construct(const FArguments& InArgs, UFSMGraphSubNode* InGraphNode);
 	
 	virtual FString GetNodeComment() const override;
+
+	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	
 };

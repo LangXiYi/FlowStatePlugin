@@ -6,7 +6,7 @@
 #include "AIGraph/Classes/AIGraphTypes.h"
 #include "Graph/Node/FSMGraphNode.h"
 #include "Graph/Node/FSMGraphSubNode.h"
-#include "Slate/SGraphNode_FSM.h"
+#include "Slate/SGraphNode_State.h"
 #include "Slate/SGraphNode_Root.h"
 #include "Slate/SGraphNode_Sub.h"
 #include "SM/FSMRuntimeNode.h"
@@ -27,7 +27,7 @@ public:
 		}
 		if (UFSMGraphNode_State* StateNode = Cast<UFSMGraphNode_State>(Node))
 		{
-			return SNew(SGraphNode_FSM, StateNode);
+			return SNew(SGraphNode_State, StateNode);
 		}
 		if (UFSMGraphSubNode* SubNode = Cast<UFSMGraphSubNode>(Node))
 		{

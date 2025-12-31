@@ -260,7 +260,7 @@ TSharedRef<SWidget> FFSMGraphEditor::CreateFlowStateMachineGraphEditor(const FWo
 	SGraphEditor::FGraphEditorEvents InEvents;
 	// TODO::绑定Graph图表的事件
 	InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FFSMGraphEditor::OnSelectedNodesChanged);
-	// InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FBehaviorTreeEditor::OnNodeDoubleClicked);
+	InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FFSMGraphEditor::OnNodeDoubleClicked);
 	// InEvents.OnTextCommitted = FOnNodeTextCommitted::CreateSP(this, &FBehaviorTreeEditor::OnNodeTitleCommitted);
 	
 	// Make full graph editor
@@ -337,7 +337,7 @@ void FFSMGraphEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSelection)
 	SelectionNodes.Reserve(NewSelection.Num());
 	for (UObject* Selection : NewSelection)
 	{
-		if (Selection->IsA<UFSMGraphNode>())
+		if (Selection->IsA<UFSMGraphNodeBase>())
 		{
 			SelectionNodes.Add(Selection);
 		}
@@ -347,7 +347,7 @@ void FFSMGraphEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSelection)
 	{
 		AssetDetailsView->SetObject(SelectionNodes[0]);
 		// 设置细节面板显示的对象为运行时节点
-		DetailsView->SetObject(static_cast<UFSMGraphNode*>(SelectionNodes[0])->RuntimeNode);
+		DetailsView->SetObject(static_cast<UFSMGraphNodeBase*>(SelectionNodes[0])->RuntimeNode);
 	}
 	else
 	{
@@ -362,6 +362,23 @@ void FFSMGraphEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSelection)
 		}
 		AssetDetailsView->SetObject(FlowStateMachine);
 		DetailsView->SetObject(RootNode);
+	}
+}
+
+void FFSMGraphEditor::OnNodeDoubleClicked(UEdGraphNode* EdGraphNode)
+{
+	UFSMGraphNodeBase* MyGraphNode = Cast<UFSMGraphNodeBase>(EdGraphNode);
+	if (MyGraphNode && MyGraphNode->RuntimeNode &&
+			MyGraphNode->RuntimeNode->GetClass()->HasAnyClassFlags(CLASS_CompiledFromBlueprint))
+	{
+		UClass* NodeClass = MyGraphNode->RuntimeNode->GetClass();
+		UPackage* Pkg = NodeClass->GetOuterUPackage();
+		FString ClassName = NodeClass->GetName().LeftChop(2);
+		UBlueprint* BlueprintOb = FindObject<UBlueprint>(Pkg, *ClassName);
+		if(BlueprintOb)
+		{
+			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(BlueprintOb);
+		}
 	}
 }
 

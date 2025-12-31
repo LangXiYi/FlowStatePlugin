@@ -1,4 +1,4 @@
-﻿#include "Slate/SGraphNode_FSM.h"
+﻿#include "Slate/SGraphNode_State.h"
 
 #include "IDocumentation.h"
 #include "NodeFactory.h"
@@ -10,7 +10,7 @@
 #include "KismetWidgets/Public/SLevelOfDetailBranchNode.h"
 #include "Widgets/Text/SInlineEditableTextBlock.h"
 
-void SGraphNode_FSM::Construct(const FArguments& InArgs, UFSMGraphNode* InGraphNode)
+void SGraphNode_State::Construct(const FArguments& InArgs, UFSMGraphNode* InGraphNode)
 {
 	GraphNode = InGraphNode;
 
@@ -18,7 +18,21 @@ void SGraphNode_FSM::Construct(const FArguments& InArgs, UFSMGraphNode* InGraphN
 	UpdateGraphNode();
 }
 
-void SGraphNode_FSM::UpdateGraphNode()
+void SGraphNode_State::SetOwner(const TSharedRef<SGraphPanel>& OwnerPanel)
+{
+	SGraphNode::SetOwner(OwnerPanel);
+
+	for (auto& ChildWidget : SubNodes)
+	{
+		if (ChildWidget.IsValid())
+		{
+			ChildWidget->SetOwner(OwnerPanel);
+			OwnerPanel->AttachGraphEvents(ChildWidget);
+		}
+	}
+}
+
+void SGraphNode_State::UpdateGraphNode()
 {
 	// SGraphNode::UpdateGraphNode();
 	InputPins.Empty();
@@ -101,8 +115,8 @@ void SGraphNode_FSM::UpdateGraphNode()
 		SNew(SBorder)
 		.AddMetaData<FGraphNodeMetaData>(TagMeta)
 		.BorderImage(FEditorStyle::GetBrush("Graph.StateNode.Body"))
-		.BorderBackgroundColor(this, &SGraphNode_FSM::GetBorderBackgroundColor)
-		.OnMouseButtonDown(this, &SGraphNode_FSM::OnMouseButtonDown)
+		.BorderBackgroundColor(this, &SGraphNode_State::GetBorderBackgroundColor)
+		.OnMouseButtonDown(this, &SGraphNode_State::OnMouseButtonDown)
 		.HAlign(HAlign_Fill)
 		.VAlign(VAlign_Fill)
 		.Padding(0.f)
@@ -147,44 +161,44 @@ void SGraphNode_FSM::UpdateGraphNode()
 	CreatePinWidgets();
 }
 
-TSharedPtr<SGraphPin> SGraphNode_FSM::CreatePinWidget(UEdGraphPin* Pin) const
+TSharedPtr<SGraphPin> SGraphNode_State::CreatePinWidget(UEdGraphPin* Pin) const
 {
 	return SNew(SGraphPin_FSM, Pin)
-		.ToolTipText( this, &SGraphNode_FSM::GetPinTooltip, Pin);
+		.ToolTipText( this, &SGraphNode_State::GetPinTooltip, Pin);
 }
 
-TSharedPtr<SToolTip> SGraphNode_FSM::GetComplexTooltip()
+TSharedPtr<SToolTip> SGraphNode_State::GetComplexTooltip()
 {
 	return SGraphNode::GetComplexTooltip();
 }
 
-void SGraphNode_FSM::GetOverlayBrushes(bool bSelected, const FVector2D WidgetSize,
+void SGraphNode_State::GetOverlayBrushes(bool bSelected, const FVector2D WidgetSize,
 	TArray<FOverlayBrushInfo>& Brushes) const
 {
 	SGraphNode::GetOverlayBrushes(bSelected, WidgetSize, Brushes);
 }
 
-TArray<FOverlayWidgetInfo> SGraphNode_FSM::GetOverlayWidgets(bool bSelected, const FVector2D& WidgetSize) const
+TArray<FOverlayWidgetInfo> SGraphNode_State::GetOverlayWidgets(bool bSelected, const FVector2D& WidgetSize) const
 {
 	return SGraphNode::GetOverlayWidgets(bSelected, WidgetSize);
 }
 
-TSharedRef<SGraphNode> SGraphNode_FSM::GetNodeUnderMouse(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+TSharedRef<SGraphNode> SGraphNode_State::GetNodeUnderMouse(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	return SGraphNode::GetNodeUnderMouse(MyGeometry, MouseEvent);
 }
 
-void SGraphNode_FSM::MoveTo(const FVector2D& NewPosition, FNodeSet& NodeFilter, bool bMarkDirty)
+void SGraphNode_State::MoveTo(const FVector2D& NewPosition, FNodeSet& NodeFilter, bool bMarkDirty)
 {
 	SGraphNode::MoveTo(NewPosition, NodeFilter, bMarkDirty);
 }
 
-FReply SGraphNode_FSM::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+FReply SGraphNode_State::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	return SGraphNode::OnMouseButtonDown(MyGeometry, MouseEvent);
 }
 
-void SGraphNode_FSM::AddAction(TSharedPtr<SGraphNode> ActionWidget)
+void SGraphNode_State::AddAction(TSharedPtr<SGraphNode> ActionWidget)
 {
 	ActionBox->AddSlot()
 	.AutoHeight()
@@ -194,10 +208,10 @@ void SGraphNode_FSM::AddAction(TSharedPtr<SGraphNode> ActionWidget)
 	];
 
 	ActionWidgets.Add(ActionWidget);
-
+	SubNodes.Add(ActionWidget);
 }
 
-void SGraphNode_FSM::AddService(TSharedPtr<SGraphNode> ServiceWidget)
+void SGraphNode_State::AddService(TSharedPtr<SGraphNode> ServiceWidget)
 {
 	ServiceBox->AddSlot()
 	.AutoHeight()
@@ -207,9 +221,10 @@ void SGraphNode_FSM::AddService(TSharedPtr<SGraphNode> ServiceWidget)
 	];
 
 	ServiceWidgets.Add(ServiceWidget);
+	SubNodes.Add(ServiceWidget);
 }
 
-void SGraphNode_FSM::AddCondition(TSharedPtr<SGraphNode> ConditionWidget)
+void SGraphNode_State::AddCondition(TSharedPtr<SGraphNode> ConditionWidget)
 {
 	ConditionBox->AddSlot()
 	.AutoHeight()
@@ -219,21 +234,22 @@ void SGraphNode_FSM::AddCondition(TSharedPtr<SGraphNode> ConditionWidget)
 	];
 
 	ConditionWidgets.Add(ConditionWidget);
+	SubNodes.Add(ConditionWidget);
 }
 
-TSharedPtr<SWidget> SGraphNode_FSM::CreateNodeAppendArea()
+TSharedPtr<SWidget> SGraphNode_State::CreateNodeAppendArea()
 {
 	return SNew(SVerticalBox)
 		+SVerticalBox::Slot()
 		[
 			SNew(SBorder)
 			[
-				SAssignNew(ServiceBox, SVerticalBox)
+				ServiceBox.ToSharedRef()
 			]
 		];
 }
 
-TSharedRef<SWidget> SGraphNode_FSM::CreateNodeContentArea()
+TSharedRef<SWidget> SGraphNode_State::CreateNodeContentArea()
 {
 	return SNew(SHorizontalBox)
 		+SHorizontalBox::Slot()
@@ -258,7 +274,7 @@ TSharedRef<SWidget> SGraphNode_FSM::CreateNodeContentArea()
 				.VAlign(VAlign_Fill)
 				[
 					// 条件框
-					SAssignNew(ConditionBox, SVerticalBox)
+					ConditionBox.ToSharedRef()
 				]
 			]
 		]
@@ -273,7 +289,7 @@ TSharedRef<SWidget> SGraphNode_FSM::CreateNodeContentArea()
 				.BorderBackgroundColor(FSlateColor(FLinearColor::Gray))
 				[
 					// 行为列表
-					SAssignNew(ActionBox, SVerticalBox)
+					ActionBox.ToSharedRef()
 				]
 			]
 		]
@@ -286,7 +302,7 @@ TSharedRef<SWidget> SGraphNode_FSM::CreateNodeContentArea()
 		];
 }
 
-TSharedRef<SWidget> SGraphNode_FSM::CreateTitleWidget(TSharedPtr<SNodeTitle> NodeTitle)
+TSharedRef<SWidget> SGraphNode_State::CreateTitleWidget(TSharedPtr<SNodeTitle> NodeTitle)
 {
 	TSharedRef<SWidget> TitleWidget = SNew(SOverlay)
 		+SOverlay::Slot()
@@ -341,7 +357,7 @@ TSharedRef<SWidget> SGraphNode_FSM::CreateTitleWidget(TSharedPtr<SNodeTitle> Nod
 	InlineEditableText->SetColorAndOpacity(TAttribute<FLinearColor>::Create(TAttribute<FLinearColor>::FGetter::CreateSP(this, &SGraphNode::GetNodeTitleTextColor)));
 
 	return SNew(SLevelOfDetailBranchNode)
-		.UseLowDetailSlot(this, &SGraphNode_FSM::UseLowDetailNodeTitles)
+		.UseLowDetailSlot(this, &SGraphNode_State::UseLowDetailNodeTitles)
 		.LowDetail()
 		[
 			SNew(SBorder)
@@ -355,17 +371,17 @@ TSharedRef<SWidget> SGraphNode_FSM::CreateTitleWidget(TSharedPtr<SNodeTitle> Nod
 		];
 }
 
-bool SGraphNode_FSM::UseLowDetailNodeTitles() const
+bool SGraphNode_State::UseLowDetailNodeTitles() const
 {
 	return SGraphNode::UseLowDetailNodeTitles();
 }
 
-FSlateColor SGraphNode_FSM::GetBorderBackgroundColor() const
+FSlateColor SGraphNode_State::GetBorderBackgroundColor() const
 {
 	return FSlateColor(FLinearColor::Black);
 }
 
-FText SGraphNode_FSM::GetPinTooltip(UEdGraphPin* Pin) const
+FText SGraphNode_State::GetPinTooltip(UEdGraphPin* Pin) const
 {
 	FText HoverText = FText::GetEmpty();
 
