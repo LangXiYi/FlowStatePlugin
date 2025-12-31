@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FSMRuntimeNode.h"
+#include "RuntimeNode/FSMRuntimeNode_State.h"
 #include "UObject/Object.h"
 #include "FlowStateBase.generated.h"
 
@@ -22,36 +22,11 @@ class UFlowStateContext;
 class UFlowStateLayoutWidget;
 
 
-class IFlowStateInterface
-{
-public:
-	IFlowStateInterface() {}//: Context(InContext) {}
-	virtual ~IFlowStateInterface() = default;
-	
-	/** 当初始化状态时触发该函数 */
-	virtual void OnInitialize(UFlowStateContext* Context) = 0;
-	/** 在初始化状态前调用该函数 */
-	virtual void OnPreInitialize(IFlowStateInterface* LastState) = 0;
-	/** 当初始化状态后触发该函数 */
-	virtual void OnPostInitialize() = 0;
-	/** 当进入状态时触发该函数 */
-	virtual void OnEnter() = 0;
-	/** 当退出状态时触发该函数 */
-	virtual void OnExit() = 0;
-	/** 初始化状态控件 */
-	virtual void OnInitWidget(UFlowStateLayoutWidget* Layout) = 0;
-	/** 检查过度条件 */
-	virtual bool CheckCondition() = 0;
-
-protected:
-	// UFlowStateContext* Context;	
-};
-
 /**
- * 
+ * 可以由蓝图继承并实现的状态基类
  */
 UCLASS(Blueprintable, BlueprintType, Abstract)
-class FLOWSTATEMACHINE_API UFlowStateBase : public UFSMRuntimeNode_State, public IFlowStateInterface
+class FLOWSTATEMACHINE_API UFlowStateBase : public UFSMRuntimeNode_State
 {
 	GENERATED_BODY()
 
@@ -68,6 +43,9 @@ public:
 	virtual UWorld* GetWorld() const override;
 	virtual ULevel* GetLevel() const;
 
+	// TODO::传入具有世界上下文的对象
+	virtual void SetOwner(AActor* InActorOwner) override;
+
 	UFUNCTION(BlueprintPure, Category="Flow State")
 	FORCEINLINE float GetDeltaTime() const { return Private_DeltaTime; }
 
@@ -78,8 +56,12 @@ public:
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void OnInitWidget(UFlowStateLayoutWidget* Layout) override;
-	virtual void OnInitialize(UFlowStateContext* Context) override;
-	virtual void OnPreInitialize(IFlowStateInterface* LastState) override {}
+	virtual void OnInitialize(UFlowStateContext* InContext) override
+	{
+		Super::OnInitialize(InContext);
+		NativeOnInitialize(InContext);
+	}
+	virtual void OnPreInitialize() override {}
 	virtual void OnPostInitialize() override {}
 	virtual bool CheckCondition() override { return true; }
 
@@ -91,7 +73,7 @@ public:
 
 	/** 初始化当前状态事件 */
 	UFUNCTION(BlueprintImplementableEvent, Category="FlowState", DisplayName = OnIntialize)
-	void NativeOnInitialize();
+	void NativeOnInitialize(UFlowStateContext* InContext);
 	/** 进入当前状态事件 */
 	UFUNCTION(BlueprintImplementableEvent, Category="FlowState", DisplayName = OnEnter)
 	void NativeOnEnter();
@@ -111,33 +93,10 @@ protected:
 	void OnPreInitProperties(UFlowStateBase* LastState);
 
 protected:
-	UPROPERTY(BlueprintReadOnly, Category = "FlowState", meta = (AllowPrivateAccess = true))
-	UFlowStateContext* ParentContext;
+	/** Cached actor owner of BehaviorTreeComponent. */
+	UPROPERTY(Transient)
+	AActor* ActorOwner;
 
 private:
 	float Private_DeltaTime;
-};
-
-
-/**
- * 该状态会创建一个新的状态机并将状态切换至该状态机
- * 若当前状态的条件不满足则会跳出这一状态机器
- */
-UCLASS()
-class UFlowStateContextState : public UFlowStateBase
-{
-	GENERATED_BODY()
-
-public:
-
-
-	
-protected:
-	// 创建的新的状态机！！！
-	UPROPERTY()
-	UFlowStateContext* StateContext;
-
-	// 当前状态指向的状态机中的状态
-	UPROPERTY()
-	UFlowStateBase* ContextState;
 };

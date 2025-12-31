@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "Subsystems/WorldSubsystem.h"
 #include "FlowStateMachineSubsystem.generated.h"
 
 class UFlowStateContext;
@@ -12,7 +12,7 @@ class UFlowStateMachine;
  * 
  */
 UCLASS()
-class FLOWSTATEMACHINE_API UFlowStateMachineSubsystem : public UGameInstanceSubsystem
+class FLOWSTATEMACHINE_API UFlowStateMachineSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 
@@ -28,6 +28,4 @@ public:
 private:
 	UPROPERTY()
 	UFlowStateContext* RunningStateContext;
-	// RunningStateMachines;
-	// TMap<UFlowStateMachine*, UFlowStateContext*> StateContextMapping;
 };

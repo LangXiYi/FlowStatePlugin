@@ -2,7 +2,7 @@
 
 #include "SGraphNode.h"
 
-class UFSMGraphNode;
+class UFSMGraphNodeBase;
 
 class FLOWSTATEMACHINE_EDITOR_API SFSMGraphNodeBase : public SGraphNode
 {
@@ -12,6 +12,6 @@ public:
 		
 	SLATE_END_ARGS()
 
-	void Construct(const FArguments& InArgs, UFSMGraphNode* InGraphNode);
+	void Construct(const FArguments& InArgs, UFSMGraphNodeBase* InGraphNode);
 	
 };

@@ -1,8 +1,8 @@
-﻿#include "Slate/SGraphNode_Root.h"
-#include "Graph/Node/FSMGraphNode.h"
-#include "SM/FSMRuntimeNode.h"
+﻿#include "Slate/SFSMGraphNodeBase.h"
 
-void SGraphNode_Root::Construct(const FArguments& InArgs, UFSMGraphNode* InGraphNode)
+#include "Node/FSMGraphNodeBase.h"
+
+void SFSMGraphNodeBase::Construct(const FArguments& InArgs, UFSMGraphNodeBase* InGraphNode)
 {
 	GraphNode = InGraphNode;
 

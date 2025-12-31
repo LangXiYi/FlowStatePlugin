@@ -8,7 +8,6 @@
 
 bool UFlowStateMachineSubsystem::RunFlowStateMachine(UFlowStateMachine* StateMachine)
 {
-	// TODO::创建 FlowStateContext
 	if (StateMachine == nullptr)
 	{
 		UE_LOG(LogFlowStateMachine, Error, TEXT("StateMachine is nullptr."))
@@ -22,7 +21,7 @@ bool UFlowStateMachineSubsystem::RunFlowStateMachine(UFlowStateMachine* StateMac
 	UFlowStateContext* StateContext = NewObject<UFlowStateContext>(this);
 	if (StateContext == nullptr)
 	{
-		UE_LOG(LogFlowStateMachine, Error, TEXT("Create 'StateContext' falied, It's a nullptr."))
+		UE_LOG(LogFlowStateMachine, Error, TEXT("Create 'StateContext' failed, It's a nullptr."))
 		return false;
 	}
 	RunningStateContext = StateContext;

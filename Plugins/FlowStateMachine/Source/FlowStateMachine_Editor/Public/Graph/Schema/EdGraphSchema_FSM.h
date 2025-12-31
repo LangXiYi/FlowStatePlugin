@@ -1,10 +1,11 @@
 ﻿#pragma once
 #include "CoreMinimal.h"
-#include "FlowStateMachineEditorTypes.h"
-#include "Graph/Node/FSMGraphNode.h"
+#include "FSMEditorTypes.h"
+#include "Node/FSMGraphNode.h"
 #include "UObject/Object.h"
 #include "EdGraphSchema_FSM.generated.h"
 
+class UFSMRuntimeSubNode;
 /** Action to add a subnode to the selected node */
 USTRUCT()
 struct FLOWSTATEMACHINE_EDITOR_API FFSMSchemaAction_NewNode : public FEdGraphSchemaAction
@@ -87,7 +88,7 @@ public:
 	/** 构建当前图表下所有节点的右键菜单 */
 	virtual void GetContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const override;
 	/** 两节点间连接的条件 */
-	virtual const FPinConnectionResponse CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const override;
+	virtual const FPinConnectionResponse CanCreateConnection(const UEdGraphPin* PinA, const UEdGraphPin* PinB) const override;
 	/** 两节点是否可以合并（未完成） */
 	virtual const FPinConnectionResponse CanMergeNodes(const UEdGraphNode* A, const UEdGraphNode* B) const override;
 	/** 设置当前图表模式下所有引脚及连线的颜色 */
@@ -103,6 +104,11 @@ public:
 	virtual void GetGraphNodeContextActions(FGraphContextMenuBuilder& ContextMenuBuilder, EFSMSubNodeType SubNodeFlags) const;
 	virtual void GetSubNodeClasses(EFSMSubNodeType SubNodeFlags, TArray<FGraphNodeClassData>& ClassData, UClass*& GraphNodeClass) const;
 
+public:
+	// 供 GraphPalette 使用，获取所有可添加的列表
+	static void CollectNewNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, UClass* RuntimeNodeClass, UClass* GraphNodeClass, UObject* Owner);
+	static void CollectNewSubNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, UClass* RuntimeNodeClass, UClass* GraphNodeClass, UObject* Owner);
+	
 protected:
 	static TSharedPtr<FFSMSchemaAction_NewNode> AddNewNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
 	static TSharedPtr<FFSMSchemaAction_NewSubNode> AddNewSubNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);

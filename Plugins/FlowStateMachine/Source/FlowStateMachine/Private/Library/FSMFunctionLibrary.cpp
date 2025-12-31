@@ -5,14 +5,13 @@
 #include "FlowStateMachine_Widget/Public/Widgets/GameplayTagSlot.h"
 #include "SM/FlowStateContext.h"
 #include "System/FlowStateMachineSubsystem.h"
-#include "System/FSMWorldSettings.h"
 
 UFlowStateContext* UFSMFunctionLibrary::GetFlowStateContext(UObject* WorldContextObject)
 {
 	UWorld* World = FlowStateMachine::GetWorldFromContextObject(WorldContextObject);
 	if (World)
 	{
-		UFlowStateMachineSubsystem* Subsystem = World->GetGameInstance()->GetSubsystem<UFlowStateMachineSubsystem>();
+		UFlowStateMachineSubsystem* Subsystem = World->GetSubsystem<UFlowStateMachineSubsystem>();
 		if (Subsystem)
 		{
 			return Subsystem->GetRunningStateContext();

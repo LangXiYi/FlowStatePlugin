@@ -16,7 +16,7 @@ class UFSMMetaDataAsset;
 /**
  * 
  */
-UCLASS(Blueprintable)
+UCLASS()
 class FLOWSTATEMACHINE_API UFlowStateContext : public UObject
 {
 	GENERATED_BODY()
@@ -42,7 +42,6 @@ public:
 	// virtual void OnPreInitialize(IFlowStateInterface* LastState) override {}
 	// virtual void OnPostInitialize() override {}
 
-protected:
 	UFlowStateBase* SwitchTo(UFlowStateBase* NewState);
 	UFlowStateBase* SwitchTo(const TSubclassOf<UFlowStateBase>& NewStateClass);
 	template<class StateType = UFlowStateBase>

@@ -3,12 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FSMRuntimeNode.h"
 #include "UObject/Object.h"
 #include "FlowStateMachine.generated.h"
 
-class UFSMMetaDataAsset;
-class UFlowStateBase;
 /**
  * 
  */
@@ -20,15 +17,19 @@ class FLOWSTATEMACHINE_API UFlowStateMachine : public UObject
 public:
 	/** 状态机的运行时根节点 */
 	UPROPERTY(VisibleAnywhere)
-	UFSMRuntimeNodeBase* RootRuntimeNode;
+	class UFSMRuntimeNode* RootRuntimeNode;
 
 	/** 状态机根节点的装饰器子节点 */
 	UPROPERTY(VisibleAnywhere)
-	TArray<class UFSMRuntimeNode_Condition*> RootDecorators;
+	TArray<class UFSMRuntimeSubNode_Condition*> RootDecorators;
+
+	/** 状态机根节点的服务子节点 */
+	UPROPERTY(VisibleAnywhere)
+	TArray<class UFSMRuntimeSubNode_Service*> RootServices;
 
 	/** 状态机根节点的行为子节点 */
 	UPROPERTY(VisibleAnywhere)
-	TArray<class UFSMRuntimeNode_Action*> RootActions;
+	TArray<class UFSMRuntimeSubNode_Action*> RootActions;
 
 #if WITH_EDITORONLY_DATA
 	/** Graph For State Machine */

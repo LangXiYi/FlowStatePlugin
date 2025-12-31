@@ -9,7 +9,8 @@ public class FlowStateMachine_Editor : ModuleRules
         PublicDependencyModuleNames.AddRange(
             new string[]
             {
-                "Core", "FlowStateMachine", "FlowStateMachine_EditorRuntime"
+                "Core",
+                "FlowStateMachine",
             }
         );
 
@@ -27,7 +28,8 @@ public class FlowStateMachine_Editor : ModuleRules
                 "AIGraph",
                 "ToolMenus",
                 "GraphEditor",
-                "KismetWidgets"
+                "KismetWidgets",
+                "ApplicationCore",
             }
         );
     }

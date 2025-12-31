@@ -22,10 +22,20 @@ public:
 	/** 更新资产 */
 	virtual void UpdateAsset(int32 UpdateFlags = 0);
 
+	void OnNodesPasted(const FString& String);
+
 	/** 根据图表得到内容创建状态机 */
 	virtual void CreateFSMFromGraph(UFSMGraphNode* RootEdNode);
 
 	// TODO::On Selected Node To Update Detail View
+
+	void UpdateClassData();
+
+	bool IsLocked() const;
+	
+	void LockUpdates();
+
+	void UnlockUpdates();
 
 protected:
 	/** 生成缺少的节点，在图表被创建后调用 */
@@ -42,6 +52,9 @@ protected:
 	virtual void OnNodeInstanceRemoved(UObject* NodeInstance) {}
 
 	/** 创建所有的子级节点 */
-	void CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNodeBase* RuntimeRootNode, UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth);
+	void CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode, UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth);
+
+private:
+	bool bLockUpdates;
 };
 

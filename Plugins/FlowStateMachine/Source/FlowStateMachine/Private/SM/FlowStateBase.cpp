@@ -17,7 +17,8 @@
 
 UWorld* UFlowStateBase::GetWorld() const
 {
-	if (!HasAnyFlags(RF_ClassDefaultObject) && ensureMsgf(GetOuter(),
+	return Super::GetWorld();
+	/*if (!HasAnyFlags(RF_ClassDefaultObject) && ensureMsgf(GetOuter(),
 		TEXT("Actor: %s has a null OuterPrivate in AActor::GetWorld()"), *GetFullName())
 		&& !GetOuter()->HasAnyFlags(RF_BeginDestroyed) && !GetOuter()->IsUnreachable())
 	{
@@ -26,12 +27,18 @@ UWorld* UFlowStateBase::GetWorld() const
 			return Level->OwningWorld;
 		}
 	}
-	return nullptr;
+	return nullptr;*/
 }
 
 ULevel* UFlowStateBase::GetLevel() const
 {
 	return GetTypedOuter<ULevel>();
+}
+
+void UFlowStateBase::SetOwner(AActor* InActorOwner)
+{
+	Super::SetOwner(InActorOwner);
+	ActorOwner = InActorOwner;
 }
 
 void UFlowStateBase::Tick(float DeltaTime)
@@ -50,11 +57,12 @@ void UFlowStateBase::OnInitWidget(UFlowStateLayoutWidget* Layout)
 	NativeOnInitWidget(Layout);
 }
 
-void UFlowStateBase::OnInitialize(UFlowStateContext* Context)
+/*
+void UFlowStateBase::OnInitialize()
 {
-	ParentContext = Context;
+	// ParentContext = Context;
 	// 预初始化状态
-	OnPreInitialize(Context->CurState);
+	// OnPreInitialize(Context->CurState);
 	// TODO::获取当前新节点的Action并执行它们！！！
 
 	// for (Action* Action : Actions)
@@ -62,6 +70,7 @@ void UFlowStateBase::OnInitialize(UFlowStateContext* Context)
 	// 进入状态
 	OnEnter();
 }
+*/
 
 void UFlowStateBase::OnExit()
 {

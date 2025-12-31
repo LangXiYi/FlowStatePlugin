@@ -7,7 +7,7 @@ struct FFSMEditorToolbar;
 class UFSMCommonData;
 class UFlowStateMachine;
 
-class FFSMGraphEditor: public IFlowStateMachineEditor
+class FFSMGraphEditor: public IFlowStateMachineEditor, public FEditorUndoClient, public FNotifyHook
 {
 public:
 	FFSMGraphEditor();
@@ -47,6 +47,9 @@ public:
 	/** 创建状态机细节面板 */
 	TSharedRef<SWidget> CreateFlowStateMachineDetailView(const FWorkflowTabSpawnInfo& Info);
 
+	/** 创建状态机节点列表 */
+	TSharedRef<SWidget> CreateFlowStateMachineListView(const FWorkflowTabSpawnInfo& Info);
+
 	//////////////////////////////////////////////////////////////
 	/// Get Or Set
 	//////////////////////////////////////////////////////////////
@@ -68,11 +71,38 @@ public:
 	bool InEditingMode(bool bGraphIsEditable) const { return bGraphIsEditable; }
 	FGraphAppearanceInfo GetGraphAppearance() const;
 
+	//////////////////////////////////////////////////////////////
+	/// Graph Events
+	//////////////////////////////////////////////////////////////
 public:
-	// Graph Events
 	virtual void OnSelectedNodesChanged(const TSet<UObject*>& NewSelection);
 
 	virtual void OnNodeDoubleClicked(UEdGraphNode* EdGraphNode);
+
+	void OnGraphEditorFocused(TSharedRef<SGraphEditor> InGraphEditor);
+
+	void CreateCommandList();
+
+protected:
+	void SelectAllNodes();
+	bool CanSelectAllNodes() const;
+	void DeleteSelectedNodes();
+	bool CanDeleteNodes() const;
+	void DeleteSelectedDuplicatableNodes();
+	void CutSelectedNodes();
+	bool CanCutNodes() const;
+	void CopySelectedNodes();
+	bool CanCopyNodes() const;
+	void PasteNodes();
+	void PasteNodesHere(const FVector2D& Location);
+	bool CanPasteNodes() const;
+	void DuplicateNodes();
+	bool CanDuplicateNodes() const;
+
+	bool CanCreateComment() const;
+	void OnCreateComment();
+
+	virtual void FixupPastedNodes(const TSet<UEdGraphNode*>& NewPastedGraphNodes, const TMap<FGuid/*New*/, FGuid/*Old*/>& NewToOldNodeMapping);
 	
 protected:
 	virtual void SaveAsset_Execute() override;
@@ -98,4 +128,10 @@ private:
 	TSharedPtr<IDetailsView> AssetDetailsView;
 	// 节点的细节面板
 	TSharedPtr<IDetailsView> DetailsView;
+
+	/** Currently focused graph */
+	TWeakPtr<SGraphEditor> UpdateGraphEdPtr;
+	
+	/** The command list for this editor */
+	TSharedPtr<FUICommandList> GraphEditorCommands;
 };

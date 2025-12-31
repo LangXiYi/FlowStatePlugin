@@ -1,0 +1,21 @@
+﻿#pragma once
+
+#include "SGraphNode.h"
+
+class UFSMGraphSubNode;
+
+class FLOWSTATEMACHINE_EDITOR_API SFSMGraphSubNode : public SGraphNode
+{
+public:
+	SLATE_BEGIN_ARGS(SFSMGraphSubNode)
+		{}
+		
+	SLATE_END_ARGS()
+
+	void Construct(const FArguments& InArgs, UFSMGraphSubNode* InGraphNode);
+	
+	virtual FString GetNodeComment() const override;
+
+	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+	
+};

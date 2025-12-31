@@ -7,7 +7,6 @@
 #include "Data/DataFragments/FSMMetaDataFragment_Assets.h"
 #include "Library/FSMFunctionLibrary.h"
 #include "SM/FlowStateContext.h"
-#include "System/FSMWorldSettings.h"
 
 UFSMMetaDataAsset* UFSMMetaDataFunctionLibrary::FindMetaDataAsset(UObject* WorldContextObject)
 {

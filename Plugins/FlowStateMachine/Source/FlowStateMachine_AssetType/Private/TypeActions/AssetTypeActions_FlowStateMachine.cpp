@@ -1,6 +1,6 @@
 ﻿#include "TypeActions/AssetTypeActions_FlowStateMachine.h"
 
-#include "FlowStateMachine_Editor.h"
+#include "FlowStateMachine_EditorModule.h"
 #include "SM/FlowStateMachine.h"
 
 

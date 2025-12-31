@@ -66,6 +66,18 @@ void FFSMGraphEditorSummoner::SaveState(TSharedPtr<SDockTab> Tab, TSharedPtr<FTa
 	FDocumentTabFactoryForObjects<UFSMGraph>::SaveState(Tab, Payload);
 }
 
+void FFSMGraphEditorSummoner::OnTabActivated(TSharedPtr<SDockTab> Tab) const
+{
+	check(FlowStateMachineEditor.IsValid());
+	TSharedRef<SGraphEditor> GraphEditor = StaticCastSharedRef<SGraphEditor>(Tab->GetContent());
+	FlowStateMachineEditor.Pin()->OnGraphEditorFocused(GraphEditor);
+}
+
+void FFSMGraphEditorSummoner::OnTabRefreshed(TSharedPtr<SDockTab> Tab) const
+{
+	FDocumentTabFactoryForObjects<UFSMGraph>::OnTabRefreshed(Tab);
+}
+
 /*TSharedRef<SWidget> FFSMGraphEditorSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
 {
 	TSharedPtr<FFSMGraphEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
@@ -107,7 +119,8 @@ FFSMGraphNodeListSummoner::FFSMGraphNodeListSummoner(TSharedPtr<FFSMGraphEditor>
 
 TSharedRef<SWidget> FFSMGraphNodeListSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
 {
-	return SNew(STextBlock).Text(LOCTEXT("GraphSummoner_Title", "GraphNodeListSummoner"));
+	TSharedPtr<FFSMGraphEditor> StateMachineEditor = FlowStateMachineEditor.Pin();
+	return StateMachineEditor->CreateFlowStateMachineListView(Info);
 }
 
 FText FFSMGraphNodeListSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const

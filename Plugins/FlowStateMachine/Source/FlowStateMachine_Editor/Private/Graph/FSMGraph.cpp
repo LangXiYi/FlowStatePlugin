@@ -1,7 +1,10 @@
 ﻿#include "Graph/FSMGraph.h"
 
-#include "Graph/Node/FSMGraphNode.h"
-#include "Graph/Node/FSMGraphSubNode.h"
+// #include "RuntimeNode/FSMRuntimeNode_State.h"
+#include "Node/FSMGraphNode.h"
+#include "Node/FSMGraphNode_Root.h"
+#include "Node/FSMGraphSubNode.h"
+#include "RuntimeNode/FSMRuntimeNode.h"
 #include "SM/FlowStateMachine.h"
 
 void UFSMGraph::Initialize()
@@ -30,14 +33,30 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 
 	for (int Index = 0; Index < Nodes.Num(); ++Index)
 	{
-		UFSMGraphNode* Node = Cast<UFSMGraphNode>(Nodes[Index]);
-		if (Node == nullptr) continue;
+		UFSMGraphNodeBase* NodeBase = Cast<UFSMGraphNodeBase>(Nodes[Index]);
+		if (NodeBase == nullptr) continue;
 		// 当根节点为空时，尝试更新根节点
 		if (RootNode == nullptr)
 		{
-			RootNode = Cast<UFSMGraphNode_Root>(Node);
+			RootNode = Cast<UFSMGraphNode_Root>(NodeBase);
 		}
-		// TODO::这里可以对其他节点执行其他操作，如为节点的 Decorators/Actions 设置它们的父级
+
+		// 遍历次要节点，更新其父级节点
+		for (UFSMGraphNodeBase* SubNode : NodeBase->SubNodes)
+		{
+			if (SubNode)
+			{
+				SubNode->ParentNode = NodeBase;
+			}
+		}
+
+		// 重置节点实例
+		UFSMRuntimeNode* RuntimeNode = Cast<UFSMRuntimeNode>(NodeBase->RuntimeNode);
+		if (RuntimeNode != nullptr)
+		{
+			// 先将所有节点标记为未连接状态，之后从根节点出发的路径会用有效的值对其进行替换。
+			RuntimeNode->InitializeNode(nullptr, MAX_uint16, 0, 0);
+		}
 	}
 
 	if (RootNode == nullptr)
@@ -55,91 +74,12 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 			CreateFSMFromGraph(Node);
 		}
 	}
-	// CreateFSMFromGraph()
 
-	/*if (bLockUpdates)
-	{
-		return;
-	}
+	// TODO::UpdateBlackboardChange();
+}
 
-	// initial cleanup & root node search
-	UBehaviorTreeGraphNode_Root* RootNode = NULL;
-	for (int32 Index = 0; Index < Nodes.Num(); ++Index)
-	{
-		UBehaviorTreeGraphNode* Node = Cast<UBehaviorTreeGraphNode>(Nodes[Index]);
-
-		if (Node == nullptr)
-		{
-			// ignore non-BT nodes.
-			continue;
-		}
-
-		// debugger flags
-		if (UpdateFlags & ClearDebuggerFlags)
-		{
-			Node->ClearDebuggerState();
-
-			for (int32 iAux = 0; iAux < Node->Services.Num(); iAux++)
-			{
-				Node->Services[iAux]->ClearDebuggerState();
-			}
-
-			for (int32 iAux = 0; iAux < Node->Decorators.Num(); iAux++)
-			{
-				Node->Decorators[iAux]->ClearDebuggerState();
-			}
-		}
-
-		// parent chain
-		Node->ParentNode = NULL;
-		for (int32 iAux = 0; iAux < Node->Services.Num(); iAux++)
-		{
-			Node->Services[iAux]->ParentNode = Node;
-		}
-
-		for (int32 iAux = 0; iAux < Node->Decorators.Num(); iAux++)
-		{
-			Node->Decorators[iAux]->ParentNode = Node;
-		}
-
-		// prepare node instance
-		UBTNode* NodeInstance = Cast<UBTNode>(Node->NodeInstance);
-		if (NodeInstance)
-		{
-			// mark all nodes as disconnected first, path from root will replace it with valid values later
-			NodeInstance->InitializeNode(NULL, MAX_uint16, 0, 0);
-		}
-
-		// cache root
-		if (RootNode == NULL)
-		{
-			RootNode = Cast<UBehaviorTreeGraphNode_Root>(Nodes[Index]);
-		}
-
-		UBehaviorTreeGraphNode_CompositeDecorator* CompositeDecorator = Cast<UBehaviorTreeGraphNode_CompositeDecorator>(Nodes[Index]);
-		if (CompositeDecorator)
-		{
-			CompositeDecorator->ResetExecutionRange();
-		}
-	}
-
-	// we can't look at pins until pin references have been fixed up post undo:
-	UEdGraphPin::ResolveAllPinReferences();
-	if (RootNode && RootNode->Pins.Num() > 0 && RootNode->Pins[0]->LinkedTo.Num() > 0)
-	{
-		UBehaviorTreeGraphNode* Node = Cast<UBehaviorTreeGraphNode>(RootNode->Pins[0]->LinkedTo[0]->GetOwningNode());
-		if (Node)
-		{
-			CreateBTFromGraph(Node);
-
-			if ((UpdateFlags & KeepRebuildCounter) == 0)
-			{
-				ModCounter++;
-			}
-		}
-	}
-
-	UpdateBlackboardChange();*/
+void UFSMGraph::OnNodesPasted(const FString& String)
+{
 }
 
 void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
@@ -151,12 +91,14 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	uint16 ExecutionIndex = 0;
 	uint8 TreeDepth = 0;
 
-	FSMAsset->RootRuntimeNode = RootEdNode->RuntimeNode;
-	if (auto RootStateNode = Cast<UFSMRuntimeNode_State>(FSMAsset->RootRuntimeNode))
+	auto RootStateNode = Cast<UFSMRuntimeNode>(RootEdNode->RuntimeNode);
+	if (RootStateNode == nullptr)
 	{
-		// 赋予节点实际意义
-		RootStateNode->InitializeNode(nullptr, ExecutionIndex++, 0, TreeDepth);
+		return;
 	}
+	FSMAsset->RootRuntimeNode = RootStateNode;
+	// 赋予节点实际意义
+	RootStateNode->InitializeNode(nullptr, ExecutionIndex++, 0, TreeDepth);
 
 	// TODO::初始化 RuntimeDecorators/RuntimeActions
 	uint16 DummyIndex = MAX_uint16; // 暂时未知实际意义
@@ -184,6 +126,42 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	}*/
 	// 移除孤儿节点
 	// RemoveOrphanedNodes();
+}
+
+void UFSMGraph::UpdateClassData()
+{
+	for (int32 Idx = 0; Idx < Nodes.Num(); Idx++)
+	{
+		UFSMGraphNodeBase* Node = Cast<UFSMGraphNodeBase>(Nodes[Idx]);
+		if (Node)
+		{
+			Node->UpdateNodeClassData();
+
+			for (int32 SubIdx = 0; SubIdx < Node->SubNodes.Num(); SubIdx++)
+			{
+				if (Node->SubNodes[SubIdx])
+				{
+					Node->UpdateNodeClassData();
+				}
+			}
+		}
+	}
+}
+
+bool UFSMGraph::IsLocked() const
+{
+	return bLockUpdates;
+}
+
+void UFSMGraph::LockUpdates()
+{
+	bLockUpdates = true;
+}
+
+void UFSMGraph::UnlockUpdates()
+{
+	bLockUpdates = false;
+	UpdateAsset();
 }
 
 void UFSMGraph::SpawnMissingNodes()
@@ -295,21 +273,34 @@ bool UFSMGraph::CanRemoveNestedObject(UObject* TestObject) const
 	!TestObject->IsA(UEdGraphSchema::StaticClass());
 }
 
-void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNodeBase* RuntimeRootNode,
+void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode,
 	UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth)
 {
 	// 递归结束条件1：确保传入的运行时节点以及图表节点为空
+	// 递归结束条件2：GraphRootNode 的输出引脚数量为 0 或 引脚未连接其他节点
+
 	if (RuntimeRootNode == nullptr || GraphRootNode == nullptr)
 	{
 		return;
 	}
 
-	
+	// 清理父级节点
+	GraphRootNode->ParentNode = nullptr;
 
-	// 清理上次添加的对象
+	// 清理次要对象
+	RuntimeRootNode->ClearSubNodes();
+	// 收集 Condition、Service、Action 等次要节点
+	for (UFSMGraphNodeBase* SubNode : GraphRootNode->SubNodes)
+	{
+		if (SubNode && SubNode->RuntimeNode)
+		{
+			RuntimeRootNode->AddSubNode(SubNode->RuntimeNode);
+		}
+	}
+
+	// 清理子对象
 	RuntimeRootNode->ChildrenNodes.Empty();
-
-	// 递归结束条件2：GraphRootNode 的输出引脚数量为 0 或 引脚未连接其他节点
+	// 收集子节点
 	for (int32 Idx = 0; Idx < GraphRootNode->Pins.Num(); ++Idx)
 	{
 		UEdGraphPin* Pin = GraphRootNode->Pins[Idx];

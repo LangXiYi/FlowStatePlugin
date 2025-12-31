@@ -46,7 +46,10 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine* FlowStateMac
 {
 	StateMachine = FlowStateMachine;
 	// TODO::注册状态机并运行
-	
+	if (StateMachine && StateMachine->RootRuntimeNode)
+	{
+		SwitchTo((UFlowStateBase*)StateMachine->RootRuntimeNode);
+	}
 }
 
 void UFlowStateContext::Tick(float DeltaTime)

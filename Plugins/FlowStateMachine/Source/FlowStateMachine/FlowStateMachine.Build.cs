@@ -26,7 +26,7 @@ public class FlowStateMachine : ModuleRules
 			new string[]
 			{
 				"Core", 
-				"FlowStateMachine_Widget", 
+				"FlowStateMachine_Widget",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

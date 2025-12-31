@@ -3,7 +3,7 @@
 
 #pragma once
 #include "CoreMinimal.h"
-#include "FlowStateMachineEditorTypes.h"
+#include "FSMEditorTypes.h"
 #include "Widgets/Layout/SBorder.h"
 
 class SGraphActionMenu;

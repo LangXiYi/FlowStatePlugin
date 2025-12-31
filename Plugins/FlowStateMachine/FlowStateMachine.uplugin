@@ -4,7 +4,7 @@
 	"VersionName": "1.0",
 	"FriendlyName": "FlowStateMachine",
 	"Description": "Flow State Machine",
-	"Category": "Other",
+	"Category": "StateMachine",
 	"CreatedBy": "LiTaoTao",
 	"CreatedByURL": "",
 	"DocsURL": "",
@@ -38,11 +38,6 @@
 		{
 			"Name": "FlowStateMachine_Editor",
 			"Type": "Editor",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "FlowStateMachine_EditorRuntime",
-			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
 	]

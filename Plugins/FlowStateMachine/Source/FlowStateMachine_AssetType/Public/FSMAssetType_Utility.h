@@ -2,6 +2,7 @@
 
 #include "AssetTypeCategories.h"
 
+/*
 struct FFSMAssetTypeHelper
 {
 	static const FColor AssetColor;
@@ -9,4 +10,5 @@ struct FFSMAssetTypeHelper
 };
 const FColor FFSMAssetTypeHelper::AssetColor = FColor(0, 55, 100);
 const uint32 FFSMAssetTypeHelper::AssetCategory = EAssetTypeCategories::Gameplay;
+*/
 

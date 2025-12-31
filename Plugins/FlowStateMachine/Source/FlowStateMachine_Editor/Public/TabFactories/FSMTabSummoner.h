@@ -26,12 +26,16 @@ class FFSMGraphEditorSummoner: public FDocumentTabFactoryForObjects<UFSMGraph>
 public:
 	FFSMGraphEditorSummoner(TSharedPtr<FFSMGraphEditor> InEditor);
 
+	virtual void OnTabActivated(TSharedPtr<SDockTab> Tab) const override;
+	virtual void OnTabRefreshed(TSharedPtr<SDockTab> Tab) const override;
+
 protected:
 	virtual TAttribute<FText> ConstructTabNameForObject(UFSMGraph* DocumentID) const override;
 	virtual TSharedRef<SWidget> CreateTabBodyForObject(const FWorkflowTabSpawnInfo& Info, UFSMGraph* InGraph) const override;
 	virtual const FSlateBrush* GetTabIconForObject(const FWorkflowTabSpawnInfo& Info, UFSMGraph* InGraph) const override;
 	virtual void SaveState(TSharedPtr<SDockTab> Tab, TSharedPtr<FTabPayload> Payload) const override;
 
+	
 protected:
 
 	TWeakPtr<FFSMGraphEditor> FlowStateMachineEditor;
