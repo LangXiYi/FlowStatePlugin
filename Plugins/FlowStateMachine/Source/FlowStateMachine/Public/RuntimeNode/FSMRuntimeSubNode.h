@@ -18,7 +18,7 @@ class FLOWSTATEMACHINE_API UFSMRuntimeSubNode : public UFSMRuntimeNodeBase
 	GENERATED_BODY()
 
 public:
-
+	virtual UWorld* GetWorld() const override;
 };
 
 

@@ -3,44 +3,6 @@
 
 #include "SM/FlowStateBase.h"
 
-#include "Components/SlateWrapperTypes.h"
-#include "Components/Widget.h"
-#include "Data/FSMMetaDataAsset.h"
-#include "Engine/LevelStreaming.h"
-#include "Kismet/GameplayStatics.h"
-#include "SM/FlowStateContext.h"
-
-// UFlowStateBase::UFlowStateBase(UFlowStateContext* InContext):
-// 	IFlowStateInterface(InContext)
-// {
-// }
-
-UWorld* UFlowStateBase::GetWorld() const
-{
-	return Super::GetWorld();
-	/*if (!HasAnyFlags(RF_ClassDefaultObject) && ensureMsgf(GetOuter(),
-		TEXT("Actor: %s has a null OuterPrivate in AActor::GetWorld()"), *GetFullName())
-		&& !GetOuter()->HasAnyFlags(RF_BeginDestroyed) && !GetOuter()->IsUnreachable())
-	{
-		if (ULevel* Level = GetLevel())
-		{
-			return Level->OwningWorld;
-		}
-	}
-	return nullptr;*/
-}
-
-ULevel* UFlowStateBase::GetLevel() const
-{
-	return GetTypedOuter<ULevel>();
-}
-
-void UFlowStateBase::SetOwner(AActor* InActorOwner)
-{
-	Super::SetOwner(InActorOwner);
-	ActorOwner = InActorOwner;
-}
-
 void UFlowStateBase::Tick(float DeltaTime)
 {
 	Private_DeltaTime = DeltaTime;
@@ -49,35 +11,24 @@ void UFlowStateBase::Tick(float DeltaTime)
 
 void UFlowStateBase::OnEnter()
 {
+	Super::OnEnter();
 	NativeOnEnter();
 }
 
 void UFlowStateBase::OnInitWidget(UFlowStateLayoutWidget* Layout)
 {
+	Super::OnInitWidget(Layout);
 	NativeOnInitWidget(Layout);
 }
 
-/*
-void UFlowStateBase::OnInitialize()
+void UFlowStateBase::OnInitialize(UFlowStateContext* InContext)
 {
-	// ParentContext = Context;
-	// 预初始化状态
-	// OnPreInitialize(Context->CurState);
-	// TODO::获取当前新节点的Action并执行它们！！！
-
-	// for (Action* Action : Actions)
-
-	// 进入状态
-	OnEnter();
+	Super::OnInitialize(InContext);
+	NativeOnInitialize(InContext);
 }
-*/
 
 void UFlowStateBase::OnExit()
 {
+	Super::OnExit();
 	NativeOnExit();
-}
-
-void UFlowStateBase::PreIniProperties(UFlowStateBase* LastState)
-{
-	OnPreInitProperties(LastState);
 }

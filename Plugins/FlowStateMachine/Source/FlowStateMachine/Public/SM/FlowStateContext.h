@@ -13,6 +13,8 @@ class UFlowStateBase;
 class UFlowStateMachine;
 class UFSMMetaDataAsset;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartFlowStateMachine);
+
 /**
  * 
  */
@@ -30,31 +32,20 @@ public:
 	virtual void RegisterFlowStateMachine(UFlowStateMachine* FlowStateMachine);
 
 	// TODO::由程序自动处理状态切换而不是用户定义
+	bool TrySwitchTo(UFSMRuntimeNode* Node);
 
-	////////////////////////////////////////////////////////////////////////
-	/// IFlowStateInterface Event
-	////////////////////////////////////////////////////////////////////////
+	void Tick(float DeltaTime);
+
 public:
-	// virtual void OnEnter() override {}
-	// virtual void OnExit() override {}
-	// virtual void OnInitWidget(UFlowStateLayoutWidget* Layout) override {}
-	// virtual void OnInitialize(UFlowStateContext* Context) override {}
-	// virtual void OnPreInitialize(IFlowStateInterface* LastState) override {}
-	// virtual void OnPostInitialize() override {}
-
-	UFlowStateBase* SwitchTo(UFlowStateBase* NewState);
-	UFlowStateBase* SwitchTo(const TSubclassOf<UFlowStateBase>& NewStateClass);
-	template<class StateType = UFlowStateBase>
-	StateType* SwitchTo() { return (StateType*)SwitchToByClass(StateType::StaticClass()); }
-
-	// 获取下一组将要进入的节点
+	FOnStartFlowStateMachine OnStartFlowStateMachine;
 
 	////////////////////////////////////////////////////////////////////////
 	/// Get or Set
 	////////////////////////////////////////////////////////////////////////
 public:
 	virtual UWorld* GetWorld() const override;
-	virtual ULevel* GetLevel() const;
+
+	UFlowStateLayoutWidget* GetLayoutWidget() const { return nullptr; }
 	
 	UFUNCTION(BlueprintCallable, Category="FlowStateContext")
 	FORCEINLINE UFlowStateBase* GetCurrentState() { return CurState; }
@@ -68,46 +59,37 @@ public:
 	/// Custom Process Event
 	////////////////////////////////////////////////////////////////////////
 public:
-	/** 不保证 FSMMetaDataAsset 已加载 */
-	virtual void Initialize();
-	/** 不保证 FSMMetaDataAsset 已加载 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "FlowStateContext")
-	void OnInitialize();
-
-	virtual void Tick(float DeltaTime);
-	UFUNCTION(BlueprintImplementableEvent, Category = "FlowStateContext", DisplayName="Tick")
-	void OnTick(float DeltaTime);
 
 protected:
 	/* 保证 FSMMetaDataAsset 已加载 */
 	virtual void BeginPlay();
 	/* 保证 FSMMetaDataAsset 已加载 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "FlowStateContext")
-	void OnBeignPlay();
+	void OnBeginPlay();
 	
 	////////////////////////////////////////////////////////////////////////
-	/// GC Helper
+	/// GCManager Helper
 	////////////////////////////////////////////////////////////////////////
 public:
 	/** 将目标添加至缓存 */
 	template<class T>
 	void AddToCache(T* Target, EFlowStateLifetime Lifetime)
 	{
-		GC->AddToCache(Target, Lifetime);
+		GCManager->AddToCache(Target, Lifetime);
 	}
 	/** 从缓存中查找目标 */
 	template<class T>
 	T* FindByCache(FName Name) const
 	{
-		return GC->FindByCache<T>(Name);
+		return GCManager->FindByCache<T>(Name);
 	}
 	/** 从缓存中查找目标 */
 	AActor* FindByCache(FName Name, TSubclassOf<AActor> Type) const
 	{
-		return GC->FindByCache(Name, Type);
+		return GCManager->FindByCache(Name, Type);
 	}
 	/** 清空缓存 */
-	void ClearAllCache() const { GC->ClearAllCache(); }
+	void ClearAllCache() const { GCManager->ClearAllCache(); }
 
 private:
 	void LoadingFlowStateData(const FPrimaryAssetId& FlowStateDataID, TFunction<void()> Callback);
@@ -116,6 +98,9 @@ protected:
 	UPROPERTY()
 	UFlowStateBase* CurState;
 
+	UPROPERTY()
+	UFSMRuntimeNode* CurNode;
+
 private:
 	UPROPERTY()
 	UFSMMetaDataAsset* FlowStateData = nullptr;
@@ -123,7 +108,10 @@ private:
 	UPROPERTY()
 	UFlowStateMachine* StateMachine = nullptr;
 
+	UPROPERTY()
+	UFlowStateLayoutWidget* LayoutWidget;
+
 	TSharedPtr<struct FStreamableHandle> MetaDataLoadHandle;
 
-	TSharedPtr<FSMGC> GC;
+	TSharedPtr<FSMGC> GCManager;
 };

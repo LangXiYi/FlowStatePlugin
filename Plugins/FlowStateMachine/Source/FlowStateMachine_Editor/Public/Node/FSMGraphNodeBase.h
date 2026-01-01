@@ -45,7 +45,7 @@ public:
 	/** 将一个次要节点从当前节点中移除 */
 	virtual void OnSubNodeRemoved(UFSMGraphNodeBase* SubNode) {}
 
-	void RemoveAllSubNode();
+	virtual void RemoveAllSubNode();
 	
 	/** 复制节点 */
 	virtual void PostCopyNode();
@@ -66,6 +66,7 @@ protected:
 
 public:
 	/** 类型数据，目前使用的是 AIGraphType 中定义的类型，后续可以考虑使用自定义的类型 */
+	UPROPERTY()
 	FGraphNodeClassData ClassData;
 
 	/**	运行时节点实例 */
@@ -77,6 +78,7 @@ public:
 	UFSMGraphNodeBase* ParentNode;
 
 	/** 所有次要节点 */
+	UPROPERTY(VisibleAnywhere)
 	TArray<UFSMGraphNodeBase*> SubNodes;
 
 	bool bIsRootNode = false;

@@ -27,15 +27,28 @@ bool UFlowStateMachineSubsystem::RunFlowStateMachine(UFlowStateMachine* StateMac
 	RunningStateContext = StateContext;
 	// 将 StateMachine 注册至 FlowStateContext
 	StateContext->RegisterFlowStateMachine(StateMachine);
-	StateContext->Initialize();
 	return true;
 }
 
-void UFlowStateMachineSubsystem::StopFlowStateMachine(UFlowStateMachine* StateMachine)
+void UFlowStateMachineSubsystem::StopFlowStateMachine()
 {
-	// UFlowStateContext* StateContext = StateContextMapping.FindRef(StateMachine);
 	if (RunningStateContext)
 	{
 		// TODO::停止运行状态机
+		RunningStateContext = nullptr;
 	}
 }
+
+void UFlowStateMachineSubsystem::Tick(float DeltaTime)
+{
+	if (RunningStateContext)
+	{
+		RunningStateContext->Tick(DeltaTime);
+	}
+}
+
+TStatId UFlowStateMachineSubsystem::GetStatId() const
+{
+	return Super::GetStatID();
+}
+

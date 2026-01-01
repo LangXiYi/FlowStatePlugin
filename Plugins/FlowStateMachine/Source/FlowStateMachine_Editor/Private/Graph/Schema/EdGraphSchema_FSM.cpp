@@ -6,6 +6,7 @@
 #include "ToolMenu.h"
 #include "AIGraph/Classes/AIGraphTypes.h"
 #include "Node/FSMGraphNode.h"
+#include "Node/FSMGraphNode_Composites.h"
 #include "Node/FSMGraphSubNode.h"
 #include "RuntimeNode/FSMRuntimeNode.h"
 #include "RuntimeNode/FSMRuntimeNode_Composites.h"
@@ -143,7 +144,7 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 			TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
 
 			// 创建一个图表节点的模板给操作类
-			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(ContextMenuBuilder.OwnerOfTemporaries, UFSMRuntimeNode_Composites::StaticClass());
+			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(ContextMenuBuilder.OwnerOfTemporaries, UFSMGraphNode_Composites::StaticClass());
 			OpNode->ClassData = NodeClass;
 			AddOpAction->NodeTemplate = OpNode;
 		}

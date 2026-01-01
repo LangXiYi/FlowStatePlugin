@@ -15,3 +15,12 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNode_Composites : public UFSMRuntimeNode
 public:
 
 };
+
+UCLASS()
+class FLOWSTATEMACHINE_API UFSMBranch : public UFSMRuntimeNode_Composites
+{
+	GENERATED_BODY()
+
+public:
+
+};

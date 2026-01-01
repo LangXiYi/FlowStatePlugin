@@ -30,6 +30,8 @@ public:
 	/** 是否可以删除该节点 */
 	virtual bool CanUserDeleteNode() const override;
 
+	virtual void RemoveAllSubNode() override;
+
 public:
 	/** 次要节点：条件列表 */
 	UPROPERTY(VisibleAnywhere)

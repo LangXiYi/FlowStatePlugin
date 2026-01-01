@@ -2,3 +2,10 @@
 
 
 #include "SM/FlowStateCondition.h"
+
+#include "RuntimeNode/FSMRuntimeNode.h"
+
+bool UFlowStateCondition::Condition() const
+{
+	return Super::Condition() && BP_Condition((UFSMRuntimeNode*)ParentNode);
+}

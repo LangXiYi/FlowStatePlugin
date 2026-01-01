@@ -8,11 +8,11 @@ public:
 	SLATE_BEGIN_ARGS(SFSMGraphPalette) {};
 	SLATE_END_ARGS()
 
-	void Construct(const FArguments& InArgs, UEdGraph* InGraph);
+	void Construct(const FArguments& InArgs, UFlowStateMachine* InAsset);
 
 protected:
 	virtual void CollectAllActions(FGraphActionListBuilderBase& OutAllActions) override;
 
 private:
-	UEdGraph* FSMGraph = nullptr;
+	UFlowStateMachine* FSMAsset = nullptr;
 };

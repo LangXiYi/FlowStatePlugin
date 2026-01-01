@@ -18,6 +18,14 @@ bool UFSMGraphNode::CanUserDeleteNode() const
 	return Super::CanUserDeleteNode();
 }
 
+void UFSMGraphNode::RemoveAllSubNode()
+{
+	Super::RemoveAllSubNode();
+
+	Actions.Reset();
+	Services.Reset();
+	Conditions.Reset();
+}
 
 
 void UFSMGraphNode::InitializeInstance()

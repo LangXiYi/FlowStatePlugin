@@ -12,7 +12,7 @@ class UFlowStateMachine;
  * 
  */
 UCLASS()
-class FLOWSTATEMACHINE_API UFlowStateMachineSubsystem : public UWorldSubsystem
+class FLOWSTATEMACHINE_API UFlowStateMachineSubsystem : public UWorldSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
 
@@ -21,9 +21,13 @@ public:
 	bool RunFlowStateMachine(UFlowStateMachine* StateMachine);
 
 	UFUNCTION(BlueprintCallable, Category = "FlowStateMachineSubsystem")
-	void StopFlowStateMachine(UFlowStateMachine* StateMachine);
+	void StopFlowStateMachine();
 
 	UFlowStateContext* GetRunningStateContext() const { return RunningStateContext; }
+
+	virtual void Tick(float DeltaTime) override;
+
+	virtual TStatId GetStatId() const override;
 
 private:
 	UPROPERTY()

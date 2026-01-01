@@ -18,8 +18,6 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNodeBase : public UObject
 public:
 	virtual void InitializeFromAsset(UFlowStateMachine* Asset);
 	
-	virtual void SetOwner(AActor* ActorOwner) {}
-
 	virtual class UWorld* GetWorld() const override;
 
 	FString GetNodeName() const;

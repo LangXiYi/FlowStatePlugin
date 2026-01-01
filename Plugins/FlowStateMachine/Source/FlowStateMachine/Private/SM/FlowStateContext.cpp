@@ -8,32 +8,94 @@
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "RuntimeNode/FSMRuntimeNode_Composites.h"
 #include "SM/FlowStateBase.h"
 #include "SM/FlowStateMachine.h"
 #include "SM/FSMGC.h"
 #include "Utility/FSMUtility.h"
 
 
-void UFlowStateContext::Initialize()
+void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine* FlowStateMachine)
 {
-	// 创建垃圾回收对象
-	GC = MakeShareable(new FSMGC);
+	if (!FlowStateMachine)
+	{
+		FSMLOGE("传入的状态机对象为空。");
+		return;
+	}
 
-	// 调用蓝图实现函数，初始化对象
-	OnInitialize();
+	StateMachine = FlowStateMachine;
 
-	check(StateMachine)
-	// 加载数据资产至内存并在完成后调用 BeginPlay
-	// LoadingFlowStateData(StateMachine->GetMetaDataID(), [this]()
-	// {
-		// Loading Success Callback
-		// BeginPlay();
-	// });
+	// 创建垃圾管理器
+	GCManager = MakeShareable(new FSMGC);
+
+	// TODO::创建用户布局控件
+	LayoutWidget = nullptr;
+	
+	if (UFSMRuntimeNode* RootState = Cast<UFSMRuntimeNode>(StateMachine->RootRuntimeNode))
+	{
+		if (TrySwitchTo(RootState))
+		{
+			// 触发事件，开始运行 FSM
+			OnStartFlowStateMachine.Broadcast();
+		}
+	}
+}
+
+bool UFlowStateContext::TrySwitchTo(UFSMRuntimeNode* Node)
+{
+	if (!Node)
+	{
+		FSMLOGW("切换至指定的节点失败，该对象并非有效值。")
+		return false;
+	}
+
+	// 检查节点是否满足所有条件
+	if (!Node->CheckCondition())
+	{
+		FSMLOGW("切换至指定的节点失败，该对象的所有前置条件为满足。")
+		return false;
+	}
+
+	// 若目标是一个状态节点，那么直接切换过去即可
+	UFSMRuntimeNode_State* State = Cast<UFSMRuntimeNode_State>(Node);
+	if (State)
+	{
+		// 退出上一节点
+		if (CurNode)
+		{
+			CurNode->OnExit();
+			CurNode = nullptr;
+		}
+		
+		State->OnInitialize(this);
+		State->OnEnter();
+
+		CurNode = State;
+		return true;
+	}
+
+	// 若目标是一个组合节点，则需要将其添加到执行链中并执行
+	UFSMRuntimeNode_Composites* Composites = Cast<UFSMRuntimeNode_Composites>(Node);
+	if (Composites)
+	{
+		// 退出上一节点
+		if (CurNode)
+		{
+			CurNode->OnExit();
+			CurNode = nullptr;
+		}
+		// TODO::将其添加到执行链中并执行
+		
+		CurNode = Composites;
+		return true;
+	}
+	FSMLOGW("切换至指定的节点失败，该对象的类型不是 State 或 Composites 。")
+	return false;
 }
 
 void UFlowStateContext::BeginPlay()
 {
-	OnBeignPlay();
+	OnBeginPlay();
 }
 
 UFlowStateContext::UFlowStateContext()//:
@@ -42,22 +104,11 @@ UFlowStateContext::UFlowStateContext()//:
 	CurState = nullptr;
 }
 
-void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine* FlowStateMachine)
-{
-	StateMachine = FlowStateMachine;
-	// TODO::注册状态机并运行
-	if (StateMachine && StateMachine->RootRuntimeNode)
-	{
-		SwitchTo((UFlowStateBase*)StateMachine->RootRuntimeNode);
-	}
-}
-
 void UFlowStateContext::Tick(float DeltaTime)
 {
-	OnTick(DeltaTime);
-	if (CurState != nullptr)
+	if (CurNode != nullptr)
 	{
-		CurState->Tick(DeltaTime);
+		CurNode->Tick(DeltaTime);
 	}
 }
 
@@ -100,47 +151,8 @@ void UFlowStateContext::LoadingFlowStateData(const FPrimaryAssetId& FlowStateDat
 	}
 }
 
-UFlowStateBase* UFlowStateContext::SwitchTo(UFlowStateBase* NewState)
-{
-	if (CurState != nullptr)
-	{
-		CurState->OnExit();
-	}
-	NewState->OnInitialize(this);
-	CurState = NewState;
-
-	// TODO::初始化控件
-	// CurState->OnInitWidget(Layout);
-	return CurState;
-}
-
-UFlowStateBase* UFlowStateContext::SwitchTo(const TSubclassOf<UFlowStateBase>& NewStateClass)
-{
-	FSMLOG("正在切换状态至 -----> %s", *NewStateClass->GetName())
-	UFlowStateBase* State = NewObject<UFlowStateBase>(this, NewStateClass);
-	if (State == nullptr)
-	{
-		FSMLOGE("创建新的状态对象失败")
-		return nullptr;
-	}
-	return SwitchTo(State);
-}
 
 UWorld* UFlowStateContext::GetWorld() const
 {
-	if (!HasAnyFlags(RF_ClassDefaultObject) && ensureMsgf(GetOuter(),
-		TEXT("Actor: %s has a null OuterPrivate in AActor::GetWorld()"), *GetFullName())
-		&& !GetOuter()->HasAnyFlags(RF_BeginDestroyed) && !GetOuter()->IsUnreachable())
-	{
-		if (ULevel* Level = GetLevel())
-		{
-			return Level->OwningWorld;
-		}
-	}
-	return nullptr;
-}
-
-ULevel* UFlowStateContext::GetLevel() const
-{
-	return GetTypedOuter<ULevel>();
+	return GetOuter()->GetWorld();
 }

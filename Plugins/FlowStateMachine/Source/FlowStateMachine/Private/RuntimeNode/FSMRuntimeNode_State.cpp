@@ -6,16 +6,18 @@
 #include "SM/FlowStateContext.h"
 #include "Utility/FSMUtility.h"
 
-void UFSMRuntimeNode_State::EndState(int Index)
+void UFSMRuntimeNode_State::OnInitialize(UFlowStateContext* InContext)
 {
-	if (!ChildrenNodes.IsValidIndex(Index))
-	{
-		FSMLOGW("UFSMRuntimeNode_State::EndState: Invalid Index %d", Index);
-		return;
-	}
+	Super::OnInitialize(InContext);
 
-	if (Context)
+	// 初始化当前状态的用户控件
+	UFlowStateLayoutWidget* LayoutWidget = InContext->GetLayoutWidget();
+	if (LayoutWidget)
 	{
-		Context->SwitchTo((UFlowStateBase*)ChildrenNodes[Index]);
+		OnInitWidget(LayoutWidget);
+	}
+	else
+	{
+		FSMLOGW("状态机中的布局控件为空！！！")
 	}
 }

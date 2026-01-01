@@ -10,10 +10,11 @@
 #include "RuntimeNode/FSMRuntimeSubNode_Action.h"
 #include "RuntimeNode/FSMRuntimeSubNode_Condition.h"
 #include "RuntimeNode/FSMRuntimeSubNode_Service.h"
+#include "SM/FlowStateMachine.h"
 
-void SFSMGraphPalette::Construct(const FArguments& InArgs, class UEdGraph* InGraph)
+void SFSMGraphPalette::Construct(const FArguments& InArgs, UFlowStateMachine* InAsset)
 {
-	FSMGraph = InGraph;
+	FSMAsset = InAsset;
 	
 	// Auto expand the palette as there's so few nodes
 	SGraphPalette::Construct(SGraphPalette::FArguments().AutoExpandActionMenu(true));
@@ -26,32 +27,32 @@ void SFSMGraphPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActi
 	UEdGraphSchema_FSM::CollectNewNodeAction(StateAction,
 		UFSMRuntimeNode_State::StaticClass(),
 		UFSMGraphNode_State::StaticClass(),
-		FSMGraph);
+		FSMAsset);
 
 	FCategorizedGraphActionListBuilder CompositesAction("Composites");
 	UEdGraphSchema_FSM::CollectNewNodeAction(CompositesAction,
 		UFSMRuntimeNode_Composites::StaticClass(),
 		UFSMGraphNode_Composites::StaticClass(),
-		FSMGraph);
+		FSMAsset);
 
 	// Sub Nodes
 	FCategorizedGraphActionListBuilder ActionAction("SubNode|Action");
 	UEdGraphSchema_FSM::CollectNewSubNodeAction(ActionAction,
 		UFSMRuntimeSubNode_Action::StaticClass(),
 		UFSMGraphSubNode_Action::StaticClass(),
-		FSMGraph);
+		FSMAsset);
 	
 	FCategorizedGraphActionListBuilder ServiceAction("SubNode|Service");
 	UEdGraphSchema_FSM::CollectNewSubNodeAction(ServiceAction,
 		UFSMRuntimeSubNode_Service::StaticClass(),
 		UFSMGraphSubNode_Service::StaticClass(),
-		FSMGraph);
+		FSMAsset);
 
 	FCategorizedGraphActionListBuilder ConditionAction("SubNode|Condition");
 	UEdGraphSchema_FSM::CollectNewSubNodeAction(ConditionAction,
 		UFSMRuntimeSubNode_Condition::StaticClass(),
 		UFSMGraphSubNode_Condition::StaticClass(),
-		FSMGraph);
+		FSMAsset);
 
 	OutAllActions.Append(StateAction);
 	OutAllActions.Append(CompositesAction);

@@ -141,7 +141,7 @@ void UFSMGraph::UpdateClassData()
 			{
 				if (Node->SubNodes[SubIdx])
 				{
-					Node->UpdateNodeClassData();
+					Node->SubNodes[SubIdx]->UpdateNodeClassData();
 				}
 			}
 		}
