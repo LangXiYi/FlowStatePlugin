@@ -14,59 +14,28 @@ class UFlowStateMachine;
 class UFSMMetaDataAsset;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartFlowStateMachine);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnExitState, UFSMRuntimeNode*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnEnterState, UFSMRuntimeNode*);
 
 /**
- * 
+ * 因为存在两种可执行的节点，State以及Composites，所以使用他们的公用基类 RuntimeNode
  */
 UCLASS()
 class FLOWSTATEMACHINE_API UFlowStateContext : public UObject
 {
 	GENERATED_BODY()
 
-	friend class UFlowStateBase;
-
-public:
-	UFlowStateContext();
-	
 public:
 	virtual void RegisterFlowStateMachine(UFlowStateMachine* FlowStateMachine);
 
-	// TODO::由程序自动处理状态切换而不是用户定义
 	bool TrySwitchTo(UFSMRuntimeNode* Node);
 
 	void Tick(float DeltaTime);
 
-public:
-	FOnStartFlowStateMachine OnStartFlowStateMachine;
+	void ExitCurrentState();
 
-	////////////////////////////////////////////////////////////////////////
-	/// Get or Set
-	////////////////////////////////////////////////////////////////////////
-public:
-	virtual UWorld* GetWorld() const override;
+	void EnterNewState(UFSMRuntimeNode* NewState);
 
-	UFlowStateLayoutWidget* GetLayoutWidget() const { return nullptr; }
-	
-	UFUNCTION(BlueprintCallable, Category="FlowStateContext")
-	FORCEINLINE UFlowStateBase* GetCurrentState() { return CurState; }
-	template<class T>
-	FORCEINLINE T* GetCurrentState() const { return static_cast<T*>(CurState); }
-
-	UFUNCTION(BlueprintCallable, Category = "FlowStateContext")
-	FORCEINLINE UFSMMetaDataAsset* GetMetaData() const { return FlowStateData; }
-
-	////////////////////////////////////////////////////////////////////////
-	/// Custom Process Event
-	////////////////////////////////////////////////////////////////////////
-public:
-
-protected:
-	/* 保证 FSMMetaDataAsset 已加载 */
-	virtual void BeginPlay();
-	/* 保证 FSMMetaDataAsset 已加载 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "FlowStateContext")
-	void OnBeginPlay();
-	
 	////////////////////////////////////////////////////////////////////////
 	/// GCManager Helper
 	////////////////////////////////////////////////////////////////////////
@@ -91,27 +60,39 @@ public:
 	/** 清空缓存 */
 	void ClearAllCache() const { GCManager->ClearAllCache(); }
 
-private:
-	void LoadingFlowStateData(const FPrimaryAssetId& FlowStateDataID, TFunction<void()> Callback);
+	
+	////////////////////////////////////////////////////////////////////////
+	/// Get or Set
+	////////////////////////////////////////////////////////////////////////
+public:
+	UFlowStateLayoutWidget* GetLayoutWidget() const { return LayoutWidget; }
+
+	TArray<UFSMRuntimeNode*> GetNextStates() const;
+
+	UFUNCTION(BlueprintPure, Category="FlowStateContext")
+	FORCEINLINE UFSMRuntimeNode* GetCurrentState() { return CurState; }
+	template<class T>
+	FORCEINLINE T* GetCurrentState() const { return static_cast<T*>(CurState); }
+
+
+	////////////////////////////////////////////////////////////////////////
+	/// Events
+	////////////////////////////////////////////////////////////////////////
+public:
+	FOnStartFlowStateMachine OnStartFlowStateMachine;
+	FOnExitState OnExitState;
+	FOnEnterState OnEnterState;
 
 protected:
 	UPROPERTY()
-	UFlowStateBase* CurState;
-
-	UPROPERTY()
-	UFSMRuntimeNode* CurNode;
+	UFSMRuntimeNode* CurState;
 
 private:
-	UPROPERTY()
-	UFSMMetaDataAsset* FlowStateData = nullptr;
-
 	UPROPERTY()
 	UFlowStateMachine* StateMachine = nullptr;
 
 	UPROPERTY()
 	UFlowStateLayoutWidget* LayoutWidget;
-
-	TSharedPtr<struct FStreamableHandle> MetaDataLoadHandle;
 
 	TSharedPtr<FSMGC> GCManager;
 };

@@ -37,6 +37,10 @@ public:
 
 	void UnlockUpdates();
 
+#if WITH_EDITOR
+	virtual void PostEditUndo() override;
+#endif
+
 protected:
 	/** 生成缺少的节点，在图表被创建后调用 */
 	void SpawnMissingNodes();

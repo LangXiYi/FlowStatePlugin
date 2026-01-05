@@ -24,15 +24,29 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode : public UFSMGraphNodeBase
 public:
 	/** 初始化运行时节点实例时调用  */
 	virtual void InitializeInstance() override;
+	
+	/** 为节点添加一个次要节点 */
+	void AddSubNode( UFSMGraphNodeBase* SubNode, class UEdGraph* ParentGraph);
+	/** 为节点添加一个次要节点 */
+	virtual void OnSubNodeAdded( UFSMGraphNodeBase* SubNode);
 
-	virtual void OnSubNodeAdded(UFSMGraphNodeBase* SubNode) override;
+	/** 将一个次要节点从当前节点中移除 */
+	void RemoveSubNode(UFSMGraphNodeBase* SubNode);
+	/** 将一个次要节点从当前节点中移除 */
+	virtual void OnSubNodeRemoved(UFSMGraphNodeBase* SubNode);
+
+	/** 移除节点中的所有次级节点 */
+	virtual void RemoveAllSubNode();
 
 	/** 是否可以删除该节点 */
 	virtual bool CanUserDeleteNode() const override;
 
-	virtual void RemoveAllSubNode() override;
-
+	virtual void ResetNodeOwner() override;
 public:
+	/** 所有次要节点 */
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMGraphNodeBase*> SubNodes;
+	
 	/** 次要节点：条件列表 */
 	UPROPERTY(VisibleAnywhere)
 	TArray<UFSMGraphSubNode*> Conditions;

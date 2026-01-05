@@ -23,8 +23,6 @@ void UFSMGraph::OnLoadedGraph()
 void UFSMGraph::OnSave()
 {
 	UpdateAsset();
-
-
 }
 
 void UFSMGraph::UpdateAsset(int32 UpdateFlags)
@@ -33,7 +31,7 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 
 	for (int Index = 0; Index < Nodes.Num(); ++Index)
 	{
-		UFSMGraphNodeBase* NodeBase = Cast<UFSMGraphNodeBase>(Nodes[Index]);
+		UFSMGraphNode* NodeBase = Cast<UFSMGraphNode>(Nodes[Index]);
 		if (NodeBase == nullptr) continue;
 		// 当根节点为空时，尝试更新根节点
 		if (RootNode == nullptr)
@@ -64,7 +62,8 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 		checkNoEntry();
 	}
 
-	// 确保根节点连接了至少一个其他节点
+	// 在撤销操作完成后，我们无法查看引脚，必须先修复引脚引用问题
+	UEdGraphPin::ResolveAllPinReferences();
 	if (RootNode && RootNode->Pins.Num() > 0 && RootNode->Pins[0]->LinkedTo.Num() > 0)
 	{
 		// 使用图表根节点的下一级节点作为运行时根节点
@@ -111,28 +110,14 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	// 对根节点进行标记
 	ClearRootNodeFlags();
 	RootEdNode->bIsRootNode = true;
-	/*RootEdNode->Condition;
-	for (int i = 0; i < RootEdNode->Decorators.Num(); ++i)
-	{
-		UFSMGraphNode* Node = RootEdNode->Decorators[i];
-		if (Node)
-		{
-			Node->bIsRootNode = true;
-		}
-	}
-	if (FSMAsset->RootRuntimeNode)
-	{
-		// FSMAsset->RootRuntimeNode->InitializeComposite(ExecutionIndex - 1);
-	}*/
-	// 移除孤儿节点
-	// RemoveOrphanedNodes();
+	RootStateNode->bIsRootNode = true;
 }
 
 void UFSMGraph::UpdateClassData()
 {
 	for (int32 Idx = 0; Idx < Nodes.Num(); Idx++)
 	{
-		UFSMGraphNodeBase* Node = Cast<UFSMGraphNodeBase>(Nodes[Idx]);
+		UFSMGraphNode* Node = Cast<UFSMGraphNode>(Nodes[Idx]);
 		if (Node)
 		{
 			Node->UpdateNodeClassData();
@@ -163,6 +148,19 @@ void UFSMGraph::UnlockUpdates()
 	bLockUpdates = false;
 	UpdateAsset();
 }
+
+
+#if WITH_EDITOR
+
+void UFSMGraph::PostEditUndo()
+{
+	Super::PostEditUndo();
+	// make sure that all execution indices are up to date
+	UpdateAsset();
+	Modify();
+}
+
+#endif
 
 void UFSMGraph::SpawnMissingNodes()
 {
@@ -217,6 +215,10 @@ void UFSMGraph::ClearRootNodeFlags()
 		if (GraphNode)
 		{
 			GraphNode->bIsRootNode = false;
+			if (GraphNode->RuntimeNode)
+			{
+				GraphNode->RuntimeNode->bIsRootNode = false;
+			}
 			// TODO::同时对子节点进行清除
 		}
 	}

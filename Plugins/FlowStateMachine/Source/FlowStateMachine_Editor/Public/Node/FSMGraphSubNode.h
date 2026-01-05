@@ -26,6 +26,13 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphSubNode : public UFSMGraphNodeBase
 
 public:
 
+	virtual void DestroyNode() override;
+	
+#if WITH_EDITOR
+
+	virtual void PostEditUndo() override;
+	
+#endif
 };
 
 // 更改 Decorator 名称为 Condition

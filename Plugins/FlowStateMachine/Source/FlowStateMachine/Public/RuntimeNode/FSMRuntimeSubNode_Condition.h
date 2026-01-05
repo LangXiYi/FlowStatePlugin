@@ -19,17 +19,5 @@ class FLOWSTATEMACHINE_API UFSMRuntimeSubNode_Condition : public UFSMRuntimeSubN
 
 public:
 	/** 过度条件 */
-	virtual bool Condition() const { return true; }
-};
-
-
-
-UCLASS()
-class FLOWSTATEMACHINE_API UFSMRuntimeSubNode_Condition_Test : public UFSMRuntimeSubNode_Condition
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere)
-	FString TestCondition;
+	virtual bool Condition(UFlowStateContext* Context) const { return true; }
 };

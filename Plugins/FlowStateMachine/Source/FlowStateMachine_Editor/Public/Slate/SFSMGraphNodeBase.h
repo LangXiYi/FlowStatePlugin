@@ -13,5 +13,6 @@ public:
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, UFSMGraphNodeBase* InGraphNode);
-	
+
+	FText GetNodeName() const;
 };

@@ -10,6 +10,22 @@
 #include "Node/FSMGraphSubNode.h"
 
 
+IFlowStateMachineEditor::IFlowStateMachineEditor()
+{
+	if (GEditor)
+	{
+		GEditor->RegisterForUndo(this);
+	}
+}
+
+IFlowStateMachineEditor::~IFlowStateMachineEditor()
+{
+	if (GEditor)
+	{
+		GEditor->UnregisterForUndo(this);
+	}
+}
+
 void IFlowStateMachineEditor::CreateCommandList()
 {
 	if (GraphEditorCommands.IsValid())
@@ -58,6 +74,34 @@ void IFlowStateMachineEditor::CreateCommandList()
 		FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::OnCreateComment),
 		FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanCreateComment)
 	);
+}
+
+void IFlowStateMachineEditor::PostUndo(bool bSuccess)
+{
+	if (bSuccess)
+	{
+		// Clear selection, to avoid holding refs to nodes that go away
+		if (TSharedPtr<SGraphEditor> CurrentGraphEditor = UpdateGraphEdPtr.Pin())
+		{
+			CurrentGraphEditor->ClearSelectionSet();
+			CurrentGraphEditor->NotifyGraphChanged();
+		}
+		FSlateApplication::Get().DismissAllMenus();
+	}
+}
+
+void IFlowStateMachineEditor::PostRedo(bool bSuccess)
+{
+	if (bSuccess)
+	{
+		// Clear selection, to avoid holding refs to nodes that go away
+		if (TSharedPtr<SGraphEditor> CurrentGraphEditor = UpdateGraphEdPtr.Pin())
+		{
+			CurrentGraphEditor->ClearSelectionSet();
+			CurrentGraphEditor->NotifyGraphChanged();
+		}
+		FSlateApplication::Get().DismissAllMenus();
+	}
 }
 
 void IFlowStateMachineEditor::SelectAllNodes()
@@ -173,7 +217,7 @@ void IFlowStateMachineEditor::CopySelectedNodes()
 	for (FGraphPanelSelectionSet::TIterator SelectedIter(SelectedNodes); SelectedIter; ++SelectedIter)
 	{
 		UEdGraphNode* Node = Cast<UEdGraphNode>(*SelectedIter);
-		UFSMGraphNodeBase* AINode = Cast<UFSMGraphNodeBase>(Node);
+		UFSMGraphNode* AINode = Cast<UFSMGraphNode>(Node);
 		if (Node == nullptr)
 		{
 			SelectedIter.RemoveCurrent();
@@ -249,6 +293,7 @@ void IFlowStateMachineEditor::PasteNodesHere(const FVector2D& Location)
 	}
 
 	// Undo/Redo support
+	// BUG::撤销操作会导致程序崩溃
 	const FScopedTransaction Transaction(FGenericCommands::Get().Paste->GetDescription());
 	UEdGraph* EdGraph = CurrentGraphEditor->GetCurrentGraph();
 	UFSMGraph* AIGraph = Cast<UFSMGraph>(EdGraph);
@@ -259,7 +304,7 @@ void IFlowStateMachineEditor::PasteNodesHere(const FVector2D& Location)
 		AIGraph->LockUpdates();
 	}
 
-	UFSMGraphNodeBase* SelectedParent = NULL;
+	UFSMGraphNode* SelectedParent = NULL;
 	bool bHasMultipleNodesSelected = false;
 
 	const FGraphPanelSelectionSet SelectedNodes = CurrentGraphEditor->GetSelectedNodes();
@@ -279,7 +324,7 @@ void IFlowStateMachineEditor::PasteNodesHere(const FVector2D& Location)
 		{
 			if (SelectedParent == nullptr)
 			{
-				SelectedParent = Node;
+				SelectedParent = (UFSMGraphNode*)Node;
 			}
 			else
 			{
@@ -376,9 +421,9 @@ void IFlowStateMachineEditor::PasteNodesHere(const FVector2D& Location)
 			PasteNode->DestroyNode();
 
 			PasteNode->ParentNode = ParentMap.FindRef(PasteNode->CopySubNodeIndex);
-			if (PasteNode->ParentNode)
+			if (UFSMGraphNode* FSMParentNode = Cast<UFSMGraphNode>(PasteNode->ParentNode))
 			{
-				PasteNode->ParentNode->AddSubNode(PasteNode, EdGraph);
+				FSMParentNode->AddSubNode(PasteNode, EdGraph);
 			}
 			else if (!bHasMultipleNodesSelected && !bPastedParentNode && SelectedParent)
 			{

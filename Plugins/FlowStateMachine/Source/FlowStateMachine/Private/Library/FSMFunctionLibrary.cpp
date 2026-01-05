@@ -25,7 +25,7 @@ UFlowStateContext* UFSMFunctionLibrary::GetFlowStateContext(UObject* WorldContex
 UFlowStateBase* UFSMFunctionLibrary::GetCurFlowState(UObject* WorldContextObject)
 {
 	UFlowStateContext* FlowStateContext = GetFlowStateContext(WorldContextObject);
-	return FlowStateContext ? FlowStateContext->GetCurrentState() : nullptr;
+	return FlowStateContext ? (UFlowStateBase*)FlowStateContext->GetCurrentState() : nullptr;
 }
 
 UFlowStateBase* UFSMFunctionLibrary::GetCurFlowStateAs(UObject* WorldContextObject, TSubclassOf<UFlowStateBase> Type)

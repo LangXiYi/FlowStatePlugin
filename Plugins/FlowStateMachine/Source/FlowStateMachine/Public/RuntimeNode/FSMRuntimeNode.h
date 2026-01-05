@@ -49,18 +49,41 @@ public:
 	/** 【Only Editor】 只在编辑阶段可以清除子节点 */
 	virtual void ClearSubNodes()
 	{
+		SubNodes.Empty();
 		Actions.Empty();
 		Services.Empty();
 		Conditions.Empty();
 	}
 #endif
 
-	UFUNCTION(BlueprintPure, Category = "FlowStateMachine")
-	UFlowStateContext* GetContext() const { return Context; }
+	template<class T = UFSMRuntimeNodeBase>
+	T* FindSubNode() const
+	{
+		for (auto SubNode : SubNodes)
+		{
+			// 若该次要节点是一个目标类型的对象，则返回该对象
+			if (SubNode->IsA(T::StaticClass()))
+			{
+				return static_cast<T*>(SubNode);
+			}
+		}
+		return nullptr;
+	}
 
 	virtual UWorld* GetWorld() const override;
 
+	UFUNCTION(BlueprintPure, Category = "FlowStateMachine")
+	UFlowStateContext* GetContext() const { return Context; }
+
 protected:
+	/** 运行时创建的状态管理实例 */
+	UPROPERTY()
+	UFlowStateContext* Context;
+	
+	/** 次要节点 */
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMRuntimeNodeBase*> SubNodes;
+
 	/** 次要节点：行为列表 */
 	UPROPERTY(VisibleAnywhere)
 	TArray<class UFSMRuntimeSubNode_Action*> Actions;
@@ -85,7 +108,4 @@ private:
 	/** depth in tree */
 	UPROPERTY(VisibleAnywhere)
 	uint8 TreeDepth;
-
-	UPROPERTY(VisibleAnywhere)
-	class UFlowStateContext* Context;
 };

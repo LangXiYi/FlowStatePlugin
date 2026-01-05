@@ -18,9 +18,20 @@ bool UFSMGraphNode::CanUserDeleteNode() const
 	return Super::CanUserDeleteNode();
 }
 
+void UFSMGraphNode::ResetNodeOwner()
+{
+	Super::ResetNodeOwner();
+
+	
+	for (auto& SubNode : SubNodes)
+	{
+		SubNode->ResetNodeOwner();
+	}
+}
+
 void UFSMGraphNode::RemoveAllSubNode()
 {
-	Super::RemoveAllSubNode();
+	SubNodes.Empty();
 
 	Actions.Reset();
 	Services.Reset();
@@ -54,6 +65,63 @@ void UFSMGraphNode::OnSubNodeAdded(UFSMGraphNodeBase* SubNode)
 	}
 }
 
+void UFSMGraphNode::AddSubNode(UFSMGraphNodeBase* SubNode, class UEdGraph* ParentGraph)
+{
+	if (SubNode ==nullptr)
+	{
+		checkNoEntry()
+		return;
+	}
+	
+	// const FScopedTransaction Transaction(LOCTEXT("AddNode", "Add Node"));
+	ParentGraph->Modify();
+	Modify();
+
+	SubNode->SetFlags(RF_Transactional);
+
+	// 设置节点 Outer 为 Graph 确保其不会被回收
+	SubNode->Rename(nullptr, ParentGraph, REN_NonTransactional);
+	SubNode->ParentNode = this;
+
+	SubNode->CreateNewGuid();
+	SubNode->PostPlacedNewNode();
+	SubNode->AllocateDefaultPins();
+	SubNode->AutowireNewNode(nullptr);
+
+	SubNode->NodePosX = 0;
+	SubNode->NodePosY = 0;
+
+	SubNodes.Add(SubNode);
+	OnSubNodeAdded(SubNode);
+
+	ParentGraph->NotifyGraphChanged();
+	GetFSMGraph()->UpdateAsset();
+}
+
+void UFSMGraphNode::RemoveSubNode(UFSMGraphNodeBase* SubNode)
+{
+	SubNodes.RemoveSingle(SubNode);
+	Modify();
+
+	OnSubNodeRemoved(SubNode);
+}
+
+void UFSMGraphNode::OnSubNodeRemoved(UFSMGraphNodeBase* SubNode)
+{
+	if (UFSMGraphSubNode_Condition* ConditionNode = Cast<UFSMGraphSubNode_Condition>(SubNode))
+	{
+		Conditions.RemoveSingle(ConditionNode);
+	}
+	else if (UFSMGraphSubNode_Service* ServiceNode = Cast<UFSMGraphSubNode_Service>(SubNode))
+	{
+		Services.RemoveSingle(ServiceNode);
+	}
+	else if (UFSMGraphSubNode_Action* ActionNode = Cast<UFSMGraphSubNode_Action>(SubNode))
+	{
+		Actions.RemoveSingle(ActionNode);
+	}
+}
+
 void UFSMGraphNode::AddConditionSubMenu(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
 {
 	FToolMenuSection& Section = Menu->FindOrAddSection("FSMGraphNode");
@@ -64,7 +132,7 @@ void UFSMGraphNode::AddConditionSubMenu(UToolMenu* Menu, UGraphNodeContextMenuCo
 		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddConditionSubMenu, (UEdGraph*)Context->Graph));
 }
 
-void UFSMGraphNode::AddServiceSubMenu(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
+void UFSMGraphNode::AddActionSubMenu(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
 {
 	FToolMenuSection& Section = Menu->FindOrAddSection("FSMGraphNode");
 	Section.AddSubMenu(
@@ -74,7 +142,7 @@ void UFSMGraphNode::AddServiceSubMenu(UToolMenu* Menu, UGraphNodeContextMenuCont
 		FNewToolMenuDelegate::CreateUObject(this, &UFSMGraphNode::CreateAddActionSubMenu, (UEdGraph*)Context->Graph));
 }
 
-void UFSMGraphNode::AddActionSubMenu(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
+void UFSMGraphNode::AddServiceSubMenu(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const
 {
 	FToolMenuSection& Section = Menu->FindOrAddSection("FSMGraphNode");
 	Section.AddSubMenu(

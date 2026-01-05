@@ -39,3 +39,28 @@ FReply SFSMGraphSubNode::OnMouseButtonDown(const FGeometry& MyGeometry, const FP
 	}
 	return FReply::Unhandled();
 }
+
+void SFSMGraphSubNode::UpdateGraphNode()
+{
+	// SGraphNode::UpdateGraphNode();
+	// TODO::自定义子节点样式
+
+	GetOrAddSlot(ENodeZone::Center)
+	[
+		SNew(SBorder)
+		.OnMouseButtonDown(this, &SFSMGraphSubNode::OnMouseButtonDown)
+		.HAlign(HAlign_Fill)
+		[
+			SNew(SOverlay)
+
+			// 标题栏
+			+ SOverlay::Slot()
+			.HAlign(HAlign_Center)
+			[
+				SNew(STextBlock)
+				.Text(this, &SFSMGraphSubNode::GetNodeName)
+			]
+		]
+	];
+}
+

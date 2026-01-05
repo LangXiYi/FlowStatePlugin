@@ -3,6 +3,8 @@
 
 #include "RuntimeNode/FSMRuntimeSubNode.h"
 
+#include "RuntimeNode/FSMRuntimeNode.h"
+
 
 UWorld* UFSMRuntimeSubNode::GetWorld() const
 {
@@ -11,4 +13,17 @@ UWorld* UFSMRuntimeSubNode::GetWorld() const
 		return ParentNode->GetWorld();
 	}
 	return Super::GetWorld();
+}
+
+UFlowStateContext* UFSMRuntimeSubNode::GetContext() const
+{
+	if (ParentNode)
+	{
+		UFSMRuntimeNode* FSMParentNode = Cast<UFSMRuntimeNode>(ParentNode);
+		if (FSMParentNode)
+		{
+			return FSMParentNode->GetContext();
+		}
+	}
+	return nullptr;
 }

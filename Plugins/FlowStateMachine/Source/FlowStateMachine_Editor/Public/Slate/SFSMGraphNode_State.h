@@ -18,6 +18,8 @@ public:
 	void Construct(const FArguments& InArgs, UFSMGraphNode* InGraphNode);
 
 	// SGraphNode interface
+	virtual FReply OnDragOver(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent) override;
+	virtual FReply OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent) override;
 	virtual void SetOwner(const TSharedRef<SGraphPanel>& OwnerPanel) override;
 	virtual void UpdateGraphNode() override;
 	virtual TSharedPtr<SToolTip> GetComplexTooltip() override;

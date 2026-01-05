@@ -11,6 +11,7 @@ public class FlowStateMachine_Editor : ModuleRules
             {
                 "Core",
                 "FlowStateMachine",
+                "FlowStateMachine_Widget"
             }
         );
 

@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include "SGraphNode.h"
+#include "SFSMGraphNodeBase.h"
 
 class UFSMGraphSubNode;
 
-class FLOWSTATEMACHINE_EDITOR_API SFSMGraphSubNode : public SGraphNode
+class FLOWSTATEMACHINE_EDITOR_API SFSMGraphSubNode : public SFSMGraphNodeBase
 {
 public:
 	SLATE_BEGIN_ARGS(SFSMGraphSubNode)
@@ -17,5 +17,6 @@ public:
 	virtual FString GetNodeComment() const override;
 
 	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	
+
+	virtual void UpdateGraphNode() override;
 };

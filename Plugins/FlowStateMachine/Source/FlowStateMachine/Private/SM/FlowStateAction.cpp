@@ -2,3 +2,9 @@
 
 
 #include "SM/FlowStateAction.h"
+
+void UFlowStateAction::ExecuteAction()
+{
+	Super::ExecuteAction();
+	OnExecuteAction();
+}

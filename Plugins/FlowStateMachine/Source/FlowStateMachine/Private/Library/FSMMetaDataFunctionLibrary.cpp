@@ -5,25 +5,28 @@
 
 #include "Data/FSMMetaDataAsset.h"
 #include "Data/DataFragments/FSMMetaDataFragment_Assets.h"
+#include "Engine/AssetManager.h"
 #include "Library/FSMFunctionLibrary.h"
 #include "SM/FlowStateContext.h"
 
-UFSMMetaDataAsset* UFSMMetaDataFunctionLibrary::FindMetaDataAsset(UObject* WorldContextObject)
+UFSMMetaDataAsset* UFSMMetaDataFunctionLibrary::FindMetaDataAsset(UObject* WorldContextObject,
+	FPrimaryAssetId MetaDataID)
 {
-	UFlowStateContext* FlowStateContext = UFSMFunctionLibrary::GetFlowStateContext(WorldContextObject);
-	return FlowStateContext ? FlowStateContext->GetMetaData() : nullptr;
+	// 直接根据资产ID在内存中查找
+	UObject* AssetObject = UAssetManager::Get().GetPrimaryAssetObject(MetaDataID);
+	if (UFSMMetaDataAsset* MetaData = Cast<UFSMMetaDataAsset>(AssetObject))
+	{
+		return MetaData;
+	}
+	return nullptr;
 }
 
 UFSMMetaDataFragment* UFSMMetaDataFunctionLibrary::FindMetaDataFragment(UObject* WorldContextObject,
-	TSubclassOf<UFSMMetaDataFragment> DataType)
+	FPrimaryAssetId MetaDataID, TSubclassOf<UFSMMetaDataFragment> DataType)
 {
-	UFSMMetaDataAsset* MetaDataAsset = FindMetaDataAsset(WorldContextObject);
-	return MetaDataAsset ? MetaDataAsset->FindDataFragment(DataType) : nullptr;
-}
-
-UObject* UFSMMetaDataFunctionLibrary::FindAssetFromMetaData(UObject* WorldContextObject, FName Name,
-	TSubclassOf<UObject> AssetType)
-{
-	UFSMMetaDataFragment_Assets* DataFragment = FindMetaDataFragment<UFSMMetaDataFragment_Assets>(WorldContextObject);
-	return DataFragment ? DataFragment->FindAsset(Name, AssetType) : nullptr;
+	if (UFSMMetaDataAsset* MetaData = FindMetaDataAsset(WorldContextObject, MetaDataID))
+	{
+		return MetaData->FindDataFragment(DataType);
+	}
+	return nullptr;
 }

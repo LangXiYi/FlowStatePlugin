@@ -19,6 +19,18 @@ void SFSMGraphNode_State::Construct(const FArguments& InArgs, UFSMGraphNode* InG
 	UpdateGraphNode();
 }
 
+FReply SFSMGraphNode_State::OnDragOver(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)
+{
+	// TODO::拖拽放置子节点
+	return SFSMGraphNodeBase::OnDragOver(MyGeometry, DragDropEvent);
+}
+
+FReply SFSMGraphNode_State::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)
+{
+	// TODO::拖拽放置子节点
+	return SFSMGraphNodeBase::OnDrop(MyGeometry, DragDropEvent);
+}
+
 void SFSMGraphNode_State::SetOwner(const TSharedRef<SGraphPanel>& OwnerPanel)
 {
 	SGraphNode::SetOwner(OwnerPanel);
@@ -50,6 +62,7 @@ void SFSMGraphNode_State::UpdateGraphNode()
 	else
 	{
 		SAssignNew(ConditionBox, SVerticalBox);
+
 	}
 	if (ServiceBox.IsValid())
 	{
@@ -272,7 +285,7 @@ TSharedPtr<SWidget> SFSMGraphNode_State::CreateNodeAppendArea()
 		+SVerticalBox::Slot()
 		[
 			SNew(SBorder)
-			.HAlign(HAlign_Center)
+			.HAlign(HAlign_Fill)
 			[
 				ServiceBox.ToSharedRef()
 			]
@@ -361,12 +374,10 @@ TSharedRef<SWidget> SFSMGraphNode_State::CreateTitleWidget(TSharedPtr<SNodeTitle
 					.HAlign(HAlign_Center)
 					.AutoHeight()
 					[
-						SGraphNode::CreateTitleWidget(NodeTitle)
-					]
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					[
-						NodeTitle.ToSharedRef()
+						SAssignNew(InlineEditableText, SInlineEditableTextBlock)
+						.Style(FEditorStyle::Get(), "Graph.Node.NodeTitleInlineEditableText")
+						.Text(this, &SFSMGraphNodeBase::GetNodeName)
+						.IsReadOnly(true)
 					]
 				]
 			]

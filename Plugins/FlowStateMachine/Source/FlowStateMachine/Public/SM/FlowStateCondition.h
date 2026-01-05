@@ -9,14 +9,14 @@
 /**
  * 
  */
-UCLASS(Abstract, BlueprintType, Blueprintable)
+UCLASS(Abstract, Blueprintable)
 class FLOWSTATEMACHINE_API UFlowStateCondition : public UFSMRuntimeSubNode_Condition
 {
 	GENERATED_BODY()
 
 public:
-	virtual bool Condition() const override;
+	virtual bool Condition(UFlowStateContext* Context) const override;
 
 	UFUNCTION(BlueprintImplementableEvent, DisplayName = "Condition")
-	bool BP_Condition(UFSMRuntimeNode* Parent) const;
+	bool BP_Condition(UFlowStateContext* Context) const;
 };

@@ -23,21 +23,14 @@ public:
 	//////////////////////////////////////////////////////////////////
 	
 	UFUNCTION(BlueprintPure, Category = "FSMMetaDataFunctionLibrary", meta = (WorldContext = "WorldContextObject"))
-	static UFSMMetaDataAsset* FindMetaDataAsset(UObject* WorldContextObject);
+	static UFSMMetaDataAsset* FindMetaDataAsset(UObject* WorldContextObject, FPrimaryAssetId MetaDataID);
 
 	UFUNCTION(BlueprintPure, Category = "FSMMetaDataFunctionLibrary", meta = (WorldContext = "WorldContextObject", DeterminesOutputType = "DataType"))
-	static UFSMMetaDataFragment* FindMetaDataFragment(UObject* WorldContextObject, TSubclassOf<UFSMMetaDataFragment> DataType);
+	static UFSMMetaDataFragment* FindMetaDataFragment(UObject* WorldContextObject, FPrimaryAssetId MetaDataID, TSubclassOf<UFSMMetaDataFragment> DataType);
 
 	template<class T>
 	static T* FindMetaDataFragment(UObject* WorldContextObject)
 	{
 		return (T*)FindMetaDataFragment(WorldContextObject, T::StaticClass());
 	}
-
-	//////////////////////////////////////////////////////////////////
-	// Flow State Machine Meta Data Fragments
-	//////////////////////////////////////////////////////////////////
-
-	UFUNCTION(BlueprintPure, Category = "FSMMetaDataFunctionLibrary", meta = (WorldContext = "WorldContextObject", DeterminesOutputType = "AssetType"))
-	static UObject* FindAssetFromMetaData(UObject* WorldContextObject, FName Name, TSubclassOf<UObject> AssetType);
 };

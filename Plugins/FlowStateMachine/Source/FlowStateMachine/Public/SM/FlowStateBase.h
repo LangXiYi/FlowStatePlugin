@@ -30,12 +30,6 @@ class FLOWSTATEMACHINE_API UFlowStateBase : public UFSMRuntimeNode_State
 {
 	GENERATED_BODY()
 
-	friend class UFlowStateContext;
-
-public:
-	UFlowStateBase() {}
-	// UFlowStateBase(UFlowStateContext* InContext);
-
 public:
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
@@ -43,7 +37,7 @@ public:
 	virtual void OnInitialize(UFlowStateContext* InContext) override;
 
 	/** 每帧执行事件 */
-	virtual void Tick(float DeltaTime);
+	virtual void Tick(float DeltaTime) override;
 	/** 每帧执行事件 */
 	UFUNCTION(BlueprintImplementableEvent, Category="FlowState", DisplayName="Tick")
 	void OnTick(float DeltaTime);

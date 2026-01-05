@@ -9,8 +9,10 @@
 /**
  * 
  */
-UCLASS(Abstract, BlueprintType, Blueprintable)
+UCLASS(Abstract, Blueprintable)
 class FLOWSTATEMACHINE_API UFlowStateService : public UFSMRuntimeSubNode_Service
 {
 	GENERATED_BODY()
+
+	// 按设定的间隔时间执行
 };

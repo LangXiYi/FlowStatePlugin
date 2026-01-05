@@ -9,9 +9,6 @@
 
 class UFSMRuntimeNodeBase;
 
-/**
- * 
- */
 UCLASS()
 class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNodeBase : public UEdGraphNode
 {
@@ -24,6 +21,17 @@ public:
 	/** 当节点被放置后调用，创建 RuntimeNode 实例 */
 	virtual void PostPlacedNewNode() override;
 
+	/** 为节点提供差异化比较 */
+	virtual void FindDiffs(class UEdGraphNode* OtherNode, FDiffResults& Results) override;
+
+	virtual void PrepareForCopying() override;
+	virtual void PostCopyNode();
+
+	virtual void NodeConnectionListChanged() override;
+
+	/** 获取节点的名称 */
+	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
+
 	/** 自动连接创建的新节点 */
 	virtual void AutowireNewNode(UEdGraphPin* FromPin) override;
 
@@ -32,26 +40,9 @@ public:
 
 	/** 初始化运行时节点实例时调用  */
 	virtual void InitializeInstance();
-	
-	/** 为节点添加一个次要节点 */
-	void AddSubNode( UFSMGraphNodeBase* SubNode, class UEdGraph* ParentGraph);
-
-	/** 为节点添加一个次要节点 */
-	virtual void OnSubNodeAdded( UFSMGraphNodeBase* SubNode) {}
-
-	/** 将一个次要节点从当前节点中移除 */
-	void RemoveSubNode(UFSMGraphNodeBase* SubNode);
-
-	/** 将一个次要节点从当前节点中移除 */
-	virtual void OnSubNodeRemoved(UFSMGraphNodeBase* SubNode) {}
-
-	virtual void RemoveAllSubNode();
-	
-	/** 复制节点 */
-	virtual void PostCopyNode();
 
 	/** 重设节点的拥有者 */
-	void ResetNodeOwner();
+	virtual void ResetNodeOwner();
 
 	void UpdateNodeClassData();
 
@@ -59,6 +50,18 @@ public:
 	
 	/** 获取状态机图表 */
 	class UFSMGraph* GetFSMGraph() const;
+
+	bool UserBlueprint() const;
+
+	bool HasError() const;
+
+#if WITH_EDITOR
+
+	virtual void PostEditUndo() override;
+
+	virtual void PostEditImport() override;
+	
+#endif
 
 protected:
 	UEdGraphPin* GetInputPin() const;
@@ -76,10 +79,6 @@ public:
 	/** 父级节点 */
 	UPROPERTY(VisibleAnywhere)
 	UFSMGraphNodeBase* ParentNode;
-
-	/** 所有次要节点 */
-	UPROPERTY(VisibleAnywhere)
-	TArray<UFSMGraphNodeBase*> SubNodes;
 
 	bool bIsRootNode = false;
 

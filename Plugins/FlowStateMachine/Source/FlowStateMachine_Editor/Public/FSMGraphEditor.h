@@ -7,7 +7,7 @@ struct FFSMEditorToolbar;
 class UFSMCommonData;
 class UFlowStateMachine;
 
-class FFSMGraphEditor: public IFlowStateMachineEditor, public FEditorUndoClient, public FNotifyHook
+class FFSMGraphEditor: public IFlowStateMachineEditor, public FNotifyHook
 {
 public:
 	FFSMGraphEditor();
@@ -26,6 +26,11 @@ public:
 	virtual FText GetBaseToolkitName() const override { return FText::FromString("FlowStateMachineEditor"); }
 	virtual FString GetWorldCentricTabPrefix() const override { return "FlowStateMachineEditor"; }
 	// IAssetEditorInstance End
+
+	//~ Begin FEditorUndoClient Interface
+	virtual void PostUndo(bool bSuccess) override;
+	virtual void PostRedo(bool bSuccess) override;
+	// End of FEditorUndoClient
 
 	// @todo This is a hack for now until we reconcile the default toolbar with application modes [duplicated from counterpart in Blueprint Editor]
 	void RegisterToolbarTab(const TSharedRef<class FTabManager>& InTabManager);
@@ -80,7 +85,6 @@ public:
 	virtual void OnNodeDoubleClicked(UEdGraphNode* EdGraphNode);
 
 	void OnGraphEditorFocused(TSharedRef<SGraphEditor> InGraphEditor);
-
 
 protected:
 	virtual void SaveAsset_Execute() override;

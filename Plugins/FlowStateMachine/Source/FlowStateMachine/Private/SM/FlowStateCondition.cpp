@@ -5,7 +5,7 @@
 
 #include "RuntimeNode/FSMRuntimeNode.h"
 
-bool UFlowStateCondition::Condition() const
+bool UFlowStateCondition::Condition(UFlowStateContext* Context) const
 {
-	return Super::Condition() && BP_Condition((UFSMRuntimeNode*)ParentNode);
+	return Super::Condition(Context) && BP_Condition(Context);
 }

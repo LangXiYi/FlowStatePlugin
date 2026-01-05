@@ -7,10 +7,16 @@
 #include "FlowStateAction.generated.h"
 
 /**
- * 
+ * NOTE：：目前不支持异步Action阻塞状态机执行
  */
-UCLASS(Abstract, BlueprintType, Blueprintable)
+UCLASS(Abstract, Blueprintable)
 class FLOWSTATEMACHINE_API UFlowStateAction : public UFSMRuntimeSubNode_Action
 {
 	GENERATED_BODY()
+
+public:
+	virtual void ExecuteAction() override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnExecuteAction();
 };

@@ -3,6 +3,7 @@
 
 #include "Node/FSMGraphNodeBase.h"
 
+#include "DiffResults.h"
 #include "Graph/FSMGraph.h"
 #include "RuntimeNode/FSMRuntimeNode.h"
 #include "SM/FlowStateMachine.h"
@@ -53,6 +54,35 @@ void UFSMGraphNodeBase::PostPlacedNewNode()
 	}
 }
 
+void UFSMGraphNodeBase::FindDiffs(class UEdGraphNode* OtherNode, FDiffResults& Results)
+{
+	Super::FindDiffs(OtherNode, Results);
+
+	if (UFSMGraphNodeBase* OtherGraphNode = Cast<UFSMGraphNodeBase>(OtherNode))
+	{
+		if (RuntimeNode && OtherGraphNode->RuntimeNode)
+		{
+			FDiffSingleResult Diff;
+			Diff.Diff = EDiffType::NODE_PROPERTY;
+			Diff.Node1 = this;
+			Diff.Node2 = OtherNode;
+			Diff.ToolTip = LOCTEXT("DIF_NodeInstancePropertyToolTip", "A property of the node instance has changed");
+			Diff.DisplayColor = FLinearColor(0.25f, 0.71f, 0.85f);
+
+			DiffProperties(RuntimeNode->GetClass(), OtherGraphNode->RuntimeNode->GetClass(), RuntimeNode, OtherGraphNode->RuntimeNode, Results, Diff);
+		}
+	}
+}
+
+void UFSMGraphNodeBase::PrepareForCopying()
+{
+	if (RuntimeNode)
+	{
+		// 暂时接管该节点实例的控制权，这样在进行剪切操作时该实例就不会被删除了
+		RuntimeNode->Rename(nullptr, this, REN_DontCreateRedirectors | REN_DoNotDirty);
+	}
+}
+
 void UFSMGraphNodeBase::AutowireNewNode(UEdGraphPin* FromPin)
 {
 	Super::AutowireNewNode(FromPin);
@@ -82,55 +112,20 @@ void UFSMGraphNodeBase::InitializeInstance()
 	}
 }
 
-void UFSMGraphNodeBase::AddSubNode(UFSMGraphNodeBase* SubNode, class UEdGraph* ParentGraph)
-{
-	if (SubNode ==nullptr)
-	{
-		checkNoEntry()
-		return;
-	}
-	
-	// const FScopedTransaction Transaction(LOCTEXT("AddNode", "Add Node"));
-	ParentGraph->Modify();
-	Modify();
-
-	SubNode->SetFlags(RF_Transactional);
-
-	// 设置节点 Outer 为 Graph 确保其不会被回收
-	SubNode->Rename(nullptr, ParentGraph, REN_NonTransactional);
-	SubNode->ParentNode = this;
-
-	SubNode->CreateNewGuid();
-	SubNode->PostPlacedNewNode();
-	SubNode->AllocateDefaultPins();
-	SubNode->AutowireNewNode(nullptr);
-
-	SubNode->NodePosX = 0;
-	SubNode->NodePosY = 0;
-
-	SubNodes.Add(SubNode);
-	OnSubNodeAdded(SubNode);
-
-	ParentGraph->NotifyGraphChanged();
-	GetFSMGraph()->UpdateAsset();
-}
-
-void UFSMGraphNodeBase::RemoveSubNode(UFSMGraphNodeBase* SubNode)
-{
-	SubNodes.RemoveSingle(SubNode);
-	Modify();
-
-	OnSubNodeRemoved(SubNode);
-}
-
-void UFSMGraphNodeBase::RemoveAllSubNode()
-{
-	SubNodes.Empty();
-}
-
 void UFSMGraphNodeBase::PostCopyNode()
 {
 	ResetNodeOwner();
+}
+
+void UFSMGraphNodeBase::NodeConnectionListChanged()
+{
+	Super::NodeConnectionListChanged();
+	GetFSMGraph()->UpdateAsset();
+}
+
+FText UFSMGraphNodeBase::GetNodeTitle(ENodeTitleType::Type TitleType) const
+{
+	return RuntimeNode ? FText::FromString(RuntimeNode->GetNodeName()) : Super::GetNodeTitle(TitleType);
 }
 
 void UFSMGraphNodeBase::ResetNodeOwner()
@@ -142,11 +137,6 @@ void UFSMGraphNodeBase::ResetNodeOwner()
 
 		RuntimeNode->Rename(NULL, GraphOwner, REN_DontCreateRedirectors | REN_DoNotDirty);
 		RuntimeNode->ClearFlags(RF_Transient);
-
-		for (auto& SubNode : SubNodes)
-		{
-			SubNode->ResetNodeOwner();
-		}
 	}
 }
 
@@ -179,6 +169,38 @@ UFSMGraph* UFSMGraphNodeBase::GetFSMGraph() const
 {
 	return CastChecked<UFSMGraph>(GetGraph());
 }
+
+bool UFSMGraphNodeBase::UserBlueprint() const
+{
+	return RuntimeNode && RuntimeNode->GetClass()->HasAnyClassFlags(CLASS_CompiledFromBlueprint);
+}
+
+bool UFSMGraphNodeBase::HasError() const
+{
+	return ErrorMessage.Len() > 0 || RuntimeNode == nullptr;
+}
+
+#if WITH_EDITOR
+
+void UFSMGraphNodeBase::PostEditUndo()
+{
+	Super::PostEditUndo();
+
+	ResetNodeOwner();
+}
+
+void UFSMGraphNodeBase::PostEditImport()
+{
+	Super::PostEditImport();
+
+	ResetNodeOwner();
+	if (RuntimeNode)
+	{
+		InitializeInstance();
+	}
+}
+
+#endif
 
 
 UEdGraphPin* UFSMGraphNodeBase::GetInputPin() const

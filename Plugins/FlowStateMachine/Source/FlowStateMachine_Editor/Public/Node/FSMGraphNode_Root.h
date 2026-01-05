@@ -7,6 +7,7 @@
 #include "UObject/Object.h"
 #include "FSMGraphNode_Root.generated.h"
 
+class UFlowStateLayoutWidget;
 /**
  * 默认的图表根节点
  */
@@ -23,8 +24,18 @@ public:
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override { return FText::FromString(TEXT("Root Node")); }
 
 	// TODO::监听 CommonData 改变事件
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+
+protected:
+	void UpdateCommonData();
+
+	void UpdateLayoutWidget();
+	
 public:
 	UPROPERTY(EditAnywhere)
 	UFSMCommonData* CommonData;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UFlowStateLayoutWidget> LayoutWidget;
 };
 

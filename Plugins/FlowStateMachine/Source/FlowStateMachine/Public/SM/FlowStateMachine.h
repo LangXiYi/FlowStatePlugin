@@ -39,8 +39,12 @@ public:
 #endif
 
 	/** 黑板 */
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	class UFSMCommonData* CommonData = nullptr;
+
+	/** 布局控件 */
+	UPROPERTY(VisibleAnywhere)
+	TSubclassOf<class UFlowStateLayoutWidget> LayoutWidget = nullptr;
 
 	// 状态机的切换映射
 	/**

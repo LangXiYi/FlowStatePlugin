@@ -2,11 +2,19 @@
 
 #include "WorkflowOrientedApp/WorkflowCentricApplication.h"
 
-class IFlowStateMachineEditor : public FWorkflowCentricApplication
+class IFlowStateMachineEditor : public FWorkflowCentricApplication, public FEditorUndoClient
 {
 public:
+	IFlowStateMachineEditor();
+	virtual ~IFlowStateMachineEditor();
+	
 	// TODO::添加子类必须重载的函数
 	void CreateCommandList();
+
+	//~ Begin FEditorUndoClient Interface
+	virtual void PostUndo(bool bSuccess) override;
+	virtual void PostRedo(bool bSuccess) override;
+	// End of FEditorUndoClient
 
 protected:
 	void SelectAllNodes();
@@ -16,6 +24,10 @@ protected:
 	void DeleteSelectedDuplicatableNodes();
 	void CutSelectedNodes();
 	bool CanCutNodes() const;
+	
+	/**
+	 * bug::在复制完成后会为子节点添加一个气泡消息，这不是程序所期望的。禁止
+	 */
 	void CopySelectedNodes();
 	bool CanCopyNodes() const;
 	void PasteNodes();

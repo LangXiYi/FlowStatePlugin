@@ -35,8 +35,9 @@ bool UFSMRuntimeNode::CheckCondition()
 {
 	for (const UFSMRuntimeSubNode_Condition* Condition : Conditions)
 	{
-		if (!Condition->Condition())
+		if (!Condition->Condition(Context))
 		{
+			FSMLOGW("前置条件 [%s] 未通过", *Condition->GetNodeName())
 			return false;
 		}
 	}
@@ -71,6 +72,11 @@ void UFSMRuntimeNode::InitializeNode(UFSMRuntimeNode* InParentNode, uint16 InExe
 
 void UFSMRuntimeNode::AddSubNode(UFSMRuntimeNodeBase* InSubNode)
 {
+	if (InSubNode == nullptr)
+	{
+		return;
+	}
+
 	if (UFSMRuntimeSubNode_Action* ActionNode = Cast<UFSMRuntimeSubNode_Action>(InSubNode))
 	{
 		Actions.Add(ActionNode);
@@ -87,7 +93,23 @@ void UFSMRuntimeNode::AddSubNode(UFSMRuntimeNodeBase* InSubNode)
 	{
 		checkNoEntry();
 	}
+
+	InSubNode->ParentNode = this;
+	SubNodes.Add(InSubNode);
 }
+
+/*
+bool UFSMRuntimeNode::HasAction(UClass* ActionClass) const
+{
+	for (UFSMRuntimeSubNode* Action : Actions)
+	{
+		if (Action->IsA(ActionClass))
+		{
+			return true;
+		}
+	}
+}
+*/
 
 #endif
 

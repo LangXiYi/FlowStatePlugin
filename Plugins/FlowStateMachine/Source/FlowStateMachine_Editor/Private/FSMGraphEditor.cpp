@@ -143,6 +143,16 @@ void FFSMGraphEditor::OnGraphEditorFocused(TSharedRef<SGraphEditor> InGraphEdito
 	OnSelectedNodesChanged(CurrentSelection);
 }
 
+void FFSMGraphEditor::PostUndo(bool bSuccess)
+{
+	IFlowStateMachineEditor::PostUndo(bSuccess);
+}
+
+void FFSMGraphEditor::PostRedo(bool bSuccess)
+{
+	IFlowStateMachineEditor::PostRedo(bSuccess);
+}
+
 void FFSMGraphEditor::RegisterToolbarTab(const TSharedRef<class FTabManager>& InTabManager)
 {
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
