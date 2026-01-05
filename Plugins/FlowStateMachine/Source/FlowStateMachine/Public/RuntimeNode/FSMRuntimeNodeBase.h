@@ -9,7 +9,7 @@
 class UFlowStateContext;
 class UFlowStateMachine;
 /**
- * 
+ * BUG::所有蓝图变量都会被暴露出来，且运行时修改的值会被持久化保存
  */
 UCLASS(Abstract)
 class FLOWSTATEMACHINE_API UFSMRuntimeNodeBase : public UObject

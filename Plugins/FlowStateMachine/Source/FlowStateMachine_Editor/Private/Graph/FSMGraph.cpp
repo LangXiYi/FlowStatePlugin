@@ -105,7 +105,8 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	FSMAsset->RootActions.Empty();
 
 	// 创建所有子节点
-	CreateChildrenNodes(FSMAsset, FSMAsset->RootRuntimeNode, RootEdNode, ExecutionIndex, TreeDepth + 1);
+	TArray<UObject*> Stack;
+	CreateChildrenNodes(FSMAsset, FSMAsset->RootRuntimeNode, RootEdNode, ExecutionIndex, TreeDepth + 1, Stack);
 
 	// 对根节点进行标记
 	ClearRootNodeFlags();
@@ -276,15 +277,24 @@ bool UFSMGraph::CanRemoveNestedObject(UObject* TestObject) const
 }
 
 void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode,
-	UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth)
+	UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth, TArray<UObject*>& Stack)
 {
 	// 递归结束条件1：确保传入的运行时节点以及图表节点为空
 	// 递归结束条件2：GraphRootNode 的输出引脚数量为 0 或 引脚未连接其他节点
+	// 递归结束条件3：出现环形
 
 	if (RuntimeRootNode == nullptr || GraphRootNode == nullptr)
 	{
 		return;
 	}
+
+	// 该节点已经在栈中存在，表明当前执行流出现环形，需要中止执行。
+	if (Stack.Contains(RuntimeRootNode))
+	{
+		return;
+	}
+	// 将当前节点压入栈中
+	Stack.Push(RuntimeRootNode);
 
 	// 清理父级节点
 	GraphRootNode->ParentNode = nullptr;
@@ -333,9 +343,45 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 			RuntimeNode->InitializeNode(RuntimeRootNode, ExecuteIndex++, 0, TreeDepth);
 
 			// 递归添加子节点
-			CreateChildrenNodes(FSMAsset, RuntimeNode, GraphNode, ExecuteIndex, TreeDepth + 1);
+			CreateChildrenNodes(FSMAsset, RuntimeNode, GraphNode, ExecuteIndex, TreeDepth + 1, Stack);
+
 		}
 	}
+	
+	// 创建完成所有子节点后，将当前节点从栈中弹出
+	Stack.Pop();
+}
+
+bool UFSMGraph::CheckRing(UFSMGraphNodeBase* StartNode, UFSMGraphNodeBase* BreakNode)
+{
+	/*
+	 * 递归检查 StartNode 的所有子引脚，并与 BreakNode 进行比较，确保不是环形
+	 * 递归结束条件：
+	 *     1、传入的起始节点为空
+	 *     2、起始节点与标记点一致
+	 *     3、无任何输出引脚
+	 */
+	if (StartNode == nullptr)
+	{
+		return false;
+	}
+	if (StartNode == BreakNode)
+	{
+		return false;
+	}
+	for (UEdGraphPin* Pin : StartNode->Pins)
+	{
+		if (Pin->Direction != EGPD_Output)
+		{
+			continue;
+		}
+		UFSMGraphNodeBase* FSMNode = Cast<UFSMGraphNodeBase>(Pin->GetOwningNode());
+		if (FSMNode)
+		{
+			CheckRing(FSMNode, BreakNode);
+		}
+	}
+	return false;
 }
 
 namespace FSMGraphHelper

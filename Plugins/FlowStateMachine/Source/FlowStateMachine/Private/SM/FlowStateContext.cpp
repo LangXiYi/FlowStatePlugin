@@ -51,6 +51,7 @@ bool UFlowStateContext::TrySwitchTo(UFSMRuntimeNode* Node)
 		return false;
 	}
 
+
 	// 若目标是一个状态节点，那么直接切换过去即可
 	UFSMRuntimeNode_State* State = Cast<UFSMRuntimeNode_State>(Node);
 	if (State)
@@ -97,6 +98,7 @@ void UFlowStateContext::EnterNewState(UFSMRuntimeNode* NewState)
 	{
 		CurState = NewState;
 
+		OnPreInitializeState.Broadcast(NewState);
 		NewState->OnInitialize(this);
 
 		NewState->OnEnter();

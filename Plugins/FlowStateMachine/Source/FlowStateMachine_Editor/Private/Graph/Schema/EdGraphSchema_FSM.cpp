@@ -312,6 +312,7 @@ const FPinConnectionResponse UEdGraphSchema_FSM::CanCreateConnection(const UEdGr
 {
 	FPinConnectionResponse Response;
 
+
 	// TODO::控制两个引脚之间是否可以连接
 	// A->Direction != B->Direction;
 	/*if (A == nullptr || B == nullptr)

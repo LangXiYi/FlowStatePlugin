@@ -14,8 +14,7 @@ class UFlowStateMachine;
 class UFSMMetaDataAsset;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartFlowStateMachine);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnExitState, UFSMRuntimeNode*);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnEnterState, UFSMRuntimeNode*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FStateDelegate, UFSMRuntimeNode*);
 
 /**
  * 因为存在两种可执行的节点，State以及Composites，所以使用他们的公用基类 RuntimeNode
@@ -80,8 +79,9 @@ public:
 	////////////////////////////////////////////////////////////////////////
 public:
 	FOnStartFlowStateMachine OnStartFlowStateMachine;
-	FOnExitState OnExitState;
-	FOnEnterState OnEnterState;
+	FStateDelegate OnExitState;
+	FStateDelegate OnEnterState;
+	FStateDelegate OnPreInitializeState;
 
 protected:
 	UPROPERTY()

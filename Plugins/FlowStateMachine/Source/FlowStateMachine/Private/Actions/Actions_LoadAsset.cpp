@@ -47,7 +47,7 @@ void UActions_LoadAsset::ExecuteAction()
 			if (auto OtherAction = NextState->FindSubNode<UActions_LoadAsset>())
 			{
 				// 遍历所有子级节点，将所有具有加载资产行为的节点的资产引用加入预加载列表
-				OtherAction->PreloadAsset(Context->OnEnterState);
+				OtherAction->PreloadAsset(Context->OnPreInitializeState);
 			}
 		}
 	}
@@ -74,6 +74,7 @@ void UActions_LoadAsset::LoadAsset(bool bIsASync)
 				{
 					MetaData = DataAsset;
 				}
+				else
 				{
 					FSMLOGE("加载文件失败")
 				}
@@ -97,12 +98,9 @@ void UActions_LoadAsset::UnloadAsset()
 
 	LoadingHandle = nullptr;
 	PreloadingHandle = nullptr;
-
-	// Bug::移除加载似乎将活动状态的句柄也清除了，需要检查一遍代码
-	FSMLOG("尝试移除资产 %s（引用计数为: None）")
 }
 
-void UActions_LoadAsset::PreloadAsset(FOnEnterState& OnEnterState)
+void UActions_LoadAsset::PreloadAsset(FStateDelegate& PreInitializeDelegate)
 {
 	UAssetManager& AssetManager = UAssetManager::Get();
 	TArray<FName> LoadBounds;
@@ -122,8 +120,9 @@ void UActions_LoadAsset::PreloadAsset(FOnEnterState& OnEnterState)
 		}));
 	PrintLoadBoundMessage(LoadBounds);
 
-	// 绑定状态切换事件，在触发后移除非活动状态加载的资产
-	OnEnterStateHandle = OnEnterState.AddLambda([this, &OnEnterState](UFSMRuntimeNode* Node)
+	// 在初始化新状态前，先将当前状态中预加载的所有不需要的数据清除。
+	// 注意：此事件发生在状态切换前，且执行一次后自动解除绑定。
+	OnEnterStateHandle = PreInitializeDelegate.AddLambda([this, &PreInitializeDelegate](UFSMRuntimeNode* Node)
 	{
 		// 1、若该资产在此阶段仍然处于加载中，资产管理器是否会自动中断？
 		// 2、若该资产与其他状态使用的是同以资产，释放该资产释放会导致其他对象的资产引用失效？
@@ -134,7 +133,8 @@ void UActions_LoadAsset::PreloadAsset(FOnEnterState& OnEnterState)
 			UnloadAsset();
 		}
 		// 移除绑定，避免多次触发
-		OnEnterState.Remove(OnEnterStateHandle);
+		PreInitializeDelegate.Remove(OnEnterStateHandle);
+		OnEnterStateHandle.Reset();
 	});
 }
 
@@ -184,7 +184,7 @@ void UActions_LoadAsset::OnExitState(UFSMRuntimeNode* ExitNode)
 void UActions_LoadAsset::CheckCondition()
 {
 	UFSMRuntimeNode* FSMParentNode = GetParentNode<UFSMRuntimeNode>();
-	if (FSMParentNode && FSMParentNode->ParentNode != nullptr)
+	if (FSMParentNode && !FSMParentNode->bIsRootNode)
 	{
 		if (FSMParentNode->FindSubNode<UConditions_AssetCheck>() == nullptr)
 		{

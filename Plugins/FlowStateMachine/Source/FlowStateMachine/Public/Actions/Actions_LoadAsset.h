@@ -26,7 +26,7 @@ public:
 
 	void LoadAsset(bool bIsASync = true);
 	void UnloadAsset();
-	void PreloadAsset(FOnExitState& OnExitState);
+	void PreloadAsset(FStateDelegate& PreInitializeDelegate);
 	bool HasLoadCompleted() const;
 	bool HasPreloadCompleted() const;
 
