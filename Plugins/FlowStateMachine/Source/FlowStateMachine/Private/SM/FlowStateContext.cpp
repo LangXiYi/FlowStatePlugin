@@ -24,9 +24,13 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMac
 		// 创建垃圾管理器
 		GCManager = MakeShareable(new FSMGC);
 
+		// 重置执行链
 		InstanceStack.Empty();
-		
-		UFSMRuntimeNode* RootState = DumpStateInstance<UFSMRuntimeNode>(StateMachine->RootRuntimeNode, nullptr);
+
+		// 使用递归函数处理所有的子级节点
+		TArray<UFSMRuntimeNodeBase*> Stack;
+		RootState = CreateAllInstance(FlowStateMachine.RootRuntimeNode, nullptr, Stack);
+		check(Stack.Num() <= 0);
 		if (TrySwitchTo(RootState))
 		{
 			// 触发事件，开始运行 FSM
@@ -37,40 +41,12 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMac
 
 bool UFlowStateContext::TrySwitchTo(UFSMRuntimeNode* Node)
 {
-	if (!Node)
-	{
-		FSMLOGW("切换至指定的节点失败，该对象并非有效值。")
-		return false;
-	}
-
-	if (Node->bIsTemplateInstance)
-	{
-		// 从缓存中查找父级节点
-		UFSMRuntimeNodeBase* ParentNode = CacheTemplateObjects.FindRef(Node->ParentNode);
-		if (ParentNode)
-		{
-			// 若传入的节点是模板实例，则需要进行转换后才能继续执行下面的逻辑
-			Node = DumpStateInstance<UFSMRuntimeNode>(Node, ParentNode);
-		}
-		else
-		{
-			// 正常情况下不会走到这里，因为父级比如优于子级执行，除非父级被垃圾回收了
-			checkNoEntry()
-		}
-	}
-
-	if (!Node)
-	{
-		FSMLOGW("切换至指定的节点失败，转换后的对象并非有效值。")
-		return false;
-	}
-
-	// 检查节点是否满足所有条件
-	if (!Node->CheckCondition())
+	if (!Node || !Node->CheckCondition())
 	{
 		return false;
 	}
 
+	// 将实例加入执行链
 	if (Node->bIsRootNode || Node->IsStackInstance())
 	{
 		if (InstanceStack.Contains(Node))
@@ -115,6 +91,11 @@ void UFlowStateContext::Tick(float DeltaTime)
 		CurState->Tick(DeltaTime);
 	}
 
+	for (UFSMRuntimeNode* Instance : InstanceStack)
+	{
+		// TODO::执行执行链的实例对象
+	}
+
 #if !UE_BUILD_SHIPPING
 	// TODO::添加调试信息--->资产加载相关内容
 	// TODO::当前的状态是什么？
@@ -156,15 +137,8 @@ void UFlowStateContext::EnterNewState(UFSMRuntimeNode* NewState)
 	}
 }
 
-UFSMRuntimeNodeBase* UFlowStateContext::DumpStateInstance(const UFSMRuntimeNodeBase* Template, UFSMRuntimeNodeBase* ParentNode)
+UFSMRuntimeNodeBase* UFlowStateContext::DumpInstance(const UFSMRuntimeNodeBase* Template, UFSMRuntimeNodeBase* ParentNode)
 {
-	if (Template == nullptr || Template->bIsTemplateInstance == false
-		|| (ParentNode && ParentNode->bIsTemplateInstance == true)
-		)
-	{
-		return nullptr;
-	}
-
 	/** 从缓存中查找已经转换过的节点 */
 	if (CacheTemplateObjects.Contains(Template))
 	{
@@ -177,42 +151,65 @@ UFSMRuntimeNodeBase* UFlowStateContext::DumpStateInstance(const UFSMRuntimeNodeB
 	}
 
 	// 深度拷贝模板实例
-	// BUG::对于蓝图中的一些属性并未同步拷贝，这些值都是需要的。
 	UFSMRuntimeNodeBase* NodeObj = Cast<UFSMRuntimeNodeBase>(StaticDuplicateObject(Template, this));
 	// 标记实例为运行时实例
 	NodeObj->bIsTemplateInstance = false;
+	NodeObj->ParentNode = ParentNode;
+	NodeObj->InitializeFromAsset(StateMachine);
+	
 	CacheTemplateObjects.Add(Template, NodeObj);
-
-	/** 根据节点实例的类型进行不同处理 */
-	UFSMRuntimeNode* NodeInstance = Cast<UFSMRuntimeNode>(NodeObj);
-	if (NodeInstance)
-	{
-		NodeInstance->ClearSubNodes();
-		// 深度拷贝目标的所有次要节点
-		const UFSMRuntimeNode* TemplateNodeInstance = Cast<UFSMRuntimeNode>(Template);
-		for (const UFSMRuntimeNodeBase* TemplateSubNode : TemplateNodeInstance->GetAllSubNodes())
-		{
-			// 加入次要节点
-			if (UFSMRuntimeNodeBase* SubNodeInstance = DumpStateInstance(TemplateSubNode, NodeInstance))
-			{
-				NodeInstance->AddSubNode(SubNodeInstance);
-			}
-		}
-		// 重新初始化节点，确保数据与模板类型一致（无 UPROPERTY 修饰的属性不会被拷贝）
-		NodeInstance->InitializeNode(TemplateNodeInstance, ParentNode);
-		NodeInstance->InitializeFromAsset(StateMachine);
-	}
-
-	/** 处理次要节点的拷贝 */
-	UFSMRuntimeSubNode* SubNodeInstance = Cast<UFSMRuntimeSubNode>(NodeObj);
-	if (SubNodeInstance)
-	{
-		const UFSMRuntimeSubNode* TemplateNodeInstance = Cast<UFSMRuntimeSubNode>(Template);
-		// 重新初始化节点，确保数据与模板类型一致（无 UPROPERTY 修饰的属性不会被拷贝）
-		SubNodeInstance->InitializeSubNode(TemplateNodeInstance, ParentNode);
-		SubNodeInstance->InitializeFromAsset(StateMachine);
-	}
 	return NodeObj;
+}
+
+UFSMRuntimeNode* UFlowStateContext::CreateAllInstance(const UFSMRuntimeNode* RootNode,
+	UFSMRuntimeNodeBase* ParentNode, TArray<UFSMRuntimeNodeBase*>& Stack)
+{
+	if (RootNode == nullptr)
+	{
+		return nullptr;
+	}
+	
+	UFSMRuntimeNode* RootNodeInstance = DumpInstance<UFSMRuntimeNode>(RootNode, ParentNode);
+	if (RootNodeInstance == nullptr)
+	{
+		return nullptr;
+	}
+
+	// 将节点压入栈中，确保节点执行不会循环
+	if (Stack.Contains(RootNodeInstance))
+	{
+		return RootNodeInstance;
+	}
+	Stack.Push(RootNodeInstance);
+	// 替换子级节点为运行时实例化的对象
+	for (int i = 0; i < RootNodeInstance->ChildrenNodes.Num(); ++i)
+	{
+		UFSMRuntimeNode* ChildNodeInstance = CreateAllInstance(RootNodeInstance->ChildrenNodes[i], RootNodeInstance, Stack);
+		if (ChildNodeInstance)
+		{
+			RootNodeInstance->ChildrenNodes[i] = ChildNodeInstance;
+		}
+		else
+		{
+			RootNodeInstance->ChildrenNodes.RemoveAt(i--);
+		}
+	}
+	// 替换次要节点为运行时实例化的对象
+	for (int i = 0; i < RootNodeInstance->SubNodes.Num(); ++i)
+	{
+		UFSMRuntimeSubNode* SubNodeInstance= DumpInstance<UFSMRuntimeSubNode>(RootNodeInstance->SubNodes[i], ParentNode);
+		if (SubNodeInstance)
+		{
+			RootNodeInstance->ReplaceSubNode(SubNodeInstance, i);
+		}
+		else
+		{
+			RootNodeInstance->SubNodes.RemoveAt(i--);
+		}
+	}
+	
+	Stack.Pop();
+	return RootNodeInstance;
 }
 
 TArray<UFSMRuntimeNode*> UFlowStateContext::GetNextStates() const

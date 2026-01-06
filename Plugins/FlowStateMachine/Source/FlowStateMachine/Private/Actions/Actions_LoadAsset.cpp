@@ -29,6 +29,8 @@ void UActions_LoadAsset::ExecuteAction()
 	CheckCondition();
 #endif
 
+	check(!bIsTemplateInstance)
+
 	// 加载当前步骤的资产
 	LoadAsset();
 

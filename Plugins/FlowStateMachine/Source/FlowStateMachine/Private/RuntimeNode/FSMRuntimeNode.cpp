@@ -106,6 +106,34 @@ void UFSMRuntimeNode::AddSubNode(UFSMRuntimeNodeBase* InSubNode)
 	SubNodes.Add(InSubNode);
 }
 
+void UFSMRuntimeNode::ReplaceSubNode(UFSMRuntimeNodeBase* NewSubNode, int Index)
+{
+	if (NewSubNode == nullptr || !SubNodes.IsValidIndex(Index))
+	{
+		return;
+	}
+
+	if (UFSMRuntimeSubNode_Action* ActionNode = Cast<UFSMRuntimeSubNode_Action>(SubNodes[Index]))
+	{
+		const int32 ActionIndex = Actions.Find(ActionNode);
+		Actions[ActionIndex] = (UFSMRuntimeSubNode_Action*)NewSubNode;
+	}
+	else if (UFSMRuntimeSubNode_Service* ServiceNode = Cast<UFSMRuntimeSubNode_Service>(SubNodes[Index]))
+	{
+		const int32 ServiceIndex = Services.Find(ServiceNode);
+		Services[ServiceIndex] = (UFSMRuntimeSubNode_Service*)NewSubNode;
+	}
+	else if (UFSMRuntimeSubNode_Condition* ConditionNode = Cast<UFSMRuntimeSubNode_Condition>(SubNodes[Index]))
+	{
+		const int32 ConditionIndex = Conditions.Find(ConditionNode);
+		Conditions[ConditionIndex] = (UFSMRuntimeSubNode_Condition*)NewSubNode;
+	}
+
+	SubNodes[Index] = NewSubNode;
+	NewSubNode->ParentNode = this;
+
+}
+
 void UFSMRuntimeNode::ClearSubNodes()
 {
 	SubNodes.Empty();

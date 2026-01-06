@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "FlowStateBase.h"
+#include "FlowStateMachine.h"
 #include "FSMGC.h"
 #include "UObject/Object.h"
 #include "Utility/FSMUtility.h"
@@ -38,14 +39,18 @@ public:
 
 	void EnterNewState(UFSMRuntimeNode* NewState);
 
-	// 将会被序列化的对象实例转换为运行时对象
-	UFSMRuntimeNodeBase* DumpStateInstance(const UFSMRuntimeNodeBase* Template, UFSMRuntimeNodeBase* ParentNode);
+protected:
+	/** 将对象转换为运行时实例化的对象 */
+	UFSMRuntimeNodeBase* DumpInstance(const UFSMRuntimeNodeBase* Template, UFSMRuntimeNodeBase* ParentNode);
 
+	/** 将对象转换为运行时实例化的对象 */
 	template<class T>
-	T* DumpStateInstance(const UFSMRuntimeNodeBase* Template, UFSMRuntimeNodeBase* ParentNode)
+	T* DumpInstance(const UFSMRuntimeNodeBase* Template, UFSMRuntimeNodeBase* ParentNode)
 	{
-		return static_cast<T*>(DumpStateInstance(Template, ParentNode));
+		return static_cast<T*>(DumpInstance(Template, ParentNode));
 	}
+
+	UFSMRuntimeNode* CreateAllInstance(const UFSMRuntimeNode* RootNode, UFSMRuntimeNodeBase* ParentNode, TArray<UFSMRuntimeNodeBase*>& Stack);
 
 	////////////////////////////////////////////////////////////////////////
 	/// GCManager Helper
@@ -96,7 +101,7 @@ public:
 	FStateDelegate OnPreInitializeState;
 
 protected:
-	UPROPERTY()
+	UPROPERTY(Transient)
 	UFSMRuntimeNode* CurState;
 
 	UPROPERTY()
@@ -104,6 +109,9 @@ protected:
 
 	// 表示执行链中最顶部的元素（不是一定），对于出现环形的执行流，该变量表示的就不一定是最顶部的元素
 	TWeakObjectPtr<UFSMRuntimeNodeBase> StackTop;
+
+	UPROPERTY(Transient)
+	UFSMRuntimeNode* RootState;
 
 private:
 	// 引用资产，供运行时创建新的运行时节点使用

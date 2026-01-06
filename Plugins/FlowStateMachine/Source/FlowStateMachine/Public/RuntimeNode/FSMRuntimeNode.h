@@ -48,6 +48,9 @@ public:
 	/** 添加子节点 */
 	virtual void AddSubNode(UFSMRuntimeNodeBase* InSubNode);
 
+	/** 替换次要节点，使用新的次要节点替换原有的节点 */
+	virtual void ReplaceSubNode(UFSMRuntimeNodeBase* NewSubNode, int Index);
+
 	/** 清除子节点 */
 	virtual void ClearSubNodes();
 
@@ -80,14 +83,14 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	TArray<UFSMRuntimeNode*> ChildrenNodes;
 
-protected:
-	/** 运行时创建的状态管理实例 */
-	UPROPERTY()
-	UFlowStateContext* Context;
-
 	/** 次要节点 */
 	UPROPERTY(VisibleAnywhere)
 	TArray<UFSMRuntimeNodeBase*> SubNodes;
+
+protected:
+	/** 运行时创建的状态管理实例 */
+	UPROPERTY(Transient)
+	UFlowStateContext* Context;
 
 	/** 次要节点：行为列表 */
 	UPROPERTY(VisibleAnywhere)
