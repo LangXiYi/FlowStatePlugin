@@ -83,3 +83,5 @@ Source/TutorialProject/
 Source/TutorialProject/*
 Content/TutorialProject/
 Content/TutorialProject/*
+
+__PACKAGES__/*

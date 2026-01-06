@@ -27,3 +27,8 @@ UFlowStateContext* UFSMRuntimeSubNode::GetContext() const
 	}
 	return nullptr;
 }
+
+void UFSMRuntimeSubNode::InitializeSubNode(const UFSMRuntimeSubNode* TemplateNodeInstance, UFSMRuntimeNodeBase* InParentNode)
+{
+	ParentNode = InParentNode;
+}

@@ -39,22 +39,17 @@ public:
 	/** Tick 函数每帧执行 */
 	virtual void Tick(float DeltaTime) {}
 
-#if WITH_EDITOR
 	/** 初始化节点，该函数注意在编辑器构建阶段调用 */
-	virtual void InitializeNode(UFSMRuntimeNode* InParentNode, uint16 InExecutionIndex, uint16 InMemoryOffset, uint8 InTreeDepth);
+	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode, uint16 InExecutionIndex, uint16 InMemoryOffset, uint8 InTreeDepth);
 
-	/** 【Only Editor】 只在编辑阶段可以调用添加子节点 */
+	/** 根据模板节点初始化该节点 */
+	void InitializeNode(const UFSMRuntimeNode* TemplateNode, UFSMRuntimeNodeBase* InParentNode);
+
+	/** 添加子节点 */
 	virtual void AddSubNode(UFSMRuntimeNodeBase* InSubNode);
 
-	/** 【Only Editor】 只在编辑阶段可以清除子节点 */
-	virtual void ClearSubNodes()
-	{
-		SubNodes.Empty();
-		Actions.Empty();
-		Services.Empty();
-		Conditions.Empty();
-	}
-#endif
+	/** 清除子节点 */
+	virtual void ClearSubNodes();
 
 	template<class T = UFSMRuntimeNodeBase>
 	T* FindSubNode() const
@@ -70,16 +65,26 @@ public:
 		return nullptr;
 	}
 
+	const TArray<UFSMRuntimeNodeBase*> GetAllSubNodes() const { return SubNodes; }
+
 	virtual UWorld* GetWorld() const override;
 
 	UFUNCTION(BlueprintPure, Category = "FlowStateMachine")
 	UFlowStateContext* GetContext() const { return Context; }
 
+	/** 是否将实例加入执行链 */
+	virtual bool IsStackInstance() const { return false; }
+
+public:
+	/** 子级节点 */
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMRuntimeNode*> ChildrenNodes;
+
 protected:
 	/** 运行时创建的状态管理实例 */
 	UPROPERTY()
 	UFlowStateContext* Context;
-	
+
 	/** 次要节点 */
 	UPROPERTY(VisibleAnywhere)
 	TArray<UFSMRuntimeNodeBase*> SubNodes;

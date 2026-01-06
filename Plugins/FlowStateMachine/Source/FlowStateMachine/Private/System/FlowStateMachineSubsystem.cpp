@@ -26,7 +26,7 @@ bool UFlowStateMachineSubsystem::RunFlowStateMachine(UFlowStateMachine* StateMac
 	}
 	RunningStateContext = StateContext;
 	// 将 StateMachine 注册至 FlowStateContext
-	StateContext->RegisterFlowStateMachine(StateMachine);
+	StateContext->RegisterFlowStateMachine(*StateMachine);
 	return true;
 }
 

@@ -40,18 +40,18 @@ public:
 		return static_cast<T*>(ParentNode);
 	}
 
+
 public:
 	/** 父级节点 */
 	UPROPERTY(VisibleAnywhere)
 	UFSMRuntimeNodeBase* ParentNode;
-	
-	/** 子级节点 */
-	UPROPERTY(VisibleAnywhere)
-	TArray<UFSMRuntimeNodeBase*> ChildrenNodes;
 
 	// 是否为根节点
 	UPROPERTY(VisibleAnywhere)
 	bool bIsRootNode = false;
+
+	/** 该实例是否是模板实例(不会参与实际运行，仅作为运行的参考) */
+	bool bIsTemplateInstance = true;
 
 protected:
 	UPROPERTY(EditAnywhere)

@@ -7,6 +7,8 @@
 void FFlowStateMachineModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+
+	// TODO::自动注册 MetaData 到资产管理器中，避免每次都需要修改设置添加扫描路径
 }
 
 void FFlowStateMachineModule::ShutdownModule()

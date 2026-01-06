@@ -13,6 +13,10 @@ struct FStreamableHandle;
  * 加载资产
  * 允许预加载
  * 需要搭配 AssetCondition 使用，保证在进入步骤时，资产已全部加载完成
+ *
+ * Note: Scans a list of paths and reads asset data for all primary assets of a specific type.
+ *       If done in the editor it will load the data off disk, in cooked games it will load out of the asset registry cache
+ * Node: 资产在调用卸载函数后不会立即卸载，需要等待该资产的引用计数归零后才会开始执行，期间资产会一致在内存中保持加载。
  */
 UCLASS(NotBlueprintable)
 class FLOWSTATEMACHINE_API UActions_LoadAsset : public UFSMRuntimeSubNode_Action
@@ -55,8 +59,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Advanced")
 	bool bSyncLoad = false;
 
-	UPROPERTY()
-	UFSMMetaDataAsset* MetaData;
+	// 使用弱指针引用该资产，确保回收机制正常运行
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UFSMMetaDataAsset> MetaData;
 
 	TSharedPtr<FStreamableHandle> LoadingHandle;
 	TSharedPtr<FStreamableHandle> PreloadingHandle;

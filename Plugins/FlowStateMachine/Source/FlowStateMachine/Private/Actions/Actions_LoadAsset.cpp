@@ -87,7 +87,7 @@ void UActions_LoadAsset::LoadAsset(bool bIsASync)
 		FSoftObjectPath AssetPath = AssetManager.GetPrimaryAssetPath(AssetId);
 		MetaData = Cast<UFSMMetaDataAsset>(AssetPath.TryLoad());
 		// 手动注册该资产至资产管理器，确保后续可以通过资产管理器找到该它
-		AssetManager.RegisterSpecificPrimaryAsset(AssetId,MetaData);
+		AssetManager.RegisterSpecificPrimaryAsset(AssetId, MetaData.Get());
 	}
 }
 
@@ -134,7 +134,6 @@ void UActions_LoadAsset::PreloadAsset(FStateDelegate& PreInitializeDelegate)
 		}
 		// 移除绑定，避免多次触发
 		PreInitializeDelegate.Remove(OnEnterStateHandle);
-		OnEnterStateHandle.Reset();
 	});
 }
 

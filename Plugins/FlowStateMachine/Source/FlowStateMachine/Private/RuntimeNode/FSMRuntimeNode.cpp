@@ -60,14 +60,22 @@ bool UFSMRuntimeNode::TrySwitchTo(int Index)
 	return false;
 }
 
-#if WITH_EDITOR
-
-void UFSMRuntimeNode::InitializeNode(UFSMRuntimeNode* InParentNode, uint16 InExecutionIndex, uint16 InMemoryOffset, uint8 InTreeDepth)
+void UFSMRuntimeNode::InitializeNode(UFSMRuntimeNodeBase* InParentNode, uint16 InExecutionIndex, uint16 InMemoryOffset, uint8 InTreeDepth)
 {
 	ParentNode = InParentNode;
 	ExecutionIndex = InExecutionIndex;
 	MemoryOffset = InMemoryOffset;
 	TreeDepth = InTreeDepth;
+}
+
+void UFSMRuntimeNode::InitializeNode(const UFSMRuntimeNode* TemplateNode, UFSMRuntimeNodeBase* InParentNode)
+{
+	if (TemplateNode == nullptr || TemplateNode->bIsTemplateInstance == false)
+	{
+		checkNoEntry();
+		return;
+	}
+	InitializeNode(InParentNode, TemplateNode->ExecutionIndex, TemplateNode->MemoryOffset, TemplateNode->TreeDepth);
 }
 
 void UFSMRuntimeNode::AddSubNode(UFSMRuntimeNodeBase* InSubNode)
@@ -98,6 +106,14 @@ void UFSMRuntimeNode::AddSubNode(UFSMRuntimeNodeBase* InSubNode)
 	SubNodes.Add(InSubNode);
 }
 
+void UFSMRuntimeNode::ClearSubNodes()
+{
+	SubNodes.Empty();
+	Actions.Empty();
+	Services.Empty();
+	Conditions.Empty();
+}
+
 /*
 bool UFSMRuntimeNode::HasAction(UClass* ActionClass) const
 {
@@ -110,10 +126,6 @@ bool UFSMRuntimeNode::HasAction(UClass* ActionClass) const
 	}
 }
 */
-
-#endif
-
-
 
 UWorld* UFSMRuntimeNode::GetWorld() const
 {

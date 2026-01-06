@@ -33,4 +33,7 @@ public:
 	{
 		return (T*)FindMetaDataFragment(WorldContextObject, T::StaticClass());
 	}
+
+	/** 资产的引用计数 */
+	static int32 CountSimpleReferencers(UObject* TargetObject);
 };
