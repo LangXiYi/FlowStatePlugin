@@ -12,6 +12,9 @@
 #include "RUntimeNode/FSMRuntimeNode.h"
 #include "Node/FSMGraphNode_Root.h"
 #include "Node/FSMGraphNode_State.h"
+#include "Node/Composites/FSMGraphNode_Jump.h"
+#include "Slate/SFSMGraphNode_JumpStart.h"
+#include "Slate/SFSMGraphNode_JumpTo.h"
 #include "Styling/SlateStyle.h"
 
 #define LOCTEXT_NAMESPACE "FFlowStateMachine_EditorModule"
@@ -34,6 +37,14 @@ public:
 		if (UFSMGraphSubNode* SubNode = Cast<UFSMGraphSubNode>(Node))
 		{
 			return SNew(SFSMGraphSubNode, SubNode);
+		}
+		if (UFSMGraphNode_JumpTo* GraphNode = Cast<UFSMGraphNode_JumpTo>(Node))
+		{
+			return SNew(SFSMGraphNode_JumpTo, GraphNode);
+		}
+		if (UFSMGraphNode_JumpStart* GraphNode = Cast<UFSMGraphNode_JumpStart>(Node))
+		{
+			return SNew(SFSMGraphNode_JumpStart, GraphNode);
 		}
 		return nullptr;
 	}

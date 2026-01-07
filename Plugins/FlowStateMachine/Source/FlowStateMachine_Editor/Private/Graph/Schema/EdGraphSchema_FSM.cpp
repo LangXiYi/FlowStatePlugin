@@ -16,6 +16,8 @@
 #include "RuntimeNode/FSMRuntimeSubNode_Service.h"
 #include "Node/FSMGraphNode_Root.h"
 #include "Node/FSMGraphNode_State.h"
+#include "Node/Composites/FSMGraphNode_Jump.h"
+#include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
 
 UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
                                                       const FVector2D Location, bool bSelectNewNode)
@@ -115,40 +117,26 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 		TArray<FGraphNodeClassData> NodeClasses;
 		ClassCache->GatherClasses(UFSMRuntimeNode_State::StaticClass(), NodeClasses);
 
-		for (const auto& NodeClass : NodeClasses)
+		for (FGraphNodeClassData& NodeClass : NodeClasses)
 		{
-			const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClass.ToString(), false));
-			// 添加创建状态节点到图表右键菜单
-			TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
-
-			// 创建一个图表节点的模板给操作类
-			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(ContextMenuBuilder.OwnerOfTemporaries, UFSMGraphNode_State::StaticClass());
-			OpNode->ClassData = NodeClass;
-			AddOpAction->NodeTemplate = OpNode;
+			CollectNewNodeAction(TasksBuilder, NodeClass.GetClass(), UFSMGraphNode_State::StaticClass(), ContextMenuBuilder.OwnerOfTemporaries);
 		}
-
 		ContextMenuBuilder.Append(TasksBuilder);
 	}
 
 	if (bIsAllowCreateComposites)
 	{
+		
 		FCategorizedGraphActionListBuilder TasksBuilder(TEXT("Composites"));
 
 		TArray<FGraphNodeClassData> NodeClasses;
 		ClassCache->GatherClasses(UFSMRuntimeNode_Composites::StaticClass(), NodeClasses);
 
-		for (const auto& NodeClass : NodeClasses)
+		for (FGraphNodeClassData& NodeClass : NodeClasses)
 		{
-			const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClass.ToString(), false));
-			// 添加创建组合节点到图表右键菜单
-			TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
-
-			// 创建一个图表节点的模板给操作类
-			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(ContextMenuBuilder.OwnerOfTemporaries, UFSMGraphNode_Composites::StaticClass());
-			OpNode->ClassData = NodeClass;
-			AddOpAction->NodeTemplate = OpNode;
+			UClass* CompositesGraphNodeClass = GetCompositesGraphNodeClass(NodeClass.GetClass());
+			CollectNewNodeAction(TasksBuilder, NodeClass.GetClass(), CompositesGraphNodeClass, ContextMenuBuilder.OwnerOfTemporaries);
 		}
-
 		ContextMenuBuilder.Append(TasksBuilder);
 	}
 	
@@ -308,21 +296,23 @@ TSharedPtr<FFSMSchemaAction_NewSubNode> UEdGraphSchema_FSM::AddNewSubNodeAction(
 	return NewAction;
 }
 
-const FPinConnectionResponse UEdGraphSchema_FSM::CanCreateConnection(const UEdGraphPin* PinA, const UEdGraphPin* PinB) const
+UClass* UEdGraphSchema_FSM::GetCompositesGraphNodeClass(const UClass* RuntimeNodeClass)
 {
-	FPinConnectionResponse Response;
-
-
-	// TODO::控制两个引脚之间是否可以连接
-	// A->Direction != B->Direction;
-	/*if (A == nullptr || B == nullptr)
+	if (RuntimeNodeClass == nullptr)
 	{
-		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("A || B is nullptr."));
+		return UFSMGraphNode_Composites::StaticClass();
 	}
 
-	*/
-	// return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_AB, "");
+	if (RuntimeNodeClass == (UFSMRuntimeNode_JumpTo::StaticClass()))
+	{
+		return UFSMGraphNode_JumpTo::StaticClass();
+	}
+	// 返回默认的图表节点
+	return UFSMGraphNode_Composites::StaticClass();
+}
 
+const FPinConnectionResponse UEdGraphSchema_FSM::CanCreateConnection(const UEdGraphPin* PinA, const UEdGraphPin* PinB) const
+{
 	const UFSMGraphNodeBase* OwningNodeA = Cast<UFSMGraphNodeBase>(PinA->GetOwningNodeUnchecked());
 	const UFSMGraphNodeBase* OwningNodeB = Cast<UFSMGraphNodeBase>(PinB->GetOwningNodeUnchecked());
 
@@ -342,13 +332,14 @@ const FPinConnectionResponse UEdGraphSchema_FSM::CanCreateConnection(const UEdGr
 		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("PinA Direction == PinB Direction."));
 	}
 
+	// 从输入节点向输出节点连接
 	if (PinA->Direction == EGPD_Input)
 	{
-		return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_B, "");
+		return OwningNodeB->CheckPinConnection(OwningNodeA, PinA->Direction);
 	}
 	else
 	{
-		return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_A, "");
+		return OwningNodeA->CheckPinConnection(OwningNodeB, PinA->Direction);
 	}
 }
 

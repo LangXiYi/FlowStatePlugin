@@ -113,6 +113,10 @@ protected:
 	UPROPERTY(Transient)
 	UFSMRuntimeNode* RootState;
 
+	// 所有的 StartJump 的根节点
+	UPROPERTY(Transient)
+	TArray<UFSMRuntimeNode*> JumpStates;
+
 private:
 	// 引用资产，供运行时创建新的运行时节点使用
 	UPROPERTY(Transient)

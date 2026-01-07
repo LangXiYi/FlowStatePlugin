@@ -60,8 +60,11 @@ public:
 	virtual void PostEditUndo() override;
 
 	virtual void PostEditImport() override;
-	
+
 #endif
+
+	// 检查引脚的连接性
+	virtual FPinConnectionResponse CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const;
 
 protected:
 	UEdGraphPin* GetInputPin() const;

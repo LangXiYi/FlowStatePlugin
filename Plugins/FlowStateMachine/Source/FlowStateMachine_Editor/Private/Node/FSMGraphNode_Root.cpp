@@ -14,12 +14,25 @@ void UFSMGraphNode_Root::AllocateDefaultPins()
 	CreatePin(EGPD_Output, "DefaultOutput", "Execute");
 }
 
+FPinConnectionResponse UFSMGraphNode_Root::CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const
+{
+	return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_AB, TEXT("Connect node"));
+}
+
 void UFSMGraphNode_Root::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UFSMGraphNode_Root, CommonData))
 	{
-		
+		UFSMGraph* MyGraph = GetFSMGraph();
+		if (MyGraph)
+		{
+			UFlowStateMachine* Asset = MyGraph->GetFSMAsset();
+			if (Asset)
+			{
+				Asset->CommonData = CommonData;
+			}
+		}
 	}
 	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UFSMGraphNode_Root, LayoutWidget))
 	{

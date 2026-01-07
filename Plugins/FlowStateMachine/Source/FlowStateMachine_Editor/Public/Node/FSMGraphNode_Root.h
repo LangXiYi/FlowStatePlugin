@@ -22,7 +22,7 @@ public:
 	virtual bool CanUserDeleteNode() const override{ return false; }
 	virtual bool IsSelectedInEditor() const override { return false; }
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override { return FText::FromString(TEXT("Root Node")); }
-
+	virtual FPinConnectionResponse CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection Direction) const override;
 	// TODO::监听 CommonData 改变事件
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 

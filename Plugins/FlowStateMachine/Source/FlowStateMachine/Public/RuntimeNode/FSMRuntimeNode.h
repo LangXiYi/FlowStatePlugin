@@ -39,12 +39,6 @@ public:
 	/** Tick 函数每帧执行 */
 	virtual void Tick(float DeltaTime) {}
 
-	/** 初始化节点，该函数注意在编辑器构建阶段调用 */
-	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode, uint16 InExecutionIndex, uint16 InMemoryOffset, uint8 InTreeDepth);
-
-	/** 根据模板节点初始化该节点 */
-	void InitializeNode(const UFSMRuntimeNode* TemplateNode, UFSMRuntimeNodeBase* InParentNode);
-
 	/** 添加子节点 */
 	virtual void AddSubNode(UFSMRuntimeNodeBase* InSubNode);
 
@@ -113,7 +107,4 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	uint16 MemoryOffset;
 
-	/** depth in tree */
-	UPROPERTY(VisibleAnywhere)
-	uint8 TreeDepth;
 };

@@ -7,6 +7,7 @@
 #include "Widgets/FlowStateLayoutWidget.h"
 #include "RuntimeNode/FSMRuntimeNode_Composites.h"
 #include "RuntimeNode/FSMRuntimeSubNode.h"
+#include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
 #include "SM/FlowStateBase.h"
 #include "SM/FlowStateMachine.h"
 #include "SM/FSMGC.h"
@@ -28,9 +29,11 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMac
 		InstanceStack.Empty();
 
 		// 使用递归函数处理所有的子级节点
+		CacheTemplateObjects.Reset();
 		TArray<UFSMRuntimeNodeBase*> Stack;
 		RootState = CreateAllInstance(FlowStateMachine.RootRuntimeNode, nullptr, Stack);
 		check(Stack.Num() <= 0);
+
 		if (TrySwitchTo(RootState))
 		{
 			// 触发事件，开始运行 FSM
@@ -94,6 +97,7 @@ void UFlowStateContext::Tick(float DeltaTime)
 	for (UFSMRuntimeNode* Instance : InstanceStack)
 	{
 		// TODO::执行执行链的实例对象
+		// 执行链中的实例对象可以影响它以及它之后的所有状态的执行
 	}
 
 #if !UE_BUILD_SHIPPING
@@ -181,6 +185,10 @@ UFSMRuntimeNode* UFlowStateContext::CreateAllInstance(const UFSMRuntimeNode* Roo
 		return RootNodeInstance;
 	}
 	Stack.Push(RootNodeInstance);
+
+	// 使用模板对节点实例进行初始化
+	RootNodeInstance->InitializeNode(RootNode, RootNodeInstance);
+	
 	// 替换子级节点为运行时实例化的对象
 	for (int i = 0; i < RootNodeInstance->ChildrenNodes.Num(); ++i)
 	{

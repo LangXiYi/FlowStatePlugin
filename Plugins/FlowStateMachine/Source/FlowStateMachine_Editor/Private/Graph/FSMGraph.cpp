@@ -1,10 +1,13 @@
 ﻿#include "Graph/FSMGraph.h"
 
 // #include "RuntimeNode/FSMRuntimeNode_State.h"
+#include "FSMEditorTypes.h"
 #include "Node/FSMGraphNode.h"
 #include "Node/FSMGraphNode_Root.h"
 #include "Node/FSMGraphSubNode.h"
+#include "Node/Composites/FSMGraphNode_Jump.h"
 #include "RuntimeNode/FSMRuntimeNode.h"
+#include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
 #include "SM/FlowStateMachine.h"
 
 void UFSMGraph::Initialize()
@@ -28,7 +31,9 @@ void UFSMGraph::OnSave()
 void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 {
 	UFSMGraphNode_Root* RootNode = nullptr;
+	UFlowStateMachine* FSMAsset = Cast<UFlowStateMachine>(GetOuter());
 
+	JumpStartNodes.Empty();
 	for (int Index = 0; Index < Nodes.Num(); ++Index)
 	{
 		UFSMGraphNode* NodeBase = Cast<UFSMGraphNode>(Nodes[Index]);
@@ -53,14 +58,16 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 		if (RuntimeNode != nullptr)
 		{
 			// 先将所有节点标记为未连接状态，之后从根节点出发的路径会用有效的值对其进行替换。
-			RuntimeNode->InitializeNode(nullptr, MAX_uint16, 0, 0);
+			RuntimeNode->ParentNode;
+			RuntimeNode->InitializeNode(nullptr, 0);
 		}
+
+		// TODO::记录所有 JumpStart 节点
+		
 	}
 
-	if (RootNode == nullptr)
-	{
-		checkNoEntry();
-	}
+	// 必须确保图表中存在 RootNode
+	check(RootNode);
 
 	// 在撤销操作完成后，我们无法查看引脚，必须先修复引脚引用问题
 	UEdGraphPin::ResolveAllPinReferences();
@@ -90,14 +97,14 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	uint16 ExecutionIndex = 0;
 	uint8 TreeDepth = 0;
 
-	auto RootStateNode = Cast<UFSMRuntimeNode>(RootEdNode->RuntimeNode);
+	UFSMRuntimeNode* RootStateNode = Cast<UFSMRuntimeNode>(RootEdNode->RuntimeNode);
 	if (RootStateNode == nullptr)
 	{
 		return;
 	}
 	FSMAsset->RootRuntimeNode = RootStateNode;
 	// 赋予节点实际意义
-	RootStateNode->InitializeNode(nullptr, ExecutionIndex++, 0, TreeDepth);
+	RootStateNode->InitializeNode(nullptr);
 
 	// TODO::初始化 RuntimeDecorators/RuntimeActions
 	uint16 DummyIndex = MAX_uint16; // 暂时未知实际意义
@@ -106,7 +113,7 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 
 	// 创建所有子节点
 	TArray<UObject*> Stack;
-	CreateChildrenNodes(FSMAsset, FSMAsset->RootRuntimeNode, RootEdNode, ExecutionIndex, TreeDepth + 1, Stack);
+	CreateChildrenNodes(FSMAsset, FSMAsset->RootRuntimeNode, RootEdNode, Stack);
 
 	// 对根节点进行标记
 	ClearRootNodeFlags();
@@ -159,6 +166,11 @@ void UFSMGraph::PostEditUndo()
 	// make sure that all execution indices are up to date
 	UpdateAsset();
 	Modify();
+}
+
+UFlowStateMachine* UFSMGraph::GetFSMAsset() const
+{
+	return Cast<UFlowStateMachine>(GetOuter());
 }
 
 #endif
@@ -277,7 +289,7 @@ bool UFSMGraph::CanRemoveNestedObject(UObject* TestObject) const
 }
 
 void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode,
-	UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth, TArray<UObject*>& Stack)
+	UFSMGraphNode* GraphRootNode, TArray<UObject*>& Stack)
 {
 	// 递归结束条件1：确保传入的运行时节点以及图表节点为空
 	// 递归结束条件2：GraphRootNode 的输出引脚数量为 0 或 引脚未连接其他节点
@@ -322,6 +334,8 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 			continue;
 		}
 
+		// sort connections so that they're organized the same as user can see in the editor
+		Pin->LinkedTo.Sort(FCompareNodeYLocation());
 		// 遍历节点引脚获得当前节点下的所有子节点
 		for (int i = 0; i < Pin->LinkedTo.Num(); ++i)
 		{
@@ -340,10 +354,10 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 			RuntimeRootNode->ChildrenNodes.Add(RuntimeNode);
 			
 			// 更新执行顺序
-			RuntimeNode->InitializeNode(RuntimeRootNode, ExecuteIndex++, 0, TreeDepth);
+			// RuntimeNode->InitializeNode(RuntimeRootNode);
 
 			// 递归添加子节点
-			CreateChildrenNodes(FSMAsset, RuntimeNode, GraphNode, ExecuteIndex, TreeDepth + 1, Stack);
+			CreateChildrenNodes(FSMAsset, RuntimeNode, GraphNode, Stack);
 
 		}
 	}

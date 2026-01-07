@@ -42,7 +42,7 @@ void UFSMGraphNode_State::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeC
 	AddServiceSubMenu(Menu, Context);
 	AddActionSubMenu(Menu, Context);
 
-	FToolMenuSection& section = Menu->AddSection(TEXT("SectionName"), FText::FromString(TEXT("Custom Node Actions")));
+	/*FToolMenuSection& section = Menu->AddSection(TEXT("SectionName"), FText::FromString(TEXT("Custom Node Actions")));
 	UFSMGraphNode_State* node = (UFSMGraphNode_State*)this;
 	section.AddMenuEntry(
 		TEXT("AddPinEntry"),
@@ -66,6 +66,10 @@ void UFSMGraphNode_State::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeC
 		FSlateIcon(TEXT("FlowStateMachineStyleSet"), TEXT("FlowStateMachineEditor.NodeDeletePinIcon")),
 		FUIAction(FExecuteAction::CreateLambda(
 			[node] () {
+				if (node->Pins.Num() <= 1)
+				{
+					return;
+				}
 				UEdGraphPin* pin = node->GetPinAt(node->Pins.Num() - 1);
 				if (pin->Direction != EEdGraphPinDirection::EGPD_Input) {
 					node->RemovePin(pin);
@@ -87,7 +91,7 @@ void UFSMGraphNode_State::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeC
 				node->GetGraph()->RemoveNode(node);
 			}
 		))
-	);
+	);*/
 }
 
 void UFSMGraphNode_State::CreateCustomPin(EEdGraphPinDirection Direction, const FString& PinName)

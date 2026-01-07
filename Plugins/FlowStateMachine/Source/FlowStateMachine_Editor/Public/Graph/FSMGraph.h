@@ -3,6 +3,8 @@
 #include "UObject/Object.h"
 #include "FSMGraph.generated.h"
 
+class UFSMGraphNode_JumpStart;
+class UFlowStateMachine;
 class UFSMGraphNodeBase;
 class UFSMRuntimeNodeBase;
 class UFSMRuntimeNode;
@@ -42,6 +44,8 @@ public:
 	virtual void PostEditUndo() override;
 #endif
 
+	UFlowStateMachine* GetFSMAsset() const;
+
 protected:
 	/** 生成缺少的节点，在图表被创建后调用 */
 	void SpawnMissingNodes();
@@ -59,12 +63,14 @@ protected:
 	/** 创建所有的子级节点
 	 * 注意：避免出现环形，否则程序无法正确处理会直接报错，推荐使用 JumpState 与 JumpNode   
 	 */
-	void CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode, UFSMGraphNode* GraphRootNode, uint16& ExecuteIndex, uint8 TreeDepth, TArray<UObject*>& Stack);
+	void CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode, UFSMGraphNode* GraphRootNode, TArray<UObject*>& Stack);
 
 	// 环形检查，避免递归无限重复
 	bool CheckRing(UFSMGraphNodeBase* StartNode, UFSMGraphNodeBase* BreakNode);
 	
 private:
 	bool bLockUpdates;
+
+	TArray<UFSMGraphNode_JumpStart*> JumpStartNodes;
 };
 

@@ -19,6 +19,8 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNodeBase : public UObject
 public:
 	virtual void InitializeFromAsset(UFlowStateMachine* Asset);
 
+	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode, uint16 InTreeDepth);
+
 	// 定义访问公共数据的方法
 	// float GetCommonDataAsFloat(FString PropName);
 	// ...
@@ -40,10 +42,9 @@ public:
 		return static_cast<T*>(ParentNode);
 	}
 
-
 public:
-	/** 父级节点 */
-	UPROPERTY(VisibleAnywhere)
+	/** 调用的父级节点 */
+	UPROPERTY(VisibleAnywhere, Transient)
 	UFSMRuntimeNodeBase* ParentNode;
 
 	// 是否为根节点
@@ -57,8 +58,16 @@ protected:
 	UPROPERTY(EditAnywhere)
 	FString NodeName;
 
+	/** 所有父级节点 */
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMRuntimeNodeBase*> AllParentNodes;
+
 private:
 	// 静态资产实例，可以通过他访问到我们的黑板资产
 	UPROPERTY(VisibleAnywhere)
 	UFlowStateMachine* FSMAsset;
+
+	/** depth in tree */
+	UPROPERTY(VisibleAnywhere)
+	uint8 TreeDepth;
 };

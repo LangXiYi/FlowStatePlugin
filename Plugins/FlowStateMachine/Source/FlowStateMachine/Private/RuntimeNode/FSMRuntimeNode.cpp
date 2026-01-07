@@ -60,24 +60,6 @@ bool UFSMRuntimeNode::TrySwitchTo(int Index)
 	return false;
 }
 
-void UFSMRuntimeNode::InitializeNode(UFSMRuntimeNodeBase* InParentNode, uint16 InExecutionIndex, uint16 InMemoryOffset, uint8 InTreeDepth)
-{
-	ParentNode = InParentNode;
-	ExecutionIndex = InExecutionIndex;
-	MemoryOffset = InMemoryOffset;
-	TreeDepth = InTreeDepth;
-}
-
-void UFSMRuntimeNode::InitializeNode(const UFSMRuntimeNode* TemplateNode, UFSMRuntimeNodeBase* InParentNode)
-{
-	if (TemplateNode == nullptr || TemplateNode->bIsTemplateInstance == false)
-	{
-		checkNoEntry();
-		return;
-	}
-	InitializeNode(InParentNode, TemplateNode->ExecutionIndex, TemplateNode->MemoryOffset, TemplateNode->TreeDepth);
-}
-
 void UFSMRuntimeNode::AddSubNode(UFSMRuntimeNodeBase* InSubNode)
 {
 	if (InSubNode == nullptr)

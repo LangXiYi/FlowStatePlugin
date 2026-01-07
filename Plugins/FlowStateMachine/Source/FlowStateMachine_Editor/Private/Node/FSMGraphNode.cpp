@@ -45,7 +45,7 @@ void UFSMGraphNode::InitializeInstance()
 	if (UFSMRuntimeNode* Node = Cast<UFSMRuntimeNode>(RuntimeNode))
 	{
 		// 初始化节点信息，如父级节点、节点深度、执行优先级等等，此时无实际意义。
-		Node->InitializeNode(NULL, MAX_uint16, 0, 0);
+		Node->InitializeNode(nullptr);
 	}
 }
 

@@ -112,4 +112,6 @@ public:
 protected:
 	static TSharedPtr<FFSMSchemaAction_NewNode> AddNewNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
 	static TSharedPtr<FFSMSchemaAction_NewSubNode> AddNewSubNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
+
+	static UClass* GetCompositesGraphNodeClass(const UClass* RuntimeNode);
 };

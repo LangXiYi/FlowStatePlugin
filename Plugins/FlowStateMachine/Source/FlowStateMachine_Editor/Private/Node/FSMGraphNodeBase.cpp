@@ -202,6 +202,10 @@ void UFSMGraphNodeBase::PostEditImport()
 
 #endif
 
+FPinConnectionResponse UFSMGraphNodeBase::CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const
+{
+	return FPinConnectionResponse(CONNECT_RESPONSE_MAKE, TEXT("Connect node"));
+}
 
 UEdGraphPin* UFSMGraphNodeBase::GetInputPin() const
 {

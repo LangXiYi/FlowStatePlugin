@@ -203,6 +203,11 @@ void SFSMGraphNode_State::UpdateGraphNode()
 	CreatePinWidgets();
 }
 
+void SFSMGraphNode_State::CreatePinWidgets()
+{
+	SFSMGraphNodeBase::CreatePinWidgets();
+}
+
 TSharedPtr<SGraphPin> SFSMGraphNode_State::CreatePinWidget(UEdGraphPin* Pin) const
 {
 	return SNew(SGraphPin_FSM, Pin)
