@@ -31,9 +31,8 @@ void UFSMGraph::OnSave()
 void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 {
 	UFSMGraphNode_Root* RootNode = nullptr;
-	UFlowStateMachine* FSMAsset = Cast<UFlowStateMachine>(GetOuter());
 
-	JumpStartNodes.Empty();
+	ScatteredNodes.Empty();
 	for (int Index = 0; Index < Nodes.Num(); ++Index)
 	{
 		UFSMGraphNode* NodeBase = Cast<UFSMGraphNode>(Nodes[Index]);
@@ -58,12 +57,15 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 		if (RuntimeNode != nullptr)
 		{
 			// 先将所有节点标记为未连接状态，之后从根节点出发的路径会用有效的值对其进行替换。
-			RuntimeNode->ParentNode;
-			RuntimeNode->InitializeNode(nullptr, 0);
+			RuntimeNode->InitializeNode(nullptr);
 		}
 
-		// TODO::记录所有 JumpStart 节点
-		
+		// 记录所有零碎节点: 跳跃节点、...
+		UFSMGraphNode_JumpStart* JumpStartNode = Cast<UFSMGraphNode_JumpStart>(Nodes[Index]);
+		if (JumpStartNode)
+		{
+			ScatteredNodes.Add(JumpStartNode);
+		}
 	}
 
 	// 必须确保图表中存在 RootNode
@@ -93,27 +95,28 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	UFlowStateMachine* FSMAsset = Cast<UFlowStateMachine>(GetOuter());
 	FSMAsset->RootRuntimeNode = nullptr; // 解除旧资产保存的数据引用
 
-	// 根据图表中创建新数据
-	uint16 ExecutionIndex = 0;
-	uint8 TreeDepth = 0;
-
 	UFSMRuntimeNode* RootStateNode = Cast<UFSMRuntimeNode>(RootEdNode->RuntimeNode);
 	if (RootStateNode == nullptr)
 	{
 		return;
 	}
+	// 更新资产的根节点
 	FSMAsset->RootRuntimeNode = RootStateNode;
 	// 赋予节点实际意义
 	RootStateNode->InitializeNode(nullptr);
 
-	// TODO::初始化 RuntimeDecorators/RuntimeActions
-	uint16 DummyIndex = MAX_uint16; // 暂时未知实际意义
 	FSMAsset->RootDecorators.Empty();
 	FSMAsset->RootActions.Empty();
+
+	// 检查节点的有效性
+	RootEdNode->CheckNodeValidity();
 
 	// 创建所有子节点
 	TArray<UObject*> Stack;
 	CreateChildrenNodes(FSMAsset, FSMAsset->RootRuntimeNode, RootEdNode, Stack);
+
+	// 创建所有零碎节点
+	CreateScatteredNodes(FSMAsset, ScatteredNodes);
 
 	// 对根节点进行标记
 	ClearRootNodeFlags();
@@ -308,16 +311,16 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 	// 将当前节点压入栈中
 	Stack.Push(RuntimeRootNode);
 
-	// 清理父级节点
-	GraphRootNode->ParentNode = nullptr;
+	// 检查节点的有效性
+	GraphRootNode->CheckNodeValidity();
 
-	// 清理次要对象
+	// 清理并初始化次要节点
 	RuntimeRootNode->ClearSubNodes();
-	// 收集 Condition、Service、Action 等次要节点
 	for (UFSMGraphNodeBase* SubNode : GraphRootNode->SubNodes)
 	{
 		if (SubNode && SubNode->RuntimeNode)
 		{
+			SubNode->RuntimeNode->InitializeNode(RuntimeRootNode);
 			RuntimeRootNode->AddSubNode(SubNode->RuntimeNode);
 		}
 	}
@@ -351,19 +354,33 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 			}
 			// 重命名运行时节点，确保节点的 Outer 为资产对象而非其他。
 			RuntimeNode->Rename(nullptr, FSMAsset);
-			RuntimeRootNode->ChildrenNodes.Add(RuntimeNode);
-			
-			// 更新执行顺序
-			// RuntimeNode->InitializeNode(RuntimeRootNode);
+			// 初始化节点
+			RuntimeNode->InitializeNode(RuntimeRootNode);
 
+			RuntimeRootNode->ChildrenNodes.Add(RuntimeNode);
 			// 递归添加子节点
 			CreateChildrenNodes(FSMAsset, RuntimeNode, GraphNode, Stack);
-
 		}
 	}
-	
 	// 创建完成所有子节点后，将当前节点从栈中弹出
 	Stack.Pop();
+}
+
+void UFSMGraph::CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TArray<UFSMGraphNode*>& ScatteredNodes)
+{
+	TArray<UObject*> Stack;
+	FSMAsset->ScatteredNodes.Empty();
+	for (UFSMGraphNode* ScatteredGraphNode : ScatteredNodes)
+	{
+		UFSMRuntimeNode* ScatteredRuntimeNode = Cast<UFSMRuntimeNode>(ScatteredGraphNode->RuntimeNode);
+		if (ScatteredRuntimeNode == nullptr)
+		{
+			continue;
+		}
+		Stack.Empty();
+		CreateChildrenNodes(FSMAsset, ScatteredRuntimeNode, ScatteredGraphNode, Stack);
+		FSMAsset->ScatteredNodes.Add(ScatteredRuntimeNode);
+	}
 }
 
 bool UFSMGraph::CheckRing(UFSMGraphNodeBase* StartNode, UFSMGraphNodeBase* BreakNode)
@@ -396,6 +413,47 @@ bool UFSMGraph::CheckRing(UFSMGraphNodeBase* StartNode, UFSMGraphNodeBase* Break
 		}
 	}
 	return false;
+}
+
+void UFSMGraph::GenerateJumpStateIdComboBoxStrings(TArray<TSharedPtr<FString>>& OutComboBoxStrings,
+	TArray<TSharedPtr<SToolTip>>& OutToolTips, TArray<bool>& OutRestrictedItems, bool bAllowClear, bool bAllowAll)
+{
+	/*UAssetManager& AssetManager = UAssetManager::Get();
+
+	TArray<FPrimaryAssetTypeInfo> TypeInfos;
+
+	AssetManager.GetPrimaryAssetTypeInfoList(TypeInfos);
+	TypeInfos.Sort([](const FPrimaryAssetTypeInfo& LHS, const FPrimaryAssetTypeInfo& RHS) { return LHS.PrimaryAssetType.LexicalLess(RHS.PrimaryAssetType); });
+
+	// Can the field be cleared
+	if (bAllowClear)
+	{
+		// Add None
+		OutComboBoxStrings.Add(MakeShared<FString>(FPrimaryAssetType().ToString()));
+		OutToolTips.Add(SNew(SToolTip).Text(LOCTEXT("NoType", "None")));
+		OutRestrictedItems.Add(false);
+	}
+
+	for (FPrimaryAssetTypeInfo& Info : TypeInfos)
+	{
+		OutComboBoxStrings.Add(MakeShared<FString>(Info.PrimaryAssetType.ToString()));
+
+		FText TooltipText = FText::Format(LOCTEXT("ToolTipFormat", "{0}:{1}{2}"),
+			FText::FromString(Info.PrimaryAssetType.ToString()),
+			Info.bIsEditorOnly ? LOCTEXT("EditorOnly", " EditorOnly") : FText(),
+			Info.bHasBlueprintClasses ? LOCTEXT("Blueprints", " Blueprints") : FText());
+
+		OutToolTips.Add(SNew(SToolTip).Text(TooltipText));
+		OutRestrictedItems.Add(false);
+	}
+
+	if (bAllowAll)
+	{
+		// Add All
+		OutComboBoxStrings.Add(MakeShared<FString>(IAssetManagerEditorModule::AllPrimaryAssetTypes.ToString()));
+		OutToolTips.Add(SNew(SToolTip).Text(LOCTEXT("AllTypes", "All Primary Asset Types")));
+		OutRestrictedItems.Add(false);
+	}*/
 }
 
 namespace FSMGraphHelper

@@ -6,6 +6,7 @@
 #include "RuntimeNode/FSMRuntimeSubNode_Action.h"
 #include "FlowStateAction.generated.h"
 
+class UFlowStateBase;
 /**
  * NOTE：：目前不支持异步Action阻塞状态机执行
  */
@@ -15,8 +16,8 @@ class FLOWSTATEMACHINE_API UFlowStateAction : public UFSMRuntimeSubNode_Action
 	GENERATED_BODY()
 
 public:
-	virtual void ExecuteAction() override;
+	virtual void ExecuteAction(UFSMRuntimeNode* Instance) override;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnExecuteAction();
+	void OnExecuteAction(UFSMRuntimeNode* Instance);
 };

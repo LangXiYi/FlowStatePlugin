@@ -6,6 +6,8 @@
 #include "UObject/Object.h"
 #include "FlowStateMachine.generated.h"
 
+class UFSMRuntimeNode;
+
 /**
  * 
  */
@@ -17,7 +19,11 @@ class FLOWSTATEMACHINE_API UFlowStateMachine : public UObject
 public:
 	/** 状态机的运行时根节点 */
 	UPROPERTY(VisibleAnywhere)
-	class UFSMRuntimeNode* RootRuntimeNode;
+	UFSMRuntimeNode* RootRuntimeNode;
+
+	/** 状态机根节点的装饰器子节点 */
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMRuntimeNode*> ScatteredNodes;
 
 	/** 状态机根节点的装饰器子节点 */
 	UPROPERTY(VisibleAnywhere)

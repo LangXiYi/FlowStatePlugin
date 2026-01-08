@@ -44,6 +44,7 @@ public:
 
 	/** 替换次要节点，使用新的次要节点替换原有的节点 */
 	virtual void ReplaceSubNode(UFSMRuntimeNodeBase* NewSubNode, int Index);
+	virtual void ReplaceChildNode(UFSMRuntimeNode* NewChildNode, int Index);
 
 	/** 清除子节点 */
 	virtual void ClearSubNodes();

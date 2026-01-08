@@ -111,4 +111,6 @@ private:
 	// 节点的细节面板
 	TSharedPtr<IDetailsView> DetailsView;
 
+	TSharedPtr<class SFSMGraphPalette> ClassPalette;
+
 };

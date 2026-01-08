@@ -22,7 +22,7 @@ FPinConnectionResponse UFSMGraphNode_Root::CheckPinConnection(const UFSMGraphNod
 void UFSMGraphNode_Root::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UFSMGraphNode_Root, CommonData))
+	if (PropertyChangedEvent.MemberProperty && PropertyChangedEvent.MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UFSMGraphNode_Root, CommonData))
 	{
 		UFSMGraph* MyGraph = GetFSMGraph();
 		if (MyGraph)
@@ -34,7 +34,7 @@ void UFSMGraphNode_Root::PostEditChangeProperty(struct FPropertyChangedEvent& Pr
 			}
 		}
 	}
-	if (PropertyChangedEvent.Property && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(UFSMGraphNode_Root, LayoutWidget))
+	if (PropertyChangedEvent.MemberProperty && PropertyChangedEvent.MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UFSMGraphNode_Root, LayoutWidget))
 	{
 		
 	}

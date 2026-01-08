@@ -328,7 +328,7 @@ TSharedRef<SWidget> FFSMGraphEditor::CreateFlowStateMachineDetailView(const FWor
 
 TSharedRef<SWidget> FFSMGraphEditor::CreateFlowStateMachineListView(const FWorkflowTabSpawnInfo& Info)
 {
-	return SNew(SFSMGraphPalette, GetFlowStateMachine());
+	return SAssignNew(ClassPalette, SFSMGraphPalette, GetFlowStateMachine());
 }
 
 FText FFSMGraphEditor::GetLocalizedMode(FName InMode)
@@ -417,6 +417,7 @@ void FFSMGraphEditor::SaveAsset_Execute()
 		if (Graph)
 		{
 			Graph->OnSave();
+			ClassPalette->RefreshActionsList(true);
 		}
 	}
 	IFlowStateMachineEditor::SaveAsset_Execute();

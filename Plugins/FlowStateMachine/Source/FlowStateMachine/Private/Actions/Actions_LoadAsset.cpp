@@ -8,6 +8,7 @@
 #include "Data/FSMMetaDataAsset.h"
 #include "Engine/AssetManager.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Library/FSMMetaDataFunctionLibrary.h"
 #include "RuntimeNode/FSMRuntimeNode.h"
 #include "SM/FlowStateContext.h"
 
@@ -16,7 +17,7 @@ UActions_LoadAsset::UActions_LoadAsset(const FObjectInitializer& ObjectInitializ
 	NodeName = TEXT("LoadAsset");
 }
 
-void UActions_LoadAsset::ExecuteAction()
+void UActions_LoadAsset::ExecuteAction(UFSMRuntimeNode* Instance)
 {
 	UFlowStateContext* Context = GetContext();
 	if (Context == nullptr)
@@ -32,7 +33,7 @@ void UActions_LoadAsset::ExecuteAction()
 	check(!bIsTemplateInstance)
 
 	// 加载当前步骤的资产
-	LoadAsset();
+	LoadAsset(bSyncLoad);
 
 	// 监听 Context 的状态退出事件，在切换至目标状态后，移除加载资产
 	if (bAutoReleaseAsset)
@@ -55,7 +56,7 @@ void UActions_LoadAsset::ExecuteAction()
 	}
 }
 
-void UActions_LoadAsset::LoadAsset(bool bIsASync)
+void UActions_LoadAsset::LoadAsset(bool IsSyncLoad)
 {
 	UAssetManager& AssetManager = UAssetManager::Get();
 	if (PreloadingHandle.IsValid())
@@ -64,7 +65,7 @@ void UActions_LoadAsset::LoadAsset(bool bIsASync)
 		LoadingHandle = PreloadingHandle;
 	}
 	// 异步加载只在非根节点中有效
-	else if (bIsASync && !ParentNode->bIsRootNode)
+	else if (IsSyncLoad == false && !ParentNode->bIsRootNode)
 	{
 		TArray<FName> LoadBounds;
 		LoadingHandle = AssetManager.LoadPrimaryAsset(AssetId, LoadBounds,
@@ -87,8 +88,10 @@ void UActions_LoadAsset::LoadAsset(bool bIsASync)
 	{
 		// 阻塞加载资产
 		FSoftObjectPath AssetPath = AssetManager.GetPrimaryAssetPath(AssetId);
-		MetaData = Cast<UFSMMetaDataAsset>(AssetPath.TryLoad());
 		// 手动注册该资产至资产管理器，确保后续可以通过资产管理器找到该它
+		LoadingHandle = AssetManager.GetStreamableManager().RequestSyncLoad(AssetPath);
+		// 同步加载执行完成后更新元数据
+		MetaData = UFSMMetaDataFunctionLibrary::FindMetaDataAsset(this, AssetId);
 		AssetManager.RegisterSpecificPrimaryAsset(AssetId, MetaData.Get());
 	}
 }
@@ -184,12 +187,12 @@ void UActions_LoadAsset::OnExitState(UFSMRuntimeNode* ExitNode)
 
 void UActions_LoadAsset::CheckCondition()
 {
-	UFSMRuntimeNode* FSMParentNode = GetParentNode<UFSMRuntimeNode>();
+	/*UFSMRuntimeNode* FSMParentNode = GetParentNode<UFSMRuntimeNode>();
 	if (FSMParentNode && !FSMParentNode->bIsRootNode)
 	{
 		if (FSMParentNode->FindSubNode<UConditions_AssetCheck>() == nullptr)
 		{
 			ensureMsgf(false, TEXT("非根节点的 LoadAsset 行为推荐搭配 Conditions_AssetCheck 使用，确保资产加载完成"));
 		}
-	}
+	}*/
 }

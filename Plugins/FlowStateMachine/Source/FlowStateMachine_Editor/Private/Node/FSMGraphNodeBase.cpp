@@ -175,11 +175,6 @@ bool UFSMGraphNodeBase::UserBlueprint() const
 	return RuntimeNode && RuntimeNode->GetClass()->HasAnyClassFlags(CLASS_CompiledFromBlueprint);
 }
 
-bool UFSMGraphNodeBase::HasError() const
-{
-	return ErrorMessage.Len() > 0 || RuntimeNode == nullptr;
-}
-
 #if WITH_EDITOR
 
 void UFSMGraphNodeBase::PostEditUndo()
@@ -205,6 +200,11 @@ void UFSMGraphNodeBase::PostEditImport()
 FPinConnectionResponse UFSMGraphNodeBase::CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const
 {
 	return FPinConnectionResponse(CONNECT_RESPONSE_MAKE, TEXT("Connect node"));
+}
+
+bool UFSMGraphNodeBase::CheckNodeValidity()
+{
+	return ErrorMessage.Len() == 0 && RuntimeNode != nullptr;
 }
 
 UEdGraphPin* UFSMGraphNodeBase::GetInputPin() const

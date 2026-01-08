@@ -3,14 +3,20 @@
 
 #include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
 
+#include "SM/FlowStateContext.h"
+
 void UFSMRuntimeNode_JumpStart::OnEnter()
 {
 	Super::OnEnter();
+
+	TrySwitchTo(0);
 }
 
 void UFSMRuntimeNode_JumpTo::OnEnter()
 {
 	Super::OnEnter();
 
-	// TODO::未完成！！！
+
+	check(Context)
+	Context->GotoScatteredNode(JumpStartId);
 }

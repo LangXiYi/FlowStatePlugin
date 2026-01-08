@@ -15,9 +15,15 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_JumpStart : public UFSMGraphNode
 	GENERATED_BODY()
 
 public:
+	UFSMGraphNode_JumpStart(const FObjectInitializer& ObjectInitializer);
+	virtual void PostPlacedNewNode() override;
 	virtual void AllocateDefaultPins() override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FPinConnectionResponse CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const override;
+
+	// DEBUG：：不要修改此属性值
+	UPROPERTY()
+	FGuid JumpStartId;
 };
 
 /**
@@ -30,5 +36,12 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_JumpTo : public UFSMGraphNode_Co
 
 public:
 	virtual void AllocateDefaultPins() override;
+	virtual void PostPlacedNewNode() override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
+
+	virtual bool CheckNodeValidity() override;
+
+	// 点击时，创建一个查找窗口，返回所有的跳跃节点列表，点击后将值赋予该节点
+	UPROPERTY()
+	FGuid JumpStartId;
 };

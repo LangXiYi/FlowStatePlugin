@@ -14,6 +14,7 @@ public:
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, UFSMGraphNode* InGraphNode);
+	virtual TSharedRef<SWidget> CreateTitleWidget(TSharedPtr<SNodeTitle> NodeTitle) override;
 	
 	virtual FString GetNodeComment() const override;
 

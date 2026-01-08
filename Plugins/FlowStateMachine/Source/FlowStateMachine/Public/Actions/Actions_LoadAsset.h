@@ -26,9 +26,8 @@ class FLOWSTATEMACHINE_API UActions_LoadAsset : public UFSMRuntimeSubNode_Action
 public:
 	UActions_LoadAsset(const FObjectInitializer& ObjectInitializer);
 	
-	virtual void ExecuteAction() override;
-
-	void LoadAsset(bool bIsASync = true);
+	virtual void ExecuteAction(UFSMRuntimeNode* Instance) override;
+	void LoadAsset(bool IsSyncLoad = false);
 	void UnloadAsset();
 	void PreloadAsset(FStateDelegate& PreInitializeDelegate);
 	bool HasLoadCompleted() const;

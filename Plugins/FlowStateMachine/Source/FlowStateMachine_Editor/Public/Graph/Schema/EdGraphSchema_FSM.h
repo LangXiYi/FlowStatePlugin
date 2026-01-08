@@ -106,12 +106,13 @@ public:
 
 public:
 	// 供 GraphPalette 使用，获取所有可添加的列表
-	static void CollectNewNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, UClass* RuntimeNodeClass, UClass* GraphNodeClass, UObject* Owner);
-	static void CollectNewSubNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, UClass* RuntimeNodeClass, UClass* GraphNodeClass, UObject* Owner);
-	
+	static void CollectNewNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, UClass* RuntimeNodeClass, UClass* GraphNodeClass, UEdGraph* InGraph);
+	static void CollectNewSubNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, UClass* RuntimeNodeClass, UClass* GraphNodeClass, UEdGraph* InGraph);
+	static void CollectJumpNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, const FGraphNodeClassData& NodeClassData, UClass* GraphNodeClass, UEdGraph* InGraph);
+	static UClass* GetCompositesGraphNodeClass(const UClass* RuntimeNode);
+
 protected:
 	static TSharedPtr<FFSMSchemaAction_NewNode> AddNewNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
 	static TSharedPtr<FFSMSchemaAction_NewSubNode> AddNewSubNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
 
-	static UClass* GetCompositesGraphNodeClass(const UClass* RuntimeNode);
 };

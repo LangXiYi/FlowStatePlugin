@@ -53,8 +53,6 @@ public:
 
 	bool UserBlueprint() const;
 
-	bool HasError() const;
-
 #if WITH_EDITOR
 
 	virtual void PostEditUndo() override;
@@ -63,8 +61,11 @@ public:
 
 #endif
 
-	// 检查引脚的连接性
+	/** 检查引脚的连接性 */
 	virtual FPinConnectionResponse CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const;
+
+	/** 检查节点的有效性 */
+	virtual bool CheckNodeValidity();
 
 protected:
 	UEdGraphPin* GetInputPin() const;

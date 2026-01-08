@@ -4,6 +4,7 @@
 #include "FlowStateMachine_EditorModule.h"
 #include "GraphEditorActions.h"
 #include "ToolMenu.h"
+#include "Graph/FSMGraph.h"
 #include "AIGraph/Classes/AIGraphTypes.h"
 #include "Node/FSMGraphNode.h"
 #include "Node/FSMGraphNode_Composites.h"
@@ -37,7 +38,7 @@ UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEd
 		ParentGraph->AddNode(NodeTemplate, true);
 
 		NodeTemplate->CreateNewGuid();
-		NodeTemplate->PostPasteNode();
+		NodeTemplate->PostPlacedNewNode();
 
 		NodeTemplate->NodePosX = Location.X;
 		NodeTemplate->NodePosY = Location.Y;
@@ -119,7 +120,7 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 
 		for (FGraphNodeClassData& NodeClass : NodeClasses)
 		{
-			CollectNewNodeAction(TasksBuilder, NodeClass.GetClass(), UFSMGraphNode_State::StaticClass(), ContextMenuBuilder.OwnerOfTemporaries);
+			CollectNewNodeAction(TasksBuilder, NodeClass.GetClass(), UFSMGraphNode_State::StaticClass(), const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph));
 		}
 		ContextMenuBuilder.Append(TasksBuilder);
 	}
@@ -135,11 +136,10 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 		for (FGraphNodeClassData& NodeClass : NodeClasses)
 		{
 			UClass* CompositesGraphNodeClass = GetCompositesGraphNodeClass(NodeClass.GetClass());
-			CollectNewNodeAction(TasksBuilder, NodeClass.GetClass(), CompositesGraphNodeClass, ContextMenuBuilder.OwnerOfTemporaries);
+			CollectNewNodeAction(TasksBuilder, NodeClass.GetClass(), CompositesGraphNodeClass, const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph));
 		}
 		ContextMenuBuilder.Append(TasksBuilder);
 	}
-	
 	Super::GetGraphContextActions(ContextMenuBuilder);
 }
 
@@ -235,30 +235,50 @@ void UEdGraphSchema_FSM::GetSubNodeClasses(EFSMSubNodeType SubNodeFlags, TArray<
 }
 
 void UEdGraphSchema_FSM::CollectNewNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder,
-	UClass* RuntimeNodeClass, UClass* GraphNodeClass, UObject* Owner)
+	UClass* RuntimeNodeClass, UClass* GraphNodeClass, UEdGraph* InGraph)
 {
+	if (InGraph == nullptr)
+	{
+		return;
+	}
 	FFlowStateMachine_EditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateMachine_EditorModule>("FlowStateMachine_Editor");
 	TSharedPtr<FGraphNodeClassHelper> ClassCache = FSMEditorModule.GetClassCache();
 	
 	TArray<FGraphNodeClassData> NodeClasses;
 	ClassCache->GatherClasses(RuntimeNodeClass, NodeClasses);
 
-	for (const auto& NodeClassData : NodeClasses)
+	for (auto& NodeClassData : NodeClasses)
 	{
-		const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClassData.ToString(), false));
-		// 添加创建状态节点到图表右键菜单
-		TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
+		// Action Switcher 控制行为创建
+		if (NodeClassData.GetClass() == UFSMRuntimeNode_JumpTo::StaticClass())
+		{
+			CollectJumpNodeAction(TasksBuilder, NodeClassData, GraphNodeClass, InGraph);
+		}
+		else
+		{
+			//////////////////////////////////
+			// Default Action
+			//////////////////////////////////
+			
+			const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClassData.ToString(), false));
+			// 添加创建状态节点到图表右键菜单
+			TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
 
-		// 创建一个图表节点的模板给操作类
-		UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(Owner, GraphNodeClass);
-		OpNode->ClassData = NodeClassData;
-		AddOpAction->NodeTemplate = OpNode;
+			// 创建一个图表节点的模板给操作类
+			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(InGraph, GraphNodeClass);
+			OpNode->ClassData = NodeClassData;
+			AddOpAction->NodeTemplate = OpNode;
+		}
 	}
 }
 
 void UEdGraphSchema_FSM::CollectNewSubNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder,
-	UClass* RuntimeNodeClass, UClass* GraphNodeClass, UObject* Owner)
+                                                 UClass* RuntimeNodeClass, UClass* GraphNodeClass, UEdGraph* Owner)
 {
+	if (Owner == nullptr)
+	{
+		return;
+	}
 	FFlowStateMachine_EditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateMachine_EditorModule>("FlowStateMachine_Editor");
 	TSharedPtr<FGraphNodeClassHelper> ClassCache = FSMEditorModule.GetClassCache();
 	
@@ -280,6 +300,39 @@ void UEdGraphSchema_FSM::CollectNewSubNodeAction(FCategorizedGraphActionListBuil
 	}
 }
 
+void UEdGraphSchema_FSM::CollectJumpNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder,
+	const FGraphNodeClassData& NodeClassData, UClass* GraphNodeClass, UEdGraph* InGraph)
+{
+	 const auto& GetJumpToActionName = [](UFSMGraphNodeBase* InGraphNode)->FText
+	 {
+		 if (InGraphNode && InGraphNode->RuntimeNode)
+		 {
+		 	return FText::FromString(TEXT("Jump To ---> ") + InGraphNode->RuntimeNode->GetNodeName());
+		 }
+		 return FText::FromString(TEXT("Error None"));
+	 };
+	
+	if (UFSMGraph* MyGraph = Cast<UFSMGraph>(InGraph))
+	{
+		// 查找图表中的所有零散节点
+		for (UFSMGraphNode* ScatteredNode : MyGraph->ScatteredNodes)
+		{
+			if (UFSMGraphNode_JumpStart* JumpStartNode = Cast<UFSMGraphNode_JumpStart>(ScatteredNode))
+			{
+				const FText NodeTypeName = GetJumpToActionName(JumpStartNode);
+				// 添加创建状态节点到图表右键菜单
+				TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
+
+				// 创建一个图表节点的模板给操作类
+				UFSMGraphNode_JumpTo* OpNode = NewObject<UFSMGraphNode_JumpTo>(MyGraph, GraphNodeClass);
+				OpNode->JumpStartId = JumpStartNode->JumpStartId;
+				OpNode->ClassData = NodeClassData;
+				AddOpAction->NodeTemplate = OpNode;
+			}
+		}
+	}
+}
+
 TSharedPtr<FFSMSchemaAction_NewNode> UEdGraphSchema_FSM::AddNewNodeAction(
 	FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip)
 {
@@ -298,11 +351,10 @@ TSharedPtr<FFSMSchemaAction_NewSubNode> UEdGraphSchema_FSM::AddNewSubNodeAction(
 
 UClass* UEdGraphSchema_FSM::GetCompositesGraphNodeClass(const UClass* RuntimeNodeClass)
 {
-	if (RuntimeNodeClass == nullptr)
+	if (RuntimeNodeClass == (UFSMRuntimeNode_JumpStart::StaticClass()))
 	{
-		return UFSMGraphNode_Composites::StaticClass();
+		return UFSMGraphNode_JumpStart::StaticClass();
 	}
-
 	if (RuntimeNodeClass == (UFSMRuntimeNode_JumpTo::StaticClass()))
 	{
 		return UFSMGraphNode_JumpTo::StaticClass();

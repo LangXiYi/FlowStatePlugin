@@ -13,7 +13,9 @@ public:
 
 protected:
     void RegisterAssetTypeAction(class IAssetTools& AssetTools, TSharedRef<IAssetTypeActions> ActionPtr);
-    
+    void RegisterPropertyTypeLayout(class FPropertyEditorModule& PropertyEditorModule, FName PropertyName, TSharedRef<IPropertyTypeCustomization> TypeCustomization);
+
 protected:
     TArray<TSharedPtr<IAssetTypeActions>> CreatedAssetTypeActions;
+    TArray<FName> CreatedPropertyTypeLayouts;
 };

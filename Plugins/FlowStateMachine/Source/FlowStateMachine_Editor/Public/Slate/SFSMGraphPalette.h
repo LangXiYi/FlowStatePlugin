@@ -10,6 +10,8 @@ public:
 
 	void Construct(const FArguments& InArgs, UFlowStateMachine* InAsset);
 
+	virtual void RefreshActionsList(bool bPreserveExpansion) override;
+
 protected:
 	virtual void CollectAllActions(FGraphActionListBuilderBase& OutAllActions) override;
 

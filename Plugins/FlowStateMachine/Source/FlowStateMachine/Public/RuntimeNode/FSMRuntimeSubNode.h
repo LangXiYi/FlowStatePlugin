@@ -22,8 +22,7 @@ public:
 
 	UFlowStateContext* GetContext() const;
 
-	// 若要所有属性都同步，那么就必须要在这里将属性复制出来，因为没有UPROPERTY修饰的对不会被拷贝
-	virtual void InitializeSubNode(const UFSMRuntimeSubNode* TemplateNodeInstance, UFSMRuntimeNodeBase* InParentNode);
+	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode) override;
 };
 
 

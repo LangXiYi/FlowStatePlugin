@@ -17,7 +17,7 @@ void UFSMRuntimeNode::OnInitialize(UFlowStateContext* InContext)
 	// 执行所有 Action
 	for (UFSMRuntimeSubNode_Action* Action : Actions)
 	{
-		Action->ExecuteAction();
+		Action->ExecuteAction(this);
 	}
 }
 
@@ -90,11 +90,8 @@ void UFSMRuntimeNode::AddSubNode(UFSMRuntimeNodeBase* InSubNode)
 
 void UFSMRuntimeNode::ReplaceSubNode(UFSMRuntimeNodeBase* NewSubNode, int Index)
 {
-	if (NewSubNode == nullptr || !SubNodes.IsValidIndex(Index))
-	{
-		return;
-	}
-
+	check(NewSubNode && SubNodes.IsValidIndex(Index))
+	checkf(!NewSubNode->bIsTemplateInstance, TEXT("不得使用模板节点作为运行时实例"))
 	if (UFSMRuntimeSubNode_Action* ActionNode = Cast<UFSMRuntimeSubNode_Action>(SubNodes[Index]))
 	{
 		const int32 ActionIndex = Actions.Find(ActionNode);
@@ -110,10 +107,15 @@ void UFSMRuntimeNode::ReplaceSubNode(UFSMRuntimeNodeBase* NewSubNode, int Index)
 		const int32 ConditionIndex = Conditions.Find(ConditionNode);
 		Conditions[ConditionIndex] = (UFSMRuntimeSubNode_Condition*)NewSubNode;
 	}
-
 	SubNodes[Index] = NewSubNode;
 	NewSubNode->ParentNode = this;
+}
 
+void UFSMRuntimeNode::ReplaceChildNode(UFSMRuntimeNode* NewChildNode, int Index)
+{
+	check(NewChildNode && ChildrenNodes.IsValidIndex(Index))
+	checkf(!NewChildNode->bIsTemplateInstance, TEXT("不得使用模板节点作为运行时实例"))
+	ChildrenNodes[Index] = NewChildNode;
 }
 
 void UFSMRuntimeNode::ClearSubNodes()

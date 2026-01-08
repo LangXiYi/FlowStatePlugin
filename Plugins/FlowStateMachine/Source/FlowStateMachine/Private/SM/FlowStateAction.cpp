@@ -3,8 +3,8 @@
 
 #include "SM/FlowStateAction.h"
 
-void UFlowStateAction::ExecuteAction()
+void UFlowStateAction::ExecuteAction(UFSMRuntimeNode* Instance)
 {
-	Super::ExecuteAction();
-	OnExecuteAction();
+	Super::ExecuteAction(Instance);
+	OnExecuteAction(Instance);
 }

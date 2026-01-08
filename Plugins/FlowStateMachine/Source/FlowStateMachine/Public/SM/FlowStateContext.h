@@ -33,6 +33,9 @@ public:
 
 	bool TrySwitchTo(UFSMRuntimeNode* Node);
 
+	/** 切换至零散节点 */
+	bool GotoScatteredNode(FGuid Key);
+
 	void Tick(float DeltaTime);
 
 	void ExitCurrentState();
@@ -41,17 +44,20 @@ public:
 
 protected:
 	/** 将对象转换为运行时实例化的对象 */
-	UFSMRuntimeNodeBase* DumpInstance(const UFSMRuntimeNodeBase* Template, UFSMRuntimeNodeBase* ParentNode);
+	UFSMRuntimeNodeBase* DumpInstance(const UFSMRuntimeNodeBase* Template);
 
 	/** 将对象转换为运行时实例化的对象 */
 	template<class T>
-	T* DumpInstance(const UFSMRuntimeNodeBase* Template, UFSMRuntimeNodeBase* ParentNode)
+	T* DumpInstance(const UFSMRuntimeNodeBase* Template)
 	{
-		return static_cast<T*>(DumpInstance(Template, ParentNode));
+		return static_cast<T*>(DumpInstance(Template));
 	}
 
-	UFSMRuntimeNode* CreateAllInstance(const UFSMRuntimeNode* RootNode, UFSMRuntimeNodeBase* ParentNode, TArray<UFSMRuntimeNodeBase*>& Stack);
+	/** 转换模板实例为运行时实例 */
+	UFSMRuntimeNode* CreateChildrenInstance(const UFSMRuntimeNode* TemplateRootNode, UFSMRuntimeNodeBase* ParentNode, TArray<UFSMRuntimeNodeBase*>& Stack);
 
+	void CreateScatteredInstance();
+	
 	////////////////////////////////////////////////////////////////////////
 	/// GCManager Helper
 	////////////////////////////////////////////////////////////////////////
@@ -113,9 +119,9 @@ protected:
 	UPROPERTY(Transient)
 	UFSMRuntimeNode* RootState;
 
-	// 所有的 StartJump 的根节点
+	// 所有的零散节点
 	UPROPERTY(Transient)
-	TArray<UFSMRuntimeNode*> JumpStates;
+	TArray<UFSMRuntimeNode*> ScatteredNodes;
 
 private:
 	// 引用资产，供运行时创建新的运行时节点使用
@@ -130,4 +136,8 @@ private:
 	/** 对 Value 使用弱指针引用确保回收机制正常运行 */
 	UPROPERTY(Transient)
 	TMap<const UFSMRuntimeNodeBase* /* Template Node */, UFSMRuntimeNodeBase* /* Dump Instance */> CacheTemplateObjects;
+
+	UPROPERTY(Transient)
+	TMap<FGuid, UFSMRuntimeNode*> ScatteredNodeMapping;
+	
 };

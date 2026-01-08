@@ -16,16 +16,14 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNode_JumpStart : public UFSMRuntimeNode_Co
 
 public:
 	virtual void OnEnter() override;
-	
-	UPROPERTY(EditAnywhere)
-	FString Key;
 
-	UPROPERTY(EditAnywhere)
-	UFSMRuntimeNode* JumpTargetNode;
+	UPROPERTY(VisibleAnywhere)
+	FGuid JumpStartId;
 };
 
 /**
  * 创建一个选择器，支持从图表中查找目标节点并跳跃至该节点
+ * HiddenNode
  */
 UCLASS()
 class FLOWSTATEMACHINE_API UFSMRuntimeNode_JumpTo : public UFSMRuntimeNode_Composites
@@ -34,10 +32,7 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNode_JumpTo : public UFSMRuntimeNode_Compo
 
 public:
 	virtual void OnEnter() override;
-	
-	UPROPERTY(EditAnywhere)
-	FString Key;
 
-	UPROPERTY(EditAnywhere)
-	UFSMRuntimeNode* JumpTargetNode;
+	UPROPERTY(VisibleAnywhere)
+	FGuid JumpStartId;
 };

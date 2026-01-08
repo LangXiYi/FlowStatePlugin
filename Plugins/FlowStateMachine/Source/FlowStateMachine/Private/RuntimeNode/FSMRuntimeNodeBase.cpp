@@ -8,11 +8,12 @@ void UFSMRuntimeNodeBase::InitializeFromAsset(UFlowStateMachine* Asset)
 	FSMAsset = Asset;
 }
 
-void UFSMRuntimeNodeBase::InitializeNode(UFSMRuntimeNodeBase* InParentNode, uint16 InTreeDepth)
+void UFSMRuntimeNodeBase::InitializeNode(UFSMRuntimeNodeBase* InParentNode)
 {
-	AllParentNodes.AddUnique(InParentNode);
-	ParentNode = nullptr;
-	TreeDepth = InTreeDepth;
+	if (InParentNode)
+	{
+		AllParentNodes.AddUnique(InParentNode);
+	}
 }
 
 class UWorld* UFSMRuntimeNodeBase::GetWorld() const

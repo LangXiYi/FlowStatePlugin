@@ -28,7 +28,9 @@ UFlowStateContext* UFSMRuntimeSubNode::GetContext() const
 	return nullptr;
 }
 
-void UFSMRuntimeSubNode::InitializeSubNode(const UFSMRuntimeSubNode* TemplateNodeInstance, UFSMRuntimeNodeBase* InParentNode)
+void UFSMRuntimeSubNode::InitializeNode(UFSMRuntimeNodeBase* InParentNode)
 {
+	Super::InitializeNode(InParentNode);
+	// 次要节点的 ParentNode 是固定，所以可以直接赋值
 	ParentNode = InParentNode;
 }

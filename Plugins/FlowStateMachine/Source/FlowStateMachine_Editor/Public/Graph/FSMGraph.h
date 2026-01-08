@@ -60,17 +60,24 @@ protected:
 	virtual bool CanRemoveNestedObject(UObject* TestObject) const;
 	virtual void OnNodeInstanceRemoved(UObject* NodeInstance) {}
 
-	/** 创建所有的子级节点
-	 * 注意：避免出现环形，否则程序无法正确处理会直接报错，推荐使用 JumpState 与 JumpNode   
-	 */
-	void CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode, UFSMGraphNode* GraphRootNode, TArray<UObject*>& Stack);
+	/** 创建所有的子级节点 */
+	static void CreateChildrenNodes(UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode, UFSMGraphNode* GraphRootNode, TArray<UObject*>& Stack);
+
+	/** 创建所有的零散节点 */
+	static void CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TArray<UFSMGraphNode*>& ScatteredNodes);
 
 	// 环形检查，避免递归无限重复
 	bool CheckRing(UFSMGraphNodeBase* StartNode, UFSMGraphNodeBase* BreakNode);
+
+public:
+	static void GenerateJumpStateIdComboBoxStrings(TArray<TSharedPtr<FString>>& OutComboBoxStrings, TArray<TSharedPtr<SToolTip>>& OutToolTips, TArray<bool>& OutRestrictedItems, bool bAllowClear, bool bAllowAll);
+
+public:
+	UPROPERTY()
+	TArray<UFSMGraphNode*> ScatteredNodes;
 	
 private:
 	bool bLockUpdates;
 
-	TArray<UFSMGraphNode_JumpStart*> JumpStartNodes;
 };
 

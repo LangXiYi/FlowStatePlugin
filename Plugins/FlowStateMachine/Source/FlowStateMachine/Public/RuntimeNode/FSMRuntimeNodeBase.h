@@ -19,7 +19,7 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNodeBase : public UObject
 public:
 	virtual void InitializeFromAsset(UFlowStateMachine* Asset);
 
-	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode, uint16 InTreeDepth);
+	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode);
 
 	// 定义访问公共数据的方法
 	// float GetCommonDataAsFloat(FString PropName);
@@ -66,8 +66,4 @@ private:
 	// 静态资产实例，可以通过他访问到我们的黑板资产
 	UPROPERTY(VisibleAnywhere)
 	UFlowStateMachine* FSMAsset;
-
-	/** depth in tree */
-	UPROPERTY(VisibleAnywhere)
-	uint8 TreeDepth;
 };

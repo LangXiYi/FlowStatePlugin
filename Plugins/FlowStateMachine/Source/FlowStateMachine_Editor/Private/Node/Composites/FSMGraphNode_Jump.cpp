@@ -3,6 +3,31 @@
 
 #include "Node/Composites/FSMGraphNode_Jump.h"
 
+#include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
+
+UFSMGraphNode_JumpStart::UFSMGraphNode_JumpStart(const FObjectInitializer& ObjectInitializer)
+	:Super(ObjectInitializer)
+{
+	// if (!JumpStartId.IsValid())
+	// {
+	// 	JumpStartId = FGuid::NewGuid();
+	// }
+}
+
+void UFSMGraphNode_JumpStart::PostPlacedNewNode()
+{
+	Super::PostPlacedNewNode();
+	if (UFSMRuntimeNode_JumpStart* JumpStartRuntimeNode = Cast<UFSMRuntimeNode_JumpStart>(RuntimeNode))
+	{
+		if (!JumpStartId.IsValid())
+		{
+			JumpStartId = FGuid::NewGuid();
+			JumpStartRuntimeNode->JumpStartId = JumpStartId;
+		}
+	}
+	check(JumpStartId.IsValid());
+}
+
 void UFSMGraphNode_JumpStart::AllocateDefaultPins()
 {
 	Super::AllocateDefaultPins();
@@ -25,9 +50,9 @@ FPinConnectionResponse UFSMGraphNode_JumpStart::CheckPinConnection(const UFSMGra
 	
 	if (FromDirection == EGPD_Input)
 	{
-		return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_A, TEXT("connect node"));
+		return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_B, TEXT("connect node and break b"));
 	}
-	return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_B, TEXT("connect node"));
+	return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_A, TEXT("connect node and break a"));
 }
 
 void UFSMGraphNode_JumpTo::AllocateDefaultPins()
@@ -37,7 +62,21 @@ void UFSMGraphNode_JumpTo::AllocateDefaultPins()
 	CreatePin(EGPD_Input, "DefaultInput", "Then");
 }
 
+void UFSMGraphNode_JumpTo::PostPlacedNewNode()
+{
+	Super::PostPlacedNewNode();
+	UFSMRuntimeNode_JumpTo* JumpStartRuntimeNode = Cast<UFSMRuntimeNode_JumpTo>(RuntimeNode);
+	check(JumpStartRuntimeNode);
+	JumpStartRuntimeNode->JumpStartId = JumpStartId;
+}
+
 FText UFSMGraphNode_JumpTo::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
 	return FText::FromString(TEXT("Jump To 'NodeName'"));
+}
+
+bool UFSMGraphNode_JumpTo::CheckNodeValidity()
+{
+	// TODO::检查
+	return Super::CheckNodeValidity();
 }

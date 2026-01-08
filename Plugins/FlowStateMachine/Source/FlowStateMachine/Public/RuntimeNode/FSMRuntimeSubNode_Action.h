@@ -19,5 +19,5 @@ class FLOWSTATEMACHINE_API UFSMRuntimeSubNode_Action : public UFSMRuntimeSubNode
 
 public:
 	/** 执行行为 */
-	virtual void ExecuteAction() {}
+	virtual void ExecuteAction(UFSMRuntimeNode* Instance) {}
 };
