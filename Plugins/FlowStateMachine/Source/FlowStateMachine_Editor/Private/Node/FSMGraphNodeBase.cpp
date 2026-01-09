@@ -74,6 +74,35 @@ void UFSMGraphNodeBase::FindDiffs(class UEdGraphNode* OtherNode, FDiffResults& R
 	}
 }
 
+bool UFSMGraphNodeBase::IsDeprecated() const
+{
+	return RuntimeNode == nullptr || Super::IsDeprecated();
+}
+
+bool UFSMGraphNodeBase::HasDeprecatedReference() const
+{
+	return false;
+}
+
+FEdGraphNodeDeprecationResponse UFSMGraphNodeBase::GetDeprecationResponse(
+	EEdGraphNodeDeprecationType DeprecationType) const
+{
+	FEdGraphNodeDeprecationResponse Response;
+
+	if (DeprecationType == EEdGraphNodeDeprecationType::NodeTypeIsDeprecated)
+	{
+		Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
+		Response.MessageText = LOCTEXT("NodeDeprecated_Warning", "Warning: @@ is deprecated; please replace or remove it.");
+	}
+	else if (DeprecationType == EEdGraphNodeDeprecationType::NodeHasDeprecatedReference)
+	{
+		Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
+		Response.MessageText = LOCTEXT("NodeDeprecatedReference_Note", "Warning: @@ has a deprecated reference; please replace or remove it.");
+	}
+
+	return Response;
+}
+
 void UFSMGraphNodeBase::PrepareForCopying()
 {
 	if (RuntimeNode)
@@ -123,9 +152,62 @@ void UFSMGraphNodeBase::NodeConnectionListChanged()
 	GetFSMGraph()->UpdateAsset();
 }
 
+FLinearColor UFSMGraphNodeBase::GetNodeTitleColor() const
+{
+	if (HasDeprecatedReference())
+	{
+		return FLinearColor::Yellow;
+	}
+	return Super::GetNodeTitleColor();
+}
+
 FText UFSMGraphNodeBase::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
-	return RuntimeNode ? FText::FromString(RuntimeNode->GetNodeName()) : Super::GetNodeTitle(TitleType);
+	FText NodeTitle = RuntimeNode ? FText::FromString(RuntimeNode->GetNodeName()) : Super::GetNodeTitle(TitleType);
+	FText NodeTitleSuffix = GetNodeTitleSuffix();
+	if (NodeTitleSuffix.IsEmpty())
+	{
+		return NodeTitle;
+	}
+	return FText::Format(FTextFormat::FromString("{0} {1}"), NodeTitle, NodeTitleSuffix);
+}
+
+FText UFSMGraphNodeBase::GetTooltipText() const
+{
+	if (IsDeprecated())
+	{
+		FEdGraphNodeDeprecationResponse DeprecationMessage = GetDeprecationResponse(EEdGraphNodeDeprecationType::NodeTypeIsDeprecated);
+		if (DeprecationMessage.MessageType != EEdGraphNodeDeprecationMessageType::None)
+		{
+			return DeprecationMessage.MessageText;
+		}
+	}
+
+	if (HasDeprecatedReference())
+	{
+		FEdGraphNodeDeprecationResponse DeprecatedReferenceMessage = GetDeprecationResponse(EEdGraphNodeDeprecationType::NodeHasDeprecatedReference);
+		if (DeprecatedReferenceMessage.MessageType != EEdGraphNodeDeprecationMessageType::None)
+		{
+			return DeprecatedReferenceMessage.MessageText;
+		}
+	}
+
+	FText TooltipDesc;
+	if (RuntimeNode->GetClass()->HasAnyClassFlags(CLASS_CompiledFromBlueprint))
+	{
+		FAssetData AssetData(RuntimeNode->GetClass()->ClassGeneratedBy);
+		FString Description = AssetData.GetTagValueRef<FString>(GET_MEMBER_NAME_CHECKED(UBlueprint, BlueprintDescription));
+		if (!Description.IsEmpty())
+		{
+			Description.ReplaceInline(TEXT("\\n"), TEXT("\n"));
+			TooltipDesc = FText::FromString(MoveTemp(Description));
+		}
+	}
+	else
+	{
+		TooltipDesc = RuntimeNode->GetClass()->GetToolTipText();
+	}
+	return TooltipDesc;
 }
 
 void UFSMGraphNodeBase::ResetNodeOwner()
@@ -202,11 +284,6 @@ FPinConnectionResponse UFSMGraphNodeBase::CheckPinConnection(const UFSMGraphNode
 	return FPinConnectionResponse(CONNECT_RESPONSE_MAKE, TEXT("Connect node"));
 }
 
-bool UFSMGraphNodeBase::CheckNodeValidity()
-{
-	return ErrorMessage.Len() == 0 && RuntimeNode != nullptr;
-}
-
 UEdGraphPin* UFSMGraphNodeBase::GetInputPin() const
 {
 	TArray<UEdGraphPin*> OutPins;
@@ -232,6 +309,20 @@ TArray<UEdGraphPin*> UFSMGraphNodeBase::GetOutputPins() const
 		}
 	}
 	return OutPins;
+}
+
+FText UFSMGraphNodeBase::GetNodeTitleSuffix() const
+{
+	FText Suffix = LOCTEXT("NodeTitleSuffix", "");
+	if (IsDeprecated())
+	{
+		Suffix = LOCTEXT("DeprecatedSuffix","(Deprecated)");
+	}
+	if (HasDeprecatedReference())
+	{
+		Suffix = LOCTEXT("UnknownReference","(Unknown Reference)");
+	}
+	return Suffix;
 }
 
 #undef LOCTEXT_NAMESPACE

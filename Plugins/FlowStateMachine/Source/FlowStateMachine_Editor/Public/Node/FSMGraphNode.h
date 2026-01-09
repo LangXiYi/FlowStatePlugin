@@ -43,10 +43,6 @@ public:
 
 	virtual void ResetNodeOwner() override;
 public:
-	/** 所有次要节点 */
-	UPROPERTY(VisibleAnywhere)
-	TArray<UFSMGraphNodeBase*> SubNodes;
-	
 	/** 次要节点：条件列表 */
 	UPROPERTY(VisibleAnywhere)
 	TArray<UFSMGraphSubNode*> Conditions;

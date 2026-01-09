@@ -10,7 +10,6 @@
 
 
 
-#undef LOCTEXT_NAMESPACE
 
 void UFSMGraphSubNode::DestroyNode()
 {
@@ -19,6 +18,39 @@ void UFSMGraphSubNode::DestroyNode()
 	{
 		FSMParentNode->RemoveSubNode(this);
 	}
+}
+
+FLinearColor UFSMGraphSubNode::GetNodeTitleColor() const
+{
+	if (HasDeprecatedReference())
+	{
+		return FLinearColor::Yellow;
+	}
+	return FLinearColor::Green;
+}
+
+bool UFSMGraphSubNode::HasDeprecatedReference() const
+{
+	return ParentNode == nullptr || Super::HasDeprecatedReference();
+}
+
+FEdGraphNodeDeprecationResponse UFSMGraphSubNode::GetDeprecationResponse(
+	EEdGraphNodeDeprecationType DeprecationType) const
+{
+	FEdGraphNodeDeprecationResponse Response = Super::GetDeprecationResponse(DeprecationType);
+	if (DeprecationType == EEdGraphNodeDeprecationType::NodeTypeIsDeprecated)
+	{
+		FText NodeTitle = ParentNode->GetNodeTitle(ENodeTitleType::FullTitle);
+		Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
+		Response.MessageText = FText::Format(FTextFormat::FromString("Warning: The subnode '@@' is deprecated from {0}; please replace or remove it."), NodeTitle);
+	}
+	else if (DeprecationType == EEdGraphNodeDeprecationType::NodeHasDeprecatedReference)
+	{
+		FText NodeTitle = GetNodeTitle(ENodeTitleType::FullTitle);
+		Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
+		Response.MessageText = FText::Format(FTextFormat::FromString("Warning: The subnode '{0}' has a deprecated parent; please replace or remove it."), NodeTitle);
+	}
+	return Response;
 }
 
 #if WITH_EDITOR
@@ -47,3 +79,6 @@ void UFSMGraphSubNode::PostEditUndo()
 }
 
 #endif
+
+
+#undef LOCTEXT_NAMESPACE

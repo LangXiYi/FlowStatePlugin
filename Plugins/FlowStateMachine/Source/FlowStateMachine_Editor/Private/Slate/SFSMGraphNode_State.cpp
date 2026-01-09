@@ -245,6 +245,11 @@ FReply SFSMGraphNode_State::OnMouseButtonDown(const FGeometry& MyGeometry, const
 	return SGraphNode::OnMouseButtonDown(MyGeometry, MouseEvent);
 }
 
+FString SFSMGraphNode_State::GetNodeComment() const
+{
+	return "Test Node Comment";
+}
+
 void SFSMGraphNode_State::AddAction(TSharedPtr<SGraphNode> ActionWidget)
 {
 	ActionBox->AddSlot()

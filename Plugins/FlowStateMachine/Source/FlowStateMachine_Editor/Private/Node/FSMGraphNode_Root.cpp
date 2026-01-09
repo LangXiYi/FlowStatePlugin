@@ -7,11 +7,22 @@
 #include "SM/FlowStateMachine.h"
 #include "Widgets/FlowStateLayoutWidget.h"
 
+#define LOCTEXT_NAMESPACE "FSMGraphNode_Root"
 
 void UFSMGraphNode_Root::AllocateDefaultPins()
 {
 	Super::AllocateDefaultPins();
 	CreatePin(EGPD_Output, "DefaultOutput", "Execute");
+}
+
+bool UFSMGraphNode_Root::IsDeprecated() const
+{
+	return false;
+}
+
+FText UFSMGraphNode_Root::GetTooltipText() const
+{
+	return LOCTEXT("RootNodeTooltip", "RootNode");
 }
 
 FPinConnectionResponse UFSMGraphNode_Root::CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const
@@ -58,3 +69,5 @@ void UFSMGraphNode_Root::UpdateLayoutWidget()
 		FSMAsset->LayoutWidget = LayoutWidget;
 	}
 }
+
+#undef LOCTEXT_NAMESPACE

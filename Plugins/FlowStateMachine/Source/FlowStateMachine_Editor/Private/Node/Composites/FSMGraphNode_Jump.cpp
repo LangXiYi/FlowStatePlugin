@@ -3,7 +3,10 @@
 
 #include "Node/Composites/FSMGraphNode_Jump.h"
 
+#include "Graph/FSMGraph.h"
 #include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
+
+#define LOCTEXT_NAMESPACE "FSMGraphNodeJump"
 
 UFSMGraphNode_JumpStart::UFSMGraphNode_JumpStart(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
@@ -72,11 +75,48 @@ void UFSMGraphNode_JumpTo::PostPlacedNewNode()
 
 FText UFSMGraphNode_JumpTo::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
-	return FText::FromString(TEXT("Jump To 'NodeName'"));
+	FText NodeTitle = Super::GetNodeTitle(TitleType);
+	return FText::Format(FTextFormat::FromString("Jump to {0}"), NodeTitle);
 }
 
-bool UFSMGraphNode_JumpTo::CheckNodeValidity()
+bool UFSMGraphNode_JumpTo::IsDeprecated() const
 {
-	// TODO::检查
-	return Super::CheckNodeValidity();
+	return Super::IsDeprecated();
 }
+
+bool UFSMGraphNode_JumpTo::HasDeprecatedReference() const
+{
+	return Super::HasDeprecatedReference() || !IsValidJumpNode();
+}
+
+FEdGraphNodeDeprecationResponse UFSMGraphNode_JumpTo::GetDeprecationResponse(
+	EEdGraphNodeDeprecationType DeprecationType) const
+{
+	FEdGraphNodeDeprecationResponse Response = Super::GetDeprecationResponse(DeprecationType);
+	if (DeprecationType == EEdGraphNodeDeprecationType::NodeHasDeprecatedReference)
+	{
+		Response.MessageText = LOCTEXT("NodeDeprecationResponse", "Warning: JumpTo 节点中引用了错误的 JumpStartId ");
+		Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
+	}
+	return Response;
+}
+
+bool UFSMGraphNode_JumpTo::IsValidJumpNode() const
+{
+	UFSMGraph* MyGraph = GetFSMGraph();
+	if (MyGraph == nullptr) return false;
+	for (UFSMGraphNode* ScatteredNode : MyGraph->ScatteredNodes)
+	{
+		UFSMGraphNode_JumpStart* JumpStartNode = Cast<UFSMGraphNode_JumpStart>(ScatteredNode);
+		if (JumpStartNode == nullptr) continue;
+		// 判断 Id 是否匹配
+		if (JumpStartNode->JumpStartId == JumpStartId)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+#undef LOCTEXT_NAMESPACE

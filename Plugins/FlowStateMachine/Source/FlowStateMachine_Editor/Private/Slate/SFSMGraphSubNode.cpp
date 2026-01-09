@@ -59,6 +59,7 @@ void SFSMGraphSubNode::UpdateGraphNode()
 			[
 				SNew(STextBlock)
 				.Text(this, &SFSMGraphSubNode::GetNodeName)
+				.ColorAndOpacity(this, &SFSMGraphSubNode::GetNodeTitleColor)
 			]
 		]
 	];

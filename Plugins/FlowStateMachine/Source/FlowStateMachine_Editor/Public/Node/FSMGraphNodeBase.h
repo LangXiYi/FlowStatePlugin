@@ -15,28 +15,54 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNodeBase : public UEdGraphNode
 	GENERATED_BODY()
 
 public:
+
+	/////////////////////////////////////////////////////
+	// UEdGraphNode Function
+	/////////////////////////////////////////////////////
+
 	/** 当节点被放置后调用，创建 RuntimeNode 实例 */
 	virtual void PostPasteNode() override;
 
 	/** 当节点被放置后调用，创建 RuntimeNode 实例 */
 	virtual void PostPlacedNewNode() override;
 
-	/** 为节点提供差异化比较 */
-	virtual void FindDiffs(class UEdGraphNode* OtherNode, FDiffResults& Results) override;
-
 	virtual void PrepareForCopying() override;
-	virtual void PostCopyNode();
 
-	virtual void NodeConnectionListChanged() override;
+	/** 获取节点标题的颜色 */
+	virtual FLinearColor GetNodeTitleColor() const override;
 
 	/** 获取节点的名称 */
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
+
+	/** 获取节点的提示文本 */
+	virtual FText GetTooltipText() const override;
 
 	/** 自动连接创建的新节点 */
 	virtual void AutowireNewNode(UEdGraphPin* FromPin) override;
 
 	/** 是否可以删除该节点 */
 	virtual bool CanUserDeleteNode() const override { return true; }
+
+	/** 节点连接改变事件 */
+	virtual void NodeConnectionListChanged() override;
+
+	/** 为节点提供差异化比较 */
+	virtual void FindDiffs(class UEdGraphNode* OtherNode, FDiffResults& Results) override;
+
+	/** 重写该函数扩展节点自身的警告 */
+	virtual bool IsDeprecated() const override;
+
+	/** 重写该函数扩展引用依赖缺失的警告 */
+	virtual bool HasDeprecatedReference() const override;
+
+	/** 子类重写该函数，并返回自定义的错误日志 */
+	virtual FEdGraphNodeDeprecationResponse GetDeprecationResponse(EEdGraphNodeDeprecationType DeprecationType) const override;
+	
+	/////////////////////////////////////////////////////
+	// FSMGraphNodeBase Function
+	/////////////////////////////////////////////////////
+
+	virtual void PostCopyNode();
 
 	/** 初始化运行时节点实例时调用  */
 	virtual void InitializeInstance();
@@ -64,14 +90,17 @@ public:
 	/** 检查引脚的连接性 */
 	virtual FPinConnectionResponse CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const;
 
-	/** 检查节点的有效性 */
-	virtual bool CheckNodeValidity();
-
 protected:
 	UEdGraphPin* GetInputPin() const;
 	TArray<UEdGraphPin*> GetOutputPins() const;
+	FText GetNodeTitleSuffix() const;
+
 
 public:
+	/** 所有次要节点 */
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMGraphNodeBase*> SubNodes;
+
 	/** 类型数据，目前使用的是 AIGraphType 中定义的类型，后续可以考虑使用自定义的类型 */
 	UPROPERTY()
 	FGraphNodeClassData ClassData;

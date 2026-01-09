@@ -94,6 +94,27 @@ void UFSMGraphNode_State::GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeC
 	);*/
 }
 
+FEdGraphNodeDeprecationResponse UFSMGraphNode_State::GetDeprecationResponse(
+	EEdGraphNodeDeprecationType DeprecationType) const
+{
+	FEdGraphNodeDeprecationResponse Response = Super::GetDeprecationResponse(DeprecationType);
+	if (DeprecationType == EEdGraphNodeDeprecationType::NodeTypeIsDeprecated)
+	{
+		// 得到当前节点的名称
+		FText NodeTitle = GetNodeTitle(ENodeTitleType::FullTitle);
+		Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
+		Response.MessageText = FText::Format(FTextFormat::FromString("Warning: The state node '@@' is deprecated from {0}; please replace or remove it."), NodeTitle);
+	}
+	else if (DeprecationType == EEdGraphNodeDeprecationType::NodeHasDeprecatedReference)
+	{
+		// 得到当前节点的名称
+		FText NodeTitle = GetNodeTitle(ENodeTitleType::FullTitle);
+		Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
+		Response.MessageText = FText::Format(FTextFormat::FromString("Warning: The state node '@@' has a deprecated reference from {0}; please replace or remove it."), NodeTitle);
+	}
+	return Response;
+}
+
 void UFSMGraphNode_State::CreateCustomPin(EEdGraphPinDirection Direction, const FString& PinName)
 {
 }

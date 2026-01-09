@@ -15,4 +15,6 @@ public:
 	void Construct(const FArguments& InArgs, UFSMGraphNodeBase* InGraphNode);
 
 	FText GetNodeName() const;
+
+	// TODO::检查错误，若节点存在错误信息，则弹出提示内容
 };

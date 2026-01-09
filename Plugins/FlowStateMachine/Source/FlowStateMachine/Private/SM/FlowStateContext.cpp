@@ -4,6 +4,8 @@
 #include "SM/FlowStateContext.h"
 
 #include "Blueprint/UserWidget.h"
+#include "Data/FSMCommonData.h"
+#include "Data/CommonDataType/CommonDataType.h"
 #include "Widgets/FlowStateLayoutWidget.h"
 #include "RuntimeNode/FSMRuntimeNode_Composites.h"
 #include "RuntimeNode/FSMRuntimeSubNode.h"
@@ -39,6 +41,9 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMac
 		// 创建零碎节点的运行时实例
 		ScatteredNodes.Empty();
 		CreateScatteredInstance();
+
+		// 创建运行时公用数据
+		CreateCommonDataInstance();
 
 		if (TrySwitchTo(RootState))
 		{
@@ -257,6 +262,28 @@ void UFlowStateContext::CreateScatteredInstance()
 	}
 }
 
+void UFlowStateContext::CreateCommonDataInstance()
+{
+	check(StateMachine)
+	check(StateMachine->CommonData)
+
+	CommonDataInstance = Cast<UFSMCommonData>(StaticDuplicateObject(StateMachine->CommonData, this));
+	check(CommonDataInstance)
+
+	for (int i = 0; i < CommonDataInstance->Keys.Num(); ++i)
+	{
+		UCommonDataType* DataType = Cast<UCommonDataType>(StaticDuplicateObject(CommonDataInstance->Keys[i].DataType, this));
+		if (DataType)
+		{
+			CommonDataInstance->Keys[i].DataType = DataType;
+		}
+		else
+		{
+			CommonDataInstance->Keys.RemoveAt(i--);
+		}
+	}
+}
+
 TArray<UFSMRuntimeNode*> UFlowStateContext::GetNextStates() const
 {
 	TArray<UFSMRuntimeNode*> NextStates;
@@ -268,4 +295,91 @@ TArray<UFSMRuntimeNode*> UFlowStateContext::GetNextStates() const
 		}
 	}
 	return NextStates;
+}
+
+/*uint16 UFlowStateContext::GetKeyID(const FName& KeyName) const
+{
+	return CommonDataInstance ? CommonDataInstance->GetKeyID() : INDEX_NONE;
+}*/
+
+/*
+UObject* UFlowStateContext::GetValueAsObject(const FName& KeyName) const
+{
+}
+
+UClass* UFlowStateContext::GetValueAsClass(const FName& KeyName) const
+{
+}
+
+uint8 UFlowStateContext::GetValueAsEnum(const FName& KeyName) const
+{
+}
+
+int32 UFlowStateContext::GetValueAsInt(const FName& KeyName) const
+{
+}
+
+float UFlowStateContext::GetValueAsFloat(const FName& KeyName) const
+{
+}
+
+bool UFlowStateContext::GetValueAsBool(const FName& KeyName) const
+{
+}
+
+FString UFlowStateContext::GetValueAsString(const FName& KeyName) const
+{
+}
+
+FName UFlowStateContext::GetValueAsName(const FName& KeyName) const
+{
+}
+
+FVector UFlowStateContext::GetValueAsVector(const FName& KeyName) const
+{
+}
+
+FRotator UFlowStateContext::GetValueAsRotator(const FName& KeyName) const
+{
+}
+*/
+
+void UFlowStateContext::SetValueAsObject(const FName& KeyName, UObject* ObjectValue)
+{
+}
+
+void UFlowStateContext::SetValueAsClass(const FName& KeyName, UClass* ClassValue)
+{
+}
+
+void UFlowStateContext::SetValueAsEnum(const FName& KeyName, uint8 EnumValue)
+{
+}
+
+void UFlowStateContext::SetValueAsInt(const FName& KeyName, int32 IntValue)
+{
+}
+
+void UFlowStateContext::SetValueAsFloat(const FName& KeyName, float FloatValue)
+{
+}
+
+void UFlowStateContext::SetValueAsBool(const FName& KeyName, bool BoolValue)
+{
+}
+
+void UFlowStateContext::SetValueAsString(const FName& KeyName, FString StringValue)
+{
+}
+
+void UFlowStateContext::SetValueAsName(const FName& KeyName, FName NameValue)
+{
+}
+
+void UFlowStateContext::SetValueAsVector(const FName& KeyName, FVector VectorValue)
+{
+}
+
+void UFlowStateContext::SetValueAsRotator(const FName& KeyName, FRotator VectorValue)
+{
 }

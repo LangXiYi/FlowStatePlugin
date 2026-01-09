@@ -24,6 +24,8 @@ public:
 
 	virtual void GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const override;
 
+	virtual FEdGraphNodeDeprecationResponse GetDeprecationResponse(EEdGraphNodeDeprecationType DeprecationType) const override;
+
 	void CreateCustomPin(EEdGraphPinDirection Direction, const FString& PinName);
 
 };

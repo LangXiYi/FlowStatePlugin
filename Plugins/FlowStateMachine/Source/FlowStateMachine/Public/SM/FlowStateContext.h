@@ -57,6 +57,9 @@ protected:
 	UFSMRuntimeNode* CreateChildrenInstance(const UFSMRuntimeNode* TemplateRootNode, UFSMRuntimeNodeBase* ParentNode, TArray<UFSMRuntimeNodeBase*>& Stack);
 
 	void CreateScatteredInstance();
+
+	/** 创建运行时的公用数据实例 */
+	void CreateCommonDataInstance();
 	
 	////////////////////////////////////////////////////////////////////////
 	/// GCManager Helper
@@ -96,6 +99,93 @@ public:
 	template<class T>
 	FORCEINLINE T* GetCurrentState() const { return static_cast<T*>(CurState); }
 
+	UFUNCTION(BlueprintPure, Category="FlowStateContext")
+	UFSMCommonData* GetCommonData() const { return CommonDataInstance; }
+
+	/*template<class TDataClass>
+	typename TDataClass::FDataType GetValue(const FName& KeyName) const
+	{
+		const uint16 KeyID = GetKeyID(KeyName);
+		return GetValue<TDataClass>(KeyID);
+	}
+
+	template<class TDataClass>
+	typename TDataClass::FDataType GetValue(uint16 KeyID) const
+	{
+		const FBlackboardEntry* EntryInfo = BlackboardAsset ? BlackboardAsset->GetKey(KeyID) : nullptr;
+		if ((EntryInfo == nullptr) || (EntryInfo->KeyType == nullptr) || (EntryInfo->KeyType->GetClass() != TDataClass::StaticClass()))
+		{
+			return TDataClass::InvalidValue;
+		}
+
+		UBlackboardKeyType* KeyOb = EntryInfo->KeyType->HasInstance() ? KeyInstances[KeyID] : EntryInfo->KeyType;
+		const uint16 DataOffset = EntryInfo->KeyType->HasInstance() ? sizeof(FBlackboardInstancedKeyMemory) : 0;
+
+		const uint8* RawData = GetKeyRawData(KeyID) + DataOffset;
+		return RawData ? TDataClass::GetValue((TDataClass*)KeyOb, RawData) : TDataClass::InvalidValue;
+	}
+
+	uint16 GetKeyID(const FName& KeyName) const;
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	UObject* GetValueAsObject(const FName& KeyName) const;
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	UClass* GetValueAsClass(const FName& KeyName) const;
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	uint8 GetValueAsEnum(const FName& KeyName) const;
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	int32 GetValueAsInt(const FName& KeyName) const;
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	float GetValueAsFloat(const FName& KeyName) const;
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	bool GetValueAsBool(const FName& KeyName) const;
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	FString GetValueAsString(const FName& KeyName) const;
+	
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	FName GetValueAsName(const FName& KeyName) const;
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	FVector GetValueAsVector(const FName& KeyName) const;
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	FRotator GetValueAsRotator(const FName& KeyName) const;*/
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	void SetValueAsObject(const FName& KeyName, UObject* ObjectValue);
+	
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	void SetValueAsClass(const FName& KeyName, UClass* ClassValue);
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	void SetValueAsEnum(const FName& KeyName, uint8 EnumValue);
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	void SetValueAsInt(const FName& KeyName, int32 IntValue);
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	void SetValueAsFloat(const FName& KeyName, float FloatValue);
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	void SetValueAsBool(const FName& KeyName, bool BoolValue);
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	void SetValueAsString(const FName& KeyName, FString StringValue);
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	void SetValueAsName(const FName& KeyName, FName NameValue);
+
+	UFUNCTION(BlueprintCallable, Category="AI|Components|Blackboard")
+	void SetValueAsVector(const FName& KeyName, FVector VectorValue);
+
+	UFUNCTION(BlueprintCallable, Category = "AI|Components|Blackboard")
+	void SetValueAsRotator(const FName& KeyName, FRotator VectorValue);
 
 	////////////////////////////////////////////////////////////////////////
 	/// Events
@@ -122,6 +212,9 @@ protected:
 	// 所有的零散节点
 	UPROPERTY(Transient)
 	TArray<UFSMRuntimeNode*> ScatteredNodes;
+
+	UPROPERTY(Transient)
+	UFSMCommonData* CommonDataInstance;
 
 private:
 	// 引用资产，供运行时创建新的运行时节点使用

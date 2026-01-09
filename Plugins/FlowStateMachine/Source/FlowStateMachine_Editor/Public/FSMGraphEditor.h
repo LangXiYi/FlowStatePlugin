@@ -15,22 +15,28 @@ public:
 	void InitFlowStateMachineEditor(EToolkitMode::Type Mode,
 		const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject);
 
-	// IToolkit interface
+	// Begin IToolkit interface
 	virtual void RegisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager) override;
 	virtual void UnregisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager) override;
 	// End of IToolkit interface
 	
-	// IAssetEditorInstance Begin
+	// Begin IAssetEditorInstance 
 	virtual FLinearColor GetWorldCentricTabColorScale() const override { return FLinearColor::Blue;}
+	virtual FText GetToolkitName() const override;
 	virtual FName GetToolkitFName() const override { return FName("FlowStateMachineEditor"); }
+	virtual FText GetToolkitToolTipText() const override;
 	virtual FText GetBaseToolkitName() const override { return FText::FromString("FlowStateMachineEditor"); }
 	virtual FString GetWorldCentricTabPrefix() const override { return "FlowStateMachineEditor"; }
-	// IAssetEditorInstance End
+	// End of IAssetEditorInstance 
 
-	//~ Begin FEditorUndoClient Interface
+	// Begin FEditorUndoClient Interface
 	virtual void PostUndo(bool bSuccess) override;
 	virtual void PostRedo(bool bSuccess) override;
 	// End of FEditorUndoClient
+
+	// Begin FNotifyHook 
+	virtual void NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent, FProperty* PropertyThatChanged) override;
+	// End of FNotifyHook 
 
 	// @todo This is a hack for now until we reconcile the default toolbar with application modes [duplicated from counterpart in Blueprint Editor]
 	void RegisterToolbarTab(const TSharedRef<class FTabManager>& InTabManager);
@@ -45,6 +51,10 @@ public:
 
 	/** Check whether the blackboard mode can be accessed (i.e whether we have a valid blackboard to edit) */
 	bool CanAccessCommonDataMode() const;
+
+	//////////////////////////////////////////////////////////////
+	/// Slate Widget
+	//////////////////////////////////////////////////////////////
 
 	/** 创建状态机图表编辑器 */
 	TSharedRef<SWidget> CreateFlowStateMachineGraphEditor(const FWorkflowTabSpawnInfo& Info, UFSMGraph* InGraph);
@@ -86,6 +96,8 @@ public:
 
 	void OnGraphEditorFocused(TSharedRef<SGraphEditor> InGraphEditor);
 
+	bool IsPropertyEditable() const;
+
 protected:
 	virtual void SaveAsset_Execute() override;
 
@@ -110,7 +122,7 @@ private:
 	TSharedPtr<IDetailsView> AssetDetailsView;
 	// 节点的细节面板
 	TSharedPtr<IDetailsView> DetailsView;
-
+	// 状态节点面板，支持拖拽放置新的节点
 	TSharedPtr<class SFSMGraphPalette> ClassPalette;
 
 };

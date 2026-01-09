@@ -33,6 +33,20 @@ class UWorld* UFSMRuntimeNodeBase::GetWorld() const
 
 FString UFSMRuntimeNodeBase::GetNodeName() const
 {
-	// TODO::后续可以改为其他名称，而不是对象的名称
-	return NodeName.Len() ? NodeName : GetName();
+	const auto& GetShortTypeName = [](const UObject* Obj)
+	{
+		if (Obj->GetClass()->HasAnyClassFlags(CLASS_CompiledFromBlueprint))
+		{
+			return Obj->GetClass()->GetName().LeftChop(2);
+		}
+
+		FString TypeDesc = Obj->GetClass()->GetName();
+		const int32 ShortNameIdx = TypeDesc.Find(TEXT("_"), ESearchCase::CaseSensitive);
+		if (ShortNameIdx != INDEX_NONE)
+		{
+			TypeDesc.MidInline(ShortNameIdx + 1, MAX_int32, false);
+		}
+		return TypeDesc;
+	};
+	return NodeName.Len() ? NodeName : GetShortTypeName(this);
 }

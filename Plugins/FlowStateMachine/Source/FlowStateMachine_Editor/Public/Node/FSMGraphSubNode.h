@@ -27,6 +27,12 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphSubNode : public UFSMGraphNodeBase
 public:
 
 	virtual void DestroyNode() override;
+
+	virtual FLinearColor GetNodeTitleColor() const override;
+
+	virtual bool HasDeprecatedReference() const override;
+
+	virtual FEdGraphNodeDeprecationResponse GetDeprecationResponse(EEdGraphNodeDeprecationType DeprecationType) const override;
 	
 #if WITH_EDITOR
 

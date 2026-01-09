@@ -8,8 +8,9 @@
 
 class UFlowStateContext;
 class UFlowStateMachine;
+
 /**
- * BUG::所有蓝图变量都会被暴露出来，且运行时修改的值会被持久化保存
+ * 
  */
 UCLASS(Abstract)
 class FLOWSTATEMACHINE_API UFSMRuntimeNodeBase : public UObject
@@ -46,6 +47,10 @@ public:
 	/** 调用的父级节点 */
 	UPROPERTY(VisibleAnywhere, Transient)
 	UFSMRuntimeNodeBase* ParentNode;
+
+	/** 次要节点 */
+	UPROPERTY(VisibleAnywhere)
+	TArray<UFSMRuntimeNodeBase*> SubNodes;
 
 	// 是否为根节点
 	UPROPERTY(VisibleAnywhere)

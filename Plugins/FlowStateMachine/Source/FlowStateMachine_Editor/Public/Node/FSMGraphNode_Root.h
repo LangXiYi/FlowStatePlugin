@@ -21,6 +21,8 @@ public:
 	virtual bool CanDuplicateNode() const override { return false; }
 	virtual bool CanUserDeleteNode() const override{ return false; }
 	virtual bool IsSelectedInEditor() const override { return false; }
+	virtual bool IsDeprecated() const override;
+	virtual FText GetTooltipText() const override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override { return FText::FromString(TEXT("Root Node")); }
 	virtual FPinConnectionResponse CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection Direction) const override;
 	// TODO::监听 CommonData 改变事件

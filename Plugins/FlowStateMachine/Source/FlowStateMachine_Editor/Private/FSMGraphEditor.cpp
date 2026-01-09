@@ -135,12 +135,44 @@ void FFSMGraphEditor::UnregisterTabSpawners(const TSharedRef<class FTabManager>&
 	IFlowStateMachineEditor::UnregisterTabSpawners(InTabManager);
 }
 
+FText FFSMGraphEditor::GetToolkitName() const
+{
+	const UObject* EditingObject = GetCurrentMode() == FlowStateMachineMode ? (UObject*)FlowStateMachine : (UObject*)CommonData;
+	if(EditingObject != nullptr)
+	{
+		return FAssetEditorToolkit::GetLabelForObject(EditingObject);
+	}
+
+	return FText();
+}
+
+FText FFSMGraphEditor::GetToolkitToolTipText() const
+{
+	const UObject* EditingObject = GetCurrentMode() == FlowStateMachineMode ? (UObject*)FlowStateMachine : (UObject*)CommonData;
+
+	check (EditingObject != NULL);
+
+	return GetToolTipTextForObject(EditingObject);
+}
+
 void FFSMGraphEditor::OnGraphEditorFocused(TSharedRef<SGraphEditor> InGraphEditor)
 {
 	UpdateGraphEdPtr = InGraphEditor;
 
 	FGraphPanelSelectionSet CurrentSelection = InGraphEditor->GetSelectedNodes();
 	OnSelectedNodesChanged(CurrentSelection);
+}
+
+bool FFSMGraphEditor::IsPropertyEditable() const
+{
+	// Debug mode 下不能编辑
+	/*if (FBehaviorTreeDebugger::IsPIESimulating() || bForceDisablePropertyEdit)
+	{
+		return false;
+	}*/
+
+	TSharedPtr<SGraphEditor> FocusedGraphEd = UpdateGraphEdPtr.Pin();
+	return FocusedGraphEd.IsValid() && FocusedGraphEd->GetCurrentGraph() && FocusedGraphEd->GetCurrentGraph()->bEditable;
 }
 
 void FFSMGraphEditor::PostUndo(bool bSuccess)
@@ -151,6 +183,20 @@ void FFSMGraphEditor::PostUndo(bool bSuccess)
 void FFSMGraphEditor::PostRedo(bool bSuccess)
 {
 	IFlowStateMachineEditor::PostRedo(bSuccess);
+}
+
+void FFSMGraphEditor::NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent,
+	FProperty* PropertyThatChanged)
+{
+	if(PropertyChangedEvent.ChangeType != EPropertyChangeType::Interactive)
+	{
+		if(PropertyChangedEvent.Property != nullptr && PropertyChangedEvent.Property->GetFName() == TEXT("CommonData"))
+		{
+			CommonData = FlowStateMachine->CommonData;
+		}
+
+		// RefreshBlackboardViewsAssociatedObject();
+	}
 }
 
 void FFSMGraphEditor::RegisterToolbarTab(const TSharedRef<class FTabManager>& InTabManager)
@@ -226,6 +272,7 @@ bool FFSMGraphEditor::CanAccessFlowStateMachineMode() const
 
 bool FFSMGraphEditor::CanAccessCommonDataMode() const
 {
+	// TODO::在更新资产的数据后，同步更新该编辑器的资产
 	return CommonData != nullptr;
 }
 
@@ -304,14 +351,18 @@ TSharedRef<SWidget> FFSMGraphEditor::CreateFlowStateMachineDetailView(const FWor
 {
 	FPropertyEditorModule& PropertyEditor = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	FDetailsViewArgs PropertyViewArgs(false, false, true, FDetailsViewArgs::HideNameArea);
-	
+	PropertyViewArgs.NotifyHook = this;
+	// 始终隐藏具有“编辑默认值仅”（即 CPF_DisableEditOnInstance）标志的节点。
+	PropertyViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Hide;
+
 	DetailsView = PropertyEditor.CreateDetailView(PropertyViewArgs);
+	DetailsView->SetIsPropertyEditingEnabledDelegate(FIsPropertyEditingEnabled::CreateSP(this, &FFSMGraphEditor::IsPropertyEditable));
+
 	AssetDetailsView = PropertyEditor.CreateDetailView(PropertyViewArgs);
+	AssetDetailsView->SetIsPropertyEditingEnabledDelegate(FIsPropertyEditingEnabled::CreateSP(this, &FFSMGraphEditor::IsPropertyEditable));
 
 	AssetDetailsView->SetObject(nullptr);
 	DetailsView->SetObject(nullptr);
-
-	// TODO::绑定属性改变事件，监听RootNode是否创建成功，并更新显示内容
 
 	return SNew(SVerticalBox)
 		+SVerticalBox::Slot()

@@ -9,6 +9,7 @@
 #include "RuntimeNode/FSMRuntimeNode.h"
 #include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
 #include "SM/FlowStateMachine.h"
+#include "Utility/FSMUtility.h"
 
 void UFSMGraph::Initialize()
 {
@@ -108,9 +109,6 @@ void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
 	FSMAsset->RootDecorators.Empty();
 	FSMAsset->RootActions.Empty();
 
-	// 检查节点的有效性
-	RootEdNode->CheckNodeValidity();
-
 	// 创建所有子节点
 	TArray<UObject*> Stack;
 	CreateChildrenNodes(FSMAsset, FSMAsset->RootRuntimeNode, RootEdNode, Stack);
@@ -160,9 +158,17 @@ void UFSMGraph::UnlockUpdates()
 	UpdateAsset();
 }
 
+void UFSMGraph::Serialize(FArchive& Ar)
+{
+	UObject::Serialize(Ar);
+	if (Ar.IsSaving() || Ar.IsCooking())
+	{
+		// 检查所有节点的有效性
+		UpdateAllNodesValidity();
+	}
+}
 
 #if WITH_EDITOR
-
 void UFSMGraph::PostEditUndo()
 {
 	Super::PostEditUndo();
@@ -170,13 +176,53 @@ void UFSMGraph::PostEditUndo()
 	UpdateAsset();
 	Modify();
 }
+#endif
 
 UFlowStateMachine* UFSMGraph::GetFSMAsset() const
 {
 	return Cast<UFlowStateMachine>(GetOuter());
 }
 
-#endif
+void UFSMGraph::UpdateNodeErrorMessage(UFSMGraphNodeBase& FSMNode)
+{
+	FSMNode.ErrorMessage.Empty();
+	if (FSMNode.IsDeprecated())
+	{
+		FEdGraphNodeDeprecationResponse DeprecationMessage = FSMNode.GetDeprecationResponse(EEdGraphNodeDeprecationType::NodeTypeIsDeprecated);
+		if (DeprecationMessage.MessageType != EEdGraphNodeDeprecationMessageType::None)
+		{
+			FSMNode.ErrorMessage = DeprecationMessage.MessageText.ToString();
+		}
+	}
+
+	if (FSMNode.HasDeprecatedReference())
+	{
+		FEdGraphNodeDeprecationResponse DeprecatedReferenceMessage = FSMNode.GetDeprecationResponse(EEdGraphNodeDeprecationType::NodeHasDeprecatedReference);
+		if (DeprecatedReferenceMessage.MessageType != EEdGraphNodeDeprecationMessageType::None)
+		{
+			FSMNode.ErrorMessage = DeprecatedReferenceMessage.MessageText.ToString();
+		}
+	}
+	if (!FSMNode.ErrorMessage.IsEmpty())
+	{
+		FSMLOGE("%s", *FSMNode.ErrorMessage);
+	}
+}
+
+void UFSMGraph::UpdateAllNodesValidity()
+{
+	for (int i = 0; i < Nodes.Num(); ++i)
+	{
+		UFSMGraphNodeBase* FSMNode = Cast<UFSMGraphNodeBase>(Nodes[i]);
+		if (FSMNode == nullptr) continue;
+		UpdateNodeErrorMessage(*FSMNode);
+		for (UFSMGraphNodeBase* SubNode : FSMNode->SubNodes)
+		{
+			if (SubNode == nullptr) continue;
+			UpdateNodeErrorMessage(*SubNode);
+		}
+	}
+}
 
 void UFSMGraph::SpawnMissingNodes()
 {
@@ -311,9 +357,6 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 	// 将当前节点压入栈中
 	Stack.Push(RuntimeRootNode);
 
-	// 检查节点的有效性
-	GraphRootNode->CheckNodeValidity();
-
 	// 清理并初始化次要节点
 	RuntimeRootNode->ClearSubNodes();
 	for (UFSMGraphNodeBase* SubNode : GraphRootNode->SubNodes)
@@ -381,79 +424,6 @@ void UFSMGraph::CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TArray<U
 		CreateChildrenNodes(FSMAsset, ScatteredRuntimeNode, ScatteredGraphNode, Stack);
 		FSMAsset->ScatteredNodes.Add(ScatteredRuntimeNode);
 	}
-}
-
-bool UFSMGraph::CheckRing(UFSMGraphNodeBase* StartNode, UFSMGraphNodeBase* BreakNode)
-{
-	/*
-	 * 递归检查 StartNode 的所有子引脚，并与 BreakNode 进行比较，确保不是环形
-	 * 递归结束条件：
-	 *     1、传入的起始节点为空
-	 *     2、起始节点与标记点一致
-	 *     3、无任何输出引脚
-	 */
-	if (StartNode == nullptr)
-	{
-		return false;
-	}
-	if (StartNode == BreakNode)
-	{
-		return false;
-	}
-	for (UEdGraphPin* Pin : StartNode->Pins)
-	{
-		if (Pin->Direction != EGPD_Output)
-		{
-			continue;
-		}
-		UFSMGraphNodeBase* FSMNode = Cast<UFSMGraphNodeBase>(Pin->GetOwningNode());
-		if (FSMNode)
-		{
-			CheckRing(FSMNode, BreakNode);
-		}
-	}
-	return false;
-}
-
-void UFSMGraph::GenerateJumpStateIdComboBoxStrings(TArray<TSharedPtr<FString>>& OutComboBoxStrings,
-	TArray<TSharedPtr<SToolTip>>& OutToolTips, TArray<bool>& OutRestrictedItems, bool bAllowClear, bool bAllowAll)
-{
-	/*UAssetManager& AssetManager = UAssetManager::Get();
-
-	TArray<FPrimaryAssetTypeInfo> TypeInfos;
-
-	AssetManager.GetPrimaryAssetTypeInfoList(TypeInfos);
-	TypeInfos.Sort([](const FPrimaryAssetTypeInfo& LHS, const FPrimaryAssetTypeInfo& RHS) { return LHS.PrimaryAssetType.LexicalLess(RHS.PrimaryAssetType); });
-
-	// Can the field be cleared
-	if (bAllowClear)
-	{
-		// Add None
-		OutComboBoxStrings.Add(MakeShared<FString>(FPrimaryAssetType().ToString()));
-		OutToolTips.Add(SNew(SToolTip).Text(LOCTEXT("NoType", "None")));
-		OutRestrictedItems.Add(false);
-	}
-
-	for (FPrimaryAssetTypeInfo& Info : TypeInfos)
-	{
-		OutComboBoxStrings.Add(MakeShared<FString>(Info.PrimaryAssetType.ToString()));
-
-		FText TooltipText = FText::Format(LOCTEXT("ToolTipFormat", "{0}:{1}{2}"),
-			FText::FromString(Info.PrimaryAssetType.ToString()),
-			Info.bIsEditorOnly ? LOCTEXT("EditorOnly", " EditorOnly") : FText(),
-			Info.bHasBlueprintClasses ? LOCTEXT("Blueprints", " Blueprints") : FText());
-
-		OutToolTips.Add(SNew(SToolTip).Text(TooltipText));
-		OutRestrictedItems.Add(false);
-	}
-
-	if (bAllowAll)
-	{
-		// Add All
-		OutComboBoxStrings.Add(MakeShared<FString>(IAssetManagerEditorModule::AllPrimaryAssetTypes.ToString()));
-		OutToolTips.Add(SNew(SToolTip).Text(LOCTEXT("AllTypes", "All Primary Asset Types")));
-		OutRestrictedItems.Add(false);
-	}*/
 }
 
 namespace FSMGraphHelper

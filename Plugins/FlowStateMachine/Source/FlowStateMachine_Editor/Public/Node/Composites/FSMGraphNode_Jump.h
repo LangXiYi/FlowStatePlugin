@@ -21,7 +21,8 @@ public:
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 	virtual FPinConnectionResponse CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const override;
 
-	// DEBUG：：不要修改此属性值
+
+public:
 	UPROPERTY()
 	FGuid JumpStartId;
 };
@@ -39,8 +40,15 @@ public:
 	virtual void PostPlacedNewNode() override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 
-	virtual bool CheckNodeValidity() override;
+	virtual bool IsDeprecated() const override;
+	virtual bool HasDeprecatedReference() const override;
 
+	virtual FEdGraphNodeDeprecationResponse GetDeprecationResponse(EEdGraphNodeDeprecationType DeprecationType) const override;
+protected:
+
+	bool IsValidJumpNode() const;
+
+public:
 	// 点击时，创建一个查找窗口，返回所有的跳跃节点列表，点击后将值赋予该节点
 	UPROPERTY()
 	FGuid JumpStartId;

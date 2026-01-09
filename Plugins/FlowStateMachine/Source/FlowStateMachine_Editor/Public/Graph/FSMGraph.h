@@ -40,6 +40,10 @@ public:
 
 	void UnlockUpdates();
 
+	// Begin Object
+	virtual void Serialize(FArchive& Ar) override;
+	// End Of Object
+	
 #if WITH_EDITOR
 	virtual void PostEditUndo() override;
 #endif
@@ -47,6 +51,9 @@ public:
 	UFlowStateMachine* GetFSMAsset() const;
 
 protected:
+	/** 检查所有节点的有效性 */
+	void UpdateAllNodesValidity();
+	
 	/** 生成缺少的节点，在图表被创建后调用 */
 	void SpawnMissingNodes();
 
@@ -60,18 +67,16 @@ protected:
 	virtual bool CanRemoveNestedObject(UObject* TestObject) const;
 	virtual void OnNodeInstanceRemoved(UObject* NodeInstance) {}
 
+public:
 	/** 创建所有的子级节点 */
 	static void CreateChildrenNodes(UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode, UFSMGraphNode* GraphRootNode, TArray<UObject*>& Stack);
 
 	/** 创建所有的零散节点 */
 	static void CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TArray<UFSMGraphNode*>& ScatteredNodes);
 
-	// 环形检查，避免递归无限重复
-	bool CheckRing(UFSMGraphNodeBase* StartNode, UFSMGraphNodeBase* BreakNode);
-
-public:
-	static void GenerateJumpStateIdComboBoxStrings(TArray<TSharedPtr<FString>>& OutComboBoxStrings, TArray<TSharedPtr<SToolTip>>& OutToolTips, TArray<bool>& OutRestrictedItems, bool bAllowClear, bool bAllowAll);
-
+	/** 更新节点的错误信息 */
+	static void UpdateNodeErrorMessage(UFSMGraphNodeBase& FSMNode);
+	
 public:
 	UPROPERTY()
 	TArray<UFSMGraphNode*> ScatteredNodes;

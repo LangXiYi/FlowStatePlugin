@@ -78,10 +78,6 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	TArray<UFSMRuntimeNode*> ChildrenNodes;
 
-	/** 次要节点 */
-	UPROPERTY(VisibleAnywhere)
-	TArray<UFSMRuntimeNodeBase*> SubNodes;
-
 protected:
 	/** 运行时创建的状态管理实例 */
 	UPROPERTY(Transient)
