@@ -31,6 +31,8 @@ class FLOWSTATEMACHINE_API UFlowStateContext : public UObject
 
 public:
 	UFlowStateContext(const FObjectInitializer& ObjectInitializer);
+
+	void Initialize(EFSMExecuteMode InExecuteMode);
 	
 	virtual void RegisterFlowStateMachine(UFlowStateMachine& FlowStateMachine);
 
@@ -84,7 +86,6 @@ public:
 	}
 	/** 清空缓存 */
 	void ClearAllCache() const { GCManager->ClearAllCache(); }
-
 	
 	////////////////////////////////////////////////////////////////////////
 	/// Get or Set
@@ -148,5 +149,6 @@ private:
 
 	UPROPERTY(Transient)
 	TMap<FGuid, UFSMRuntimeNode*> ScatteredNodeMapping;
-	
+
+	EFSMExecuteMode ExecuteMode;
 };

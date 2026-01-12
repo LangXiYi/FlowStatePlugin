@@ -8,23 +8,6 @@ class FSMGC
 {
 public:
 	template<class T>
-	void AddToCache(T* Target, EFlowStateLifetime Lifetime)
-	{
-		switch (Lifetime)
-		{
-		case EFlowStateLifetime::None:
-			_AddToStaticBy(Target);
-			break;
-		case EFlowStateLifetime::Kill:
-			_AddToKillBy(Target);
-			break;
-		case EFlowStateLifetime::Hien:
-			_AddToHiddenBy(Target);
-			break;
-		}
-	}
-	
-	template<class T>
 	T* FindByCache(FName Name) const
 	{
 		return nullptr;
@@ -33,49 +16,55 @@ public:
 
 	void ClearAllCache();
 
-protected:
-	void _AddToStaticBy(AActor* Target)
-	{
-		
-	}
-	void _AddToStaticBy(UWidget* Target)
-	{
-		
-	}
-	void _AddToKillBy(AActor* Target)
-	{
-		
-	}
-	void _AddToKillBy(UWidget* Target)
-	{
-		
-	}
-	void _AddToHiddenBy(AActor* Target)
-	{
-		
-	}
-	void _AddToHiddenBy(UWidget* Target)
-	{
-		
-	}
+	////////////////////////////////////////////////////////////////
+	//  Add to Cache
+	////////////////////////////////////////////////////////////////
+	
+public:
+	template<class T>
+	void AddToCache(T* Target, EFlowStateLifetime Lifetime);
+
 private:
-	// Array<> Cache
-	
-	
-/*#if !UE_BUILD_SHIPPING
-	if (GEngine)
-	{
-		FStringFormatNamedArguments FormatArguments;
-		FormatArguments.Add("StateName", CurState ? CurState->GetName() : "None");
-		FormatArguments.Add("HiddenActors", HiddenActorsCache.Num());
-		FormatArguments.Add("HiddenWidgets", HiddenWidgetsCache.Num());
-		FormatArguments.Add("HiddenLevels", HiddenLevelsCache.Num());
-		FString Str = FString::Format(
-			TEXT("Train State {StateName}\n"
-				 "      Hidden Actors  : {HiddenActors}\n"
-				 "      Hidden Widgets : {HiddenWidgets}\n"
-				 "      Hidden Level   : {HiddenLevels}"), FormatArguments);
-		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, Str);
-	}
-#endif*/
+#define CREATE_CACHE_OBJECT_HELPER(ClassType, Name) \
+	private:\
+		TArray<ClassType> Static_##Name;\
+		TArray<ClassType> Hidden_##Name;\
+		TArray<ClassType> Kill_##Name;\
+	protected:\
+		void _AddToStaticBy(ClassType Target)\
+		{\
+			Static_##Name.Add(Target);\
+		}\
+		void _AddToHiddenBy(ClassType Target)\
+		{\
+			Hidden_##Name.Add(Target);\
+		}\
+		void _AddToKillBy(ClassType Target)\
+		{\
+			Kill_##Name.Add(Target);\
+		}\
+
+	CREATE_CACHE_OBJECT_HELPER(TWeakObjectPtr<AActor>, Actors);
+	CREATE_CACHE_OBJECT_HELPER(TWeakObjectPtr<UWidget>, Widgets);
+	CREATE_CACHE_OBJECT_HELPER(FName, SubLevels);
+
+private:
+	FText Debug_GetCacheInfo() const;
 };
+
+template <class T>
+void FSMGC::AddToCache(T* Target, EFlowStateLifetime Lifetime)
+{
+	switch (Lifetime)
+	{
+	case EFlowStateLifetime::None:
+		_AddToStaticBy(Target);
+		break;
+	case EFlowStateLifetime::Kill:
+		_AddToKillBy(Target);
+		break;
+	case EFlowStateLifetime::Hien:
+		_AddToHiddenBy(Target);
+		break;
+	}
+}

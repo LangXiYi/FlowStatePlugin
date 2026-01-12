@@ -24,6 +24,11 @@ UFlowStateContext::UFlowStateContext(const FObjectInitializer& ObjectInitializer
 	// CommonDataManager->Initialize(this);
 }
 
+void UFlowStateContext::Initialize(EFSMExecuteMode InExecuteMode)
+{
+	ExecuteMode = InExecuteMode;
+}
+
 void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMachine)
 {
 	StateMachine = &FlowStateMachine;
@@ -141,6 +146,13 @@ void UFlowStateContext::Tick(float DeltaTime)
 	 *		| XXXX_2 (引用计数)
 	 *		| XXXX_3 (引用计数)
 	 */
+
+	check(GCManager)
+	FText CacheInfo = GCManager->Debug_GetCacheInfo();
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, CacheInfo.ToString());
+	}
 
 #endif
 }
