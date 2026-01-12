@@ -20,9 +20,7 @@ class FLOWSTATEMACHINE_API UFSMRuntimeSubNode : public UFSMRuntimeNodeBase
 public:
 	virtual UWorld* GetWorld() const override;
 
-	UFlowStateContext* GetContext() const;
-
-	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode) override;
+	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlowStateContext* Context) override;
 };
 
 

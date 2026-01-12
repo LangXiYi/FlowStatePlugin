@@ -34,7 +34,7 @@ public:
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
 	virtual void OnInitWidget(UFlowStateLayoutWidget* Layout) override;
-	virtual void OnInitialize(UFlowStateContext* InContext) override;
+	virtual void OnInitialize() override;
 
 	/** 每帧执行事件 */
 	virtual void Tick(float DeltaTime) override;

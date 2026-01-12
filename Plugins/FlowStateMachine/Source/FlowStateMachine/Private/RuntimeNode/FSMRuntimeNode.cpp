@@ -10,10 +10,8 @@
 #include "SM/FlowStateContext.h"
 
 
-void UFSMRuntimeNode::OnInitialize(UFlowStateContext* InContext)
+void UFSMRuntimeNode::OnInitialize()
 {
-	Context = InContext;
-
 	// 执行所有 Action
 	for (UFSMRuntimeSubNode_Action* Action : Actions)
 	{
@@ -35,7 +33,7 @@ bool UFSMRuntimeNode::CheckCondition()
 {
 	for (const UFSMRuntimeSubNode_Condition* Condition : Conditions)
 	{
-		if (!Condition->Condition(Context))
+		if (!Condition->Condition(StateContext))
 		{
 			FSMLOGW("前置条件 [%s] 未通过", *Condition->GetNodeName())
 			return false;
@@ -46,14 +44,14 @@ bool UFSMRuntimeNode::CheckCondition()
 
 bool UFSMRuntimeNode::TrySwitchTo(int Index)
 {
-	if (!Context || !ChildrenNodes.IsValidIndex(Index))
+	if (!StateContext || !ChildrenNodes.IsValidIndex(Index))
 	{
 		FSMLOGW("状态机上下文不存在或下标索引 [%d] 非法", Index);
 		return false;
 	}
 	if (UFSMRuntimeNode* Node = Cast<UFSMRuntimeNode>(ChildrenNodes[Index]))
 	{
-		return Context->TrySwitchTo(Node);
+		return StateContext->TrySwitchTo(Node);
 	}
 	// 这里不应该会被执行，因为正常来说 ChildrenNodes 中所有的对象都继承自 UFSMRuntimeNode 。
 	checkNoEntry()
@@ -108,7 +106,6 @@ void UFSMRuntimeNode::ReplaceSubNode(UFSMRuntimeNodeBase* NewSubNode, int Index)
 		Conditions[ConditionIndex] = (UFSMRuntimeSubNode_Condition*)NewSubNode;
 	}
 	SubNodes[Index] = NewSubNode;
-	NewSubNode->ParentNode = this;
 }
 
 void UFSMRuntimeNode::ReplaceChildNode(UFSMRuntimeNode* NewChildNode, int Index)
@@ -142,9 +139,9 @@ bool UFSMRuntimeNode::HasAction(UClass* ActionClass) const
 UWorld* UFSMRuntimeNode::GetWorld() const
 {
 	// 优先返回 Context 对象的世界上下文，因为 Context 是在运行时由 FlowStateMachineSubsystem 动态创建的。
-	if (Context)
+	if (StateContext)
 	{
-		return Context->GetWorld();
+		return StateContext->GetWorld();
 	}
 	return Super::GetWorld();
 }

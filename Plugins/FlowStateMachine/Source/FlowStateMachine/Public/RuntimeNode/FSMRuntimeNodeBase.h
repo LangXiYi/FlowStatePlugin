@@ -20,7 +20,7 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNodeBase : public UObject
 public:
 	virtual void InitializeFromAsset(UFlowStateMachine* Asset);
 
-	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode);
+	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlowStateContext* Context = nullptr);
 
 	// 定义访问公共数据的方法
 	// float GetCommonDataAsFloat(FString PropName);
@@ -43,6 +43,9 @@ public:
 		return static_cast<T*>(ParentNode);
 	}
 
+	UFUNCTION(BlueprintPure)
+	UFlowStateContext* GetStateContext() const { return StateContext; }
+
 public:
 	/** 调用的父级节点 */
 	UPROPERTY(VisibleAnywhere, Transient)
@@ -60,6 +63,10 @@ public:
 	bool bIsTemplateInstance = true;
 
 protected:
+	/** 运行时创建的状态管理实例 */
+	UPROPERTY(Transient)
+	UFlowStateContext* StateContext;
+	
 	UPROPERTY(EditAnywhere)
 	FString NodeName;
 
@@ -71,4 +78,5 @@ private:
 	// 静态资产实例，可以通过他访问到我们的黑板资产
 	UPROPERTY(VisibleAnywhere)
 	UFlowStateMachine* FSMAsset;
+
 };

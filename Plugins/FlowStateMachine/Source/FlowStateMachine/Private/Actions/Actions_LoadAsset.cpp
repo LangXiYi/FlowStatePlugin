@@ -19,7 +19,7 @@ UActions_LoadAsset::UActions_LoadAsset(const FObjectInitializer& ObjectInitializ
 
 void UActions_LoadAsset::ExecuteAction(UFSMRuntimeNode* Instance)
 {
-	UFlowStateContext* Context = GetContext();
+	UFlowStateContext* Context = GetStateContext();
 	if (Context == nullptr)
 	{
 		checkNoEntry()
@@ -175,7 +175,7 @@ void UActions_LoadAsset::PrintLoadBoundMessage(const TArray<FName>& LoadBounds) 
 
 void UActions_LoadAsset::OnExitState(UFSMRuntimeNode* ExitNode)
 {
-	UFlowStateContext* Context = GetContext();
+	UFlowStateContext* Context = GetStateContext();
 	if (Context)
 	{
 		// 移除绑定，避免在非活动状态中执行

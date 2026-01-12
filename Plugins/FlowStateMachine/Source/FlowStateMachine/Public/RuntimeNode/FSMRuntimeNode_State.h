@@ -15,7 +15,7 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNode_State : public UFSMRuntimeNode
 	GENERATED_BODY()
 
 public:
-	virtual void OnInitialize(UFlowStateContext* InContext) override;
+	virtual void OnInitialize() override;
 	virtual void OnEnter() override { }
 	virtual void OnExit() override {}
 	virtual void OnPreInitialize()  {}

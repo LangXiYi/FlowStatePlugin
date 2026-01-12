@@ -21,10 +21,10 @@ void UFlowStateBase::OnInitWidget(UFlowStateLayoutWidget* Layout)
 	NativeOnInitWidget(Layout);
 }
 
-void UFlowStateBase::OnInitialize(UFlowStateContext* InContext)
+void UFlowStateBase::OnInitialize()
 {
-	Super::OnInitialize(InContext);
-	NativeOnInitialize(InContext);
+	Super::OnInitialize();
+	NativeOnInitialize(StateContext);
 }
 
 void UFlowStateBase::OnExit()

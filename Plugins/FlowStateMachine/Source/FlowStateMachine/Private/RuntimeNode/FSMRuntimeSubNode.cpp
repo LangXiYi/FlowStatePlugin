@@ -15,22 +15,9 @@ UWorld* UFSMRuntimeSubNode::GetWorld() const
 	return Super::GetWorld();
 }
 
-UFlowStateContext* UFSMRuntimeSubNode::GetContext() const
+void UFSMRuntimeSubNode::InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlowStateContext* Context)
 {
-	if (ParentNode)
-	{
-		UFSMRuntimeNode* FSMParentNode = Cast<UFSMRuntimeNode>(ParentNode);
-		if (FSMParentNode)
-		{
-			return FSMParentNode->GetContext();
-		}
-	}
-	return nullptr;
-}
-
-void UFSMRuntimeSubNode::InitializeNode(UFSMRuntimeNodeBase* InParentNode)
-{
-	Super::InitializeNode(InParentNode);
+	Super::InitializeNode(InParentNode, Context);
 	// 次要节点的 ParentNode 是固定，所以可以直接赋值
 	ParentNode = InParentNode;
 }

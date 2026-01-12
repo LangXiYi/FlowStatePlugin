@@ -17,6 +17,6 @@ void UFSMRuntimeNode_JumpTo::OnEnter()
 	Super::OnEnter();
 
 
-	check(Context)
-	Context->GotoScatteredNode(JumpStartId);
+	check(StateContext)
+	StateContext->GotoScatteredNode(JumpStartId);
 }

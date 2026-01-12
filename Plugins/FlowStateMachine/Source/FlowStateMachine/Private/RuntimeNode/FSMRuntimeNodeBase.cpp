@@ -8,12 +8,13 @@ void UFSMRuntimeNodeBase::InitializeFromAsset(UFlowStateMachine* Asset)
 	FSMAsset = Asset;
 }
 
-void UFSMRuntimeNodeBase::InitializeNode(UFSMRuntimeNodeBase* InParentNode)
+void UFSMRuntimeNodeBase::InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlowStateContext* Context)
 {
 	if (InParentNode)
 	{
 		AllParentNodes.AddUnique(InParentNode);
 	}
+	StateContext = Context;
 }
 
 class UWorld* UFSMRuntimeNodeBase::GetWorld() const

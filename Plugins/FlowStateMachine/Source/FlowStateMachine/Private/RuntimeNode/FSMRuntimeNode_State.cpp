@@ -6,12 +6,12 @@
 #include "SM/FlowStateContext.h"
 #include "Utility/FSMUtility.h"
 
-void UFSMRuntimeNode_State::OnInitialize(UFlowStateContext* InContext)
+void UFSMRuntimeNode_State::OnInitialize()
 {
-	Super::OnInitialize(InContext);
+	Super::OnInitialize();
 
 	// 初始化当前状态的用户控件
-	UFlowStateLayoutWidget* LayoutWidget = InContext->GetLayoutWidget();
+	UFlowStateLayoutWidget* LayoutWidget = StateContext->GetLayoutWidget();
 	if (LayoutWidget)
 	{
 		OnInitWidget(LayoutWidget);

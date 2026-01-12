@@ -30,3 +30,12 @@ enum class EFlowStateLifetime : uint8
 	// 当前状态结束后隐藏
 	Hien,
 };
+
+namespace FCommonData
+{
+	// const FName KeySelf = TEXT("SelfActor");
+
+	typedef uint8 FKey;
+
+	const FKey InvalidKey = FKey(-1);
+}

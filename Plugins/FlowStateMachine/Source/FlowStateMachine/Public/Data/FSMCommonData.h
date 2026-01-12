@@ -4,20 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "Utility/FSMUtility.h"
 #include "FSMCommonData.generated.h"
 
-class UCommonDataType;
+class UFSMCommonDataType;
 
 USTRUCT(BlueprintType)
-struct FCommonDataTypeKey
+struct FCommonDataEntry
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-	FName KeyName;
+	FName EntryName;
 
 	UPROPERTY(EditAnywhere, Instanced, BlueprintReadOnly)
-	UCommonDataType* DataType;
+	UFSMCommonDataType* KeyType;
 };
 
 /**
@@ -30,10 +31,17 @@ class FLOWSTATEMACHINE_API UFSMCommonData : public UDataAsset
 
 public:
 	UPROPERTY(EditAnywhere)
-	TArray<FCommonDataTypeKey> Keys;
+	TArray<FCommonDataEntry> Keys;
 
-	uint16 GetKeyID() const;
-	
-	FName GetKey() const { return NAME_None; }
-	UCommonDataType* GetDataType() const { return nullptr; }
+public:
+	const FCommonDataEntry* GetKey(FCommonData::FKey KeyID) const;
+
+	FCommonData::FKey GetKeyID(const FName KeyName) const;
+	FName GetKeyName(FCommonData::FKey KeyID) const;
+
+	TSubclassOf<UFSMCommonDataType> GetDataType(FCommonData::FKey KeyID) const;
+
+protected:
+	FCommonData::FKey InternalGetKeyID(const FName& KeyName) const;
+
 };

@@ -21,7 +21,7 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNode : public UFSMRuntimeNodeBase
 
 public:
 	/** 初始化当前节点 */
-	virtual void OnInitialize(UFlowStateContext* InContext);
+	virtual void OnInitialize();
 
 	/** 进入当前节点 */
 	virtual void OnEnter();
@@ -67,9 +67,6 @@ public:
 
 	virtual UWorld* GetWorld() const override;
 
-	UFUNCTION(BlueprintPure, Category = "FlowStateMachine")
-	UFlowStateContext* GetContext() const { return Context; }
-
 	/** 是否将实例加入执行链 */
 	virtual bool IsStackInstance() const { return false; }
 
@@ -79,10 +76,6 @@ public:
 	TArray<UFSMRuntimeNode*> ChildrenNodes;
 
 protected:
-	/** 运行时创建的状态管理实例 */
-	UPROPERTY(Transient)
-	UFlowStateContext* Context;
-
 	/** 次要节点：行为列表 */
 	UPROPERTY(VisibleAnywhere)
 	TArray<class UFSMRuntimeSubNode_Action*> Actions;
