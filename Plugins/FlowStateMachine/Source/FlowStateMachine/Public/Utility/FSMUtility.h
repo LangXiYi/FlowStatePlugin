@@ -28,7 +28,7 @@ enum class EFlowStateLifetime : uint8
 	// 当前状态结束后死亡
 	Kill,
 	// 当前状态结束后隐藏
-	Hien,
+	Hidden,
 };
 
 namespace FCommonData

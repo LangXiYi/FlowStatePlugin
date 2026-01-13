@@ -52,24 +52,22 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMac
 		check(Stack.Num() <= 0);
 
 		// 创建零碎节点的运行时实例
-		ScatteredNodes.Empty();
-		CreateScatteredInstance();
+		CreateScatteredInstance(Stack);
+		check(Stack.Num() <= 0);
 
 		// 初始化运行时的公用数据实例
 		if (CommonDataManager && StateMachine->CommonData)
 		{
 			CommonDataManager->Initialize(*StateMachine->CommonData);
 		}
+		GotoStateNode(RootState);
 
-		if (TrySwitchTo(RootState))
-		{
-			// 触发事件，开始运行 FSM
-			OnStartFlowStateMachine.Broadcast();
-		}
+		// 所有对象全部转换完成后即可清除缓存，避免无效的内存占用。
+		CacheTemplateObjects.Empty();
 	}
 }
 
-bool UFlowStateContext::TrySwitchTo(UFSMRuntimeNode* Node)
+bool UFlowStateContext::GotoStateNode(UFSMRuntimeNode* Node)
 {
 	if (!Node || !Node->CheckCondition())
 	{
@@ -96,8 +94,8 @@ bool UFlowStateContext::TrySwitchTo(UFSMRuntimeNode* Node)
 	UFSMRuntimeNode_State* State = Cast<UFSMRuntimeNode_State>(Node);
 	if (State)
 	{
-		ExitCurrentState();
-		EnterNewState(State);
+		OnExitCurState();
+		OnEnterNewState(State);
 		return true;
 	}
 
@@ -105,8 +103,8 @@ bool UFlowStateContext::TrySwitchTo(UFSMRuntimeNode* Node)
 	UFSMRuntimeNode_Composites* Composites = Cast<UFSMRuntimeNode_Composites>(Node);
 	if (Composites)
 	{
-		ExitCurrentState();
-		EnterNewState(Composites);
+		OnExitCurState();
+		OnEnterNewState(Composites);
 		// TODO::将其添加到执行链中并执行
 		return true;
 	}
@@ -117,7 +115,7 @@ bool UFlowStateContext::TrySwitchTo(UFSMRuntimeNode* Node)
 bool UFlowStateContext::GotoScatteredNode(FGuid Key)
 {
 	UFSMRuntimeNode* ScatteredNode = ScatteredNodeMapping.FindRef(Key);
-	return TrySwitchTo(ScatteredNode);
+	return GotoStateNode(ScatteredNode);
 }
 
 void UFlowStateContext::Tick(float DeltaTime)
@@ -157,7 +155,7 @@ void UFlowStateContext::Tick(float DeltaTime)
 #endif
 }
 
-void UFlowStateContext::ExitCurrentState()
+void UFlowStateContext::OnExitCurState()
 {
 	if (CurState)
 	{
@@ -167,7 +165,7 @@ void UFlowStateContext::ExitCurrentState()
 	CurState = nullptr;
 }
 
-void UFlowStateContext::EnterNewState(UFSMRuntimeNode* NewState)
+void UFlowStateContext::OnEnterNewState(UFSMRuntimeNode* NewState)
 {
 	if (NewState)
 	{
@@ -264,11 +262,11 @@ UFSMRuntimeNode* UFlowStateContext::CreateChildrenInstance(const UFSMRuntimeNode
 	return RootNodeInstance;
 }
 
-void UFlowStateContext::CreateScatteredInstance()
+void UFlowStateContext::CreateScatteredInstance(TArray<UFSMRuntimeNodeBase*>& Stack)
 {
 	check(StateMachine)
-	TArray<UFSMRuntimeNodeBase*> Stack;
 	ScatteredNodes.Empty();
+	ScatteredNodeMapping.Empty();
 	for (UFSMRuntimeNode* TemplateScatteredNode : StateMachine->ScatteredNodes)
 	{
 		if (TemplateScatteredNode == nullptr) continue;

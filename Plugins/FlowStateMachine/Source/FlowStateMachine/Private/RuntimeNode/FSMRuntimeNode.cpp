@@ -51,7 +51,7 @@ bool UFSMRuntimeNode::TrySwitchTo(int Index)
 	}
 	if (UFSMRuntimeNode* Node = Cast<UFSMRuntimeNode>(ChildrenNodes[Index]))
 	{
-		return StateContext->TrySwitchTo(Node);
+		return StateContext->GotoStateNode(Node);
 	}
 	// 这里不应该会被执行，因为正常来说 ChildrenNodes 中所有的对象都继承自 UFSMRuntimeNode 。
 	checkNoEntry()

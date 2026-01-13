@@ -59,5 +59,5 @@ public:
 	static AActor* InitActorLifetimeState(AActor* Target, EFlowStateLifetime Lifetime, FName ActorTag);
 
 	UFUNCTION(BlueprintCallable, Category = "FSMFunctionLibrary", meta = (WorldContext = "WorldContextObject", BlueprintInternalUseOnly = "True"))
-	static bool FindActorFromCache(UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, FName ActorTag, AActor*& FindActor);
+	static bool FindActorFromCache(UObject* WorldContextObject, FName ActorTag, AActor*& FindActor);
 };

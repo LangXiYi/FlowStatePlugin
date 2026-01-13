@@ -38,17 +38,3 @@ void UFlowStateMachineSubsystem::StopFlowStateMachine()
 		RunningStateContext = nullptr;
 	}
 }
-
-void UFlowStateMachineSubsystem::Tick(float DeltaTime)
-{
-	if (RunningStateContext)
-	{
-		RunningStateContext->Tick(DeltaTime);
-	}
-}
-
-TStatId UFlowStateMachineSubsystem::GetStatId() const
-{
-	return Super::GetStatID();
-}
-

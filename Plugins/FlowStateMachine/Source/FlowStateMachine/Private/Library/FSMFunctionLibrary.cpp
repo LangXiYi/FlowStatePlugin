@@ -83,14 +83,12 @@ UUserWidget* UFSMFunctionLibrary::CreateAndBindWidget(UObject* WorldContextObjec
 	return nullptr;
 }
 
-bool UFSMFunctionLibrary::FindActorFromCache(UObject* WorldContextObject, TSubclassOf<AActor> ActorClass,
-                                             FName ActorTag, AActor*& FindActor)
+bool UFSMFunctionLibrary::FindActorFromCache(UObject* WorldContextObject, FName ActorTag, AActor*& FindActor)
 {
 	UFlowStateContext* FlowStateContext = GetFlowStateContext(WorldContextObject);
 	if (FlowStateContext)
 	{
-		FindActor = FlowStateContext->FindByCache(ActorTag, ActorClass);
-		return FindActor != nullptr;
+		return FlowStateContext->FindByCache(ActorTag, FindActor);
 	}
 	return false;
 }

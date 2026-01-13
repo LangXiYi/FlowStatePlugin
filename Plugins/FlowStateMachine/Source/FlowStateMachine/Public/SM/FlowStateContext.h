@@ -15,7 +15,6 @@ class UFlowStateBase;
 class UFlowStateMachine;
 class UFSMMetaDataAsset;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartFlowStateMachine);
 DECLARE_MULTICAST_DELEGATE_OneParam(FStateDelegate, UFSMRuntimeNode*);
 
 /**
@@ -25,29 +24,36 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FStateDelegate, UFSMRuntimeNode*);
  *		在加载时，会深度拷贝状态机中的根节点，并将其加入缓存，避免重复复制
  */
 UCLASS()
-class FLOWSTATEMACHINE_API UFlowStateContext : public UObject
+class FLOWSTATEMACHINE_API UFlowStateContext : public UObject, public FTickableGameObject
 {
 	GENERATED_BODY()
 
 public:
-	UFlowStateContext(const FObjectInitializer& ObjectInitializer);
+	/** 初始化状态机 */
+	virtual void Initialize(EFSMExecuteMode InExecuteMode);
 
-	void Initialize(EFSMExecuteMode InExecuteMode);
-	
+	/** 注册状态机至运行时上下文对象 */
 	virtual void RegisterFlowStateMachine(UFlowStateMachine& FlowStateMachine);
 
-	bool TrySwitchTo(UFSMRuntimeNode* Node);
+	/** 切换至状态节点 */
+	virtual bool GotoStateNode(UFSMRuntimeNode* Node);
 
 	/** 切换至零散节点 */
-	bool GotoScatteredNode(FGuid Key);
+	virtual bool GotoScatteredNode(FGuid Key);
 
-	void Tick(float DeltaTime);
-
-	void ExitCurrentState();
-
-	void EnterNewState(UFSMRuntimeNode* NewState);
+	// Begin FTickableGameObject
+	virtual void Tick(float DeltaTime) override;
+	virtual TStatId GetStatId() const override { return Super::GetStatID(); }
+	// End of FTickableGameObject
 
 protected:
+	/** 进入新的状态 */
+	virtual void OnEnterNewState(UFSMRuntimeNode* NewState);
+
+	/** 退出当前的状态 */
+	virtual void OnExitCurState();
+
+private:
 	/** 将对象转换为运行时实例化的对象 */
 	UFSMRuntimeNodeBase* DumpInstance(const UFSMRuntimeNodeBase* Template);
 
@@ -61,8 +67,9 @@ protected:
 	/** 转换模板实例为运行时实例 */
 	UFSMRuntimeNode* CreateChildrenInstance(const UFSMRuntimeNode* TemplateRootNode, UFSMRuntimeNodeBase* ParentNode, TArray<UFSMRuntimeNodeBase*>& Stack);
 
-	void CreateScatteredInstance();
-	
+	/** 转换零散的模板节点为运行时对象 */
+	void CreateScatteredInstance(TArray<UFSMRuntimeNodeBase*>& Stack);
+
 	////////////////////////////////////////////////////////////////////////
 	/// GCManager Helper
 	////////////////////////////////////////////////////////////////////////
@@ -75,14 +82,9 @@ public:
 	}
 	/** 从缓存中查找目标 */
 	template<class T>
-	T* FindByCache(FName Name) const
+	bool FindByCache(FName Name, T* OutTarget) const
 	{
-		return GCManager->FindByCache<T>(Name);
-	}
-	/** 从缓存中查找目标 */
-	AActor* FindByCache(FName Name, TSubclassOf<AActor> Type) const
-	{
-		return GCManager->FindByCache(Name, Type);
+		return GCManager->FindRefByCache(Name, EFlowStateLifetime::Hidden, OutTarget);
 	}
 	/** 清空缓存 */
 	void ClearAllCache() const { GCManager->ClearAllCache(); }
@@ -91,37 +93,48 @@ public:
 	/// Get or Set
 	////////////////////////////////////////////////////////////////////////
 public:
+	/** 获取布局控件 */
 	UFlowStateLayoutWidget* GetLayoutWidget() const { return LayoutWidget; }
 
+	/** 获取所有的次态对象 */
 	TArray<UFSMRuntimeNode*> GetNextStates() const;
 
+	/** 获取当前的状态对象 */
 	UFUNCTION(BlueprintPure, Category="FlowStateContext")
 	FORCEINLINE UFSMRuntimeNode* GetCurrentState() const { return CurState; }
+	/** 获取当前的状态对象 */
 	template<class T>
 	FORCEINLINE T* GetCurrentState() const { return static_cast<T*>(CurState); }
 
+	/** 获取公用数据管理器 */
 	UFUNCTION(BlueprintPure, Category="FlowStateContext")
 	UFSMCommonDataManager* GetCommonDataManager() const { return CommonDataManager; }
+
+	/** 获取所有零散节点的唯一ID */
+	UFUNCTION(BlueprintPure, Category="FlowStateContext")
+	void GetScatteredNodeIDs(TArray<FGuid>& OutData) const { return ScatteredNodeMapping.GenerateKeyArray(OutData); }
 
 	////////////////////////////////////////////////////////////////////////
 	/// Events
 	////////////////////////////////////////////////////////////////////////
 public:
-	FOnStartFlowStateMachine OnStartFlowStateMachine;
 	FStateDelegate OnExitState;
 	FStateDelegate OnEnterState;
 	FStateDelegate OnPreInitializeState;
 
 protected:
+	/** 当前状态 */
 	UPROPERTY(Transient)
 	UFSMRuntimeNode* CurState;
 
+	/** 执行链 */
 	UPROPERTY()
 	TArray<UFSMRuntimeNode*> InstanceStack;
 
 	// 表示执行链中最顶部的元素（不是一定），对于出现环形的执行流，该变量表示的就不一定是最顶部的元素
 	TWeakObjectPtr<UFSMRuntimeNodeBase> StackTop;
 
+	/** 运行时根节点 */
 	UPROPERTY(Transient)
 	UFSMRuntimeNode* RootState;
 
@@ -132,23 +145,27 @@ protected:
 	/** 公用数据管理器 */
 	UPROPERTY(Transient)
 	UFSMCommonDataManager* CommonDataManager;
+
+	/** 状态机运行模式 */
+	EFSMExecuteMode ExecuteMode;
 	
 private:
 	// 引用资产，供运行时创建新的运行时节点使用
 	UPROPERTY(Transient)
 	UFlowStateMachine* StateMachine = nullptr;
 
+	/** 布局控件 */
 	UPROPERTY(Transient)
 	UFlowStateLayoutWidget* LayoutWidget;
 
+	/** 资源回收管理器 */
 	TSharedPtr<FSMGC> GCManager;
 
-	/** 缓存已经加载的对象，对 Value 使用弱指针引用确保回收机制正常运行 */
+	/** 缓存已经加载的对象，加载完成后自动释放 */
 	UPROPERTY(Transient)
 	TMap<const UFSMRuntimeNodeBase* /* Template Node */, UFSMRuntimeNodeBase* /* Dump Instance */> CacheTemplateObjects;
 
+	/** 缓存零碎节点与它的唯一ID，加快查询速度 */
 	UPROPERTY(Transient)
 	TMap<FGuid, UFSMRuntimeNode*> ScatteredNodeMapping;
-
-	EFSMExecuteMode ExecuteMode;
 };
