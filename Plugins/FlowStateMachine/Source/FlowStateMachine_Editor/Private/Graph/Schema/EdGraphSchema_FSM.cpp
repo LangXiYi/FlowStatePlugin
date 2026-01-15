@@ -23,7 +23,7 @@
 UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
                                                       const FVector2D Location, bool bSelectNewNode)
 {
-	UEdGraphNode* ResultNode = nullptr;
+	UFSMGraphNodeBase* ResultNode = nullptr;
 	// 创建图表节点
 	if (NodeTemplate != nullptr)
 	{
@@ -34,20 +34,19 @@ UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEd
 		}
 
 		// 通过 Rename 函数重设节点模板的 Outer，之前的 Outer 为临时图表
-		NodeTemplate->Rename(NULL, ParentGraph, REN_NonTransactional);
-		ParentGraph->AddNode(NodeTemplate, true);
+		ResultNode = Cast<UFSMGraphNodeBase>(StaticDuplicateObject(NodeTemplate, ParentGraph));
+		ResultNode->ClassData = NodeTemplate->ClassData;
+		// ResultNode->Rename(NULL, ParentGraph, REN_NonTransactional);
+		ParentGraph->AddNode(ResultNode, true);
 
-		NodeTemplate->CreateNewGuid();
-		NodeTemplate->PostPlacedNewNode();
+		ResultNode->CreateNewGuid();
+		ResultNode->PostPlacedNewNode();
 
-		NodeTemplate->NodePosX = Location.X;
-		NodeTemplate->NodePosY = Location.Y;
+		ResultNode->NodePosX = Location.X;
+		ResultNode->NodePosY = Location.Y;
 		
-		NodeTemplate->AllocateDefaultPins();
-		NodeTemplate->AutowireNewNode(FromPin);
-
-		ResultNode = NodeTemplate;
-
+		ResultNode->AllocateDefaultPins();
+		ResultNode->AutowireNewNode(FromPin);
 	}
 	return ResultNode;
 }
@@ -72,7 +71,9 @@ UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentG
 	// TODO::子节点需要放置在父节点上才能正确添加，获取当前鼠标悬浮的节点设置为 ParentGraphNode
 	if (ParentGraphNode != nullptr)
 	{
-		ParentGraphNode->AddSubNode(NodeTemplate, ParentGraph);
+		UFSMGraphSubNode* ResultNode = Cast<UFSMGraphSubNode>(StaticDuplicateObject(NodeTemplate, ParentGraph));
+		ResultNode->ClassData = NodeTemplate->ClassData;
+		ParentGraphNode->AddSubNode(ResultNode, ParentGraph);
 	}
 	return NULL;
 }
@@ -118,9 +119,12 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 		TArray<FGraphNodeClassData> NodeClasses;
 		ClassCache->GatherClasses(UFSMRuntimeNode_State::StaticClass(), NodeClasses);
 
-		for (FGraphNodeClassData& NodeClass : NodeClasses)
+		for (FGraphNodeClassData& NodeClassData : NodeClasses)
 		{
-			CollectNewNodeAction(TasksBuilder, NodeClass.GetClass(), UFSMGraphNode_State::StaticClass(), const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph));
+			if (NodeClassData.GetClass() != nullptr)
+			{
+				CollectNewNodeAction(TasksBuilder, NodeClassData.GetClass(), UFSMGraphNode_State::StaticClass(), ContextMenuBuilder.OwnerOfTemporaries/*const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph)*/);
+			}
 		}
 		ContextMenuBuilder.Append(TasksBuilder);
 	}
@@ -135,8 +139,11 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 
 		for (FGraphNodeClassData& NodeClass : NodeClasses)
 		{
-			UClass* CompositesGraphNodeClass = GetCompositesGraphNodeClass(NodeClass.GetClass());
-			CollectNewNodeAction(TasksBuilder, NodeClass.GetClass(), CompositesGraphNodeClass, const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph));
+			if (NodeClass.GetClass() != nullptr)
+			{
+				UClass* CompositesGraphNodeClass = GetCompositesGraphNodeClass(NodeClass.GetClass());
+				CollectNewNodeAction(TasksBuilder, NodeClass.GetClass(), CompositesGraphNodeClass, ContextMenuBuilder.OwnerOfTemporaries/*const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph)*/);
+			}
 		}
 		ContextMenuBuilder.Append(TasksBuilder);
 	}
@@ -249,6 +256,10 @@ void UEdGraphSchema_FSM::CollectNewNodeAction(FCategorizedGraphActionListBuilder
 
 	for (auto& NodeClassData : NodeClasses)
 	{
+		if (NodeClassData.GetClass(true) == nullptr)
+		{
+			continue;
+		}
 		// Action Switcher 控制行为创建
 		if (NodeClassData.GetClass() == UFSMRuntimeNode_JumpTo::StaticClass())
 		{
@@ -285,8 +296,12 @@ void UEdGraphSchema_FSM::CollectNewSubNodeAction(FCategorizedGraphActionListBuil
 	TArray<FGraphNodeClassData> NodeClasses;
 	ClassCache->GatherClasses(RuntimeNodeClass, NodeClasses);
 
-	for (const auto& NodeClassData : NodeClasses)
+	for (auto& NodeClassData : NodeClasses)
 	{
+		if (NodeClassData.GetClass(true) == nullptr)
+		{
+			continue;
+		}
 		const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClassData.ToString(), false));
 
 		// 创建一个子节点模板

@@ -468,7 +468,6 @@ void FFSMGraphEditor::SaveAsset_Execute()
 		if (Graph)
 		{
 			Graph->OnSave();
-			ClassPalette->RefreshActionsList(true);
 		}
 	}
 	IFlowStateMachineEditor::SaveAsset_Execute();

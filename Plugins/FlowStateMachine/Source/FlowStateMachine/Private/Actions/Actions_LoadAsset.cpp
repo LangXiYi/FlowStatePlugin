@@ -101,8 +101,8 @@ void UActions_LoadAsset::UnloadAsset()
 	UAssetManager& AssetManager = UAssetManager::Get();
 	AssetManager.UnloadPrimaryAsset(AssetId);
 
-	LoadingHandle = nullptr;
-	PreloadingHandle = nullptr;
+	LoadingHandle.Reset();
+	PreloadingHandle.Reset();
 }
 
 void UActions_LoadAsset::PreloadAsset(FStateDelegate& PreInitializeDelegate)

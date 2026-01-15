@@ -11,6 +11,7 @@
 #include "FSMFunctionLibrary.generated.h"
 
 
+class ASkeletalMeshActor;
 class UFlowStateLayoutWidget;
 class UFlowStateBase;
 class UFlowStateContext;
@@ -47,6 +48,9 @@ public:
 	{
 		return static_cast<T*>(GetCurFlowState(WorldContextObject));
 	}
+	
+	UFUNCTION(BlueprintCallable, Category = "FSMFunctionLibrary", meta = (WorldContext = "WorldContextObject"))
+	static EFlowStateLifetime FindActorFromCache(UObject* WorldContextObject, FName ActorTag, AActor*& FindActor);
 
 	/////////////////////////////////////////////////////////////////////
 	/// Blueprint Internal Use Only Function
@@ -58,6 +62,4 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "FSMFunctionLibrary", meta = (BlueprintInternalUseOnly = "true"))
 	static AActor* InitActorLifetimeState(AActor* Target, EFlowStateLifetime Lifetime, FName ActorTag);
 
-	UFUNCTION(BlueprintCallable, Category = "FSMFunctionLibrary", meta = (WorldContext = "WorldContextObject", BlueprintInternalUseOnly = "True"))
-	static bool FindActorFromCache(UObject* WorldContextObject, FName ActorTag, AActor*& FindActor);
 };

@@ -58,11 +58,12 @@ bool UFactory_FlowState::ConfigureProperties()
 	// Fill in options
 	FClassViewerInitializationOptions Options;
 	Options.Mode = EClassViewerMode::ClassPicker;
-	Options.DisplayMode = EClassViewerDisplayMode::TreeView;
-	Options.bShowObjectRootClass = true;
+	Options.DisplayMode = EClassViewerDisplayMode::ListView;
+	Options.bShowObjectRootClass = false;
+	Options.bExpandRootNodes = false;
 
 	// Only want blueprint actor base classes.
-	Options.bIsBlueprintBaseOnly = true;
+	Options.bIsBlueprintBaseOnly = false;
 
 	// This will allow unloaded blueprints to be shown.
 	Options.bShowUnloadedBlueprints = true;
@@ -75,7 +76,7 @@ bool UFactory_FlowState::ConfigureProperties()
 	TSharedPtr<FFlowStateClassParentFilter> Filter = MakeShareable(new FFlowStateClassParentFilter);
 	Options.ClassFilter = Filter;
 
-	Filter->DisallowedClassFlags = CLASS_Abstract | CLASS_Deprecated | CLASS_NewerVersionExists;
+	Filter->DisallowedClassFlags = CLASS_Deprecated | CLASS_NewerVersionExists;
 	Filter->AllowedChildrenOfClasses.Add(UFlowStateBase::StaticClass());
 
 	const FText TitleText = LOCTEXT("CreateFlowStateOptions", "Pick Flow State Class");

@@ -64,6 +64,7 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMac
 
 		// 所有对象全部转换完成后即可清除缓存，避免无效的内存占用。
 		CacheTemplateObjects.Empty();
+		bIsRegisterFlowStateMachine = true;
 	}
 }
 
@@ -120,6 +121,11 @@ bool UFlowStateContext::GotoScatteredNode(FGuid Key)
 
 void UFlowStateContext::Tick(float DeltaTime)
 {
+	if (bIsRegisterFlowStateMachine == false)
+	{
+		return;
+	}
+
 	if (CurState != nullptr)
 	{
 		CurState->Tick(DeltaTime);
@@ -144,12 +150,13 @@ void UFlowStateContext::Tick(float DeltaTime)
 	 *		| XXXX_2 (引用计数)
 	 *		| XXXX_3 (引用计数)
 	 */
-
-	check(GCManager)
-	FText CacheInfo = GCManager->Debug_GetCacheInfo();
-	if (GEngine)
+	if (GCManager)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, CacheInfo.ToString());
+		FText CacheInfo = GCManager->Debug_GetCacheInfo();
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, CacheInfo.ToString());
+		}
 	}
 
 #endif
@@ -163,6 +170,10 @@ void UFlowStateContext::OnExitCurState()
 	}
 	OnExitState.Broadcast(CurState);
 	CurState = nullptr;
+
+	// 通知GC清理缓存
+	GCManager->KillCache();
+	GCManager->HiddenCache();
 }
 
 void UFlowStateContext::OnEnterNewState(UFSMRuntimeNode* NewState)

@@ -29,6 +29,8 @@ class FLOWSTATEMACHINE_API UFlowStateContext : public UObject, public FTickableG
 	GENERATED_BODY()
 
 public:
+	UFlowStateContext(const FObjectInitializer& ObjectInitializer);
+
 	/** 初始化状态机 */
 	virtual void Initialize(EFSMExecuteMode InExecuteMode);
 
@@ -76,15 +78,21 @@ private:
 public:
 	/** 将目标添加至缓存 */
 	template<class T>
-	void AddToCache(T* Target, EFlowStateLifetime Lifetime)
+	void AddToCache(T Target, EFlowStateLifetime Lifetime)
 	{
 		GCManager->AddToCache(Target, Lifetime);
 	}
+	/** 切换目标的缓存区 */
+	template<class T>
+	void SwitchCache(T Target, EFlowStateLifetime FromLifetime, EFlowStateLifetime ToLifetime)
+	{
+		GCManager->SwitchCache(Target, FromLifetime, ToLifetime);
+	}
 	/** 从缓存中查找目标 */
 	template<class T>
-	bool FindByCache(FName Name, T* OutTarget) const
+	EFlowStateLifetime FindByCache(FName Name, T& OutTarget)
 	{
-		return GCManager->FindRefByCache(Name, EFlowStateLifetime::Hidden, OutTarget);
+		return GCManager->FindRefByCache(Name, OutTarget);
 	}
 	/** 清空缓存 */
 	void ClearAllCache() const { GCManager->ClearAllCache(); }
@@ -168,4 +176,6 @@ private:
 	/** 缓存零碎节点与它的唯一ID，加快查询速度 */
 	UPROPERTY(Transient)
 	TMap<FGuid, UFSMRuntimeNode*> ScatteredNodeMapping;
+
+	bool bIsRegisterFlowStateMachine = false;
 };

@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "Utility/FSMUtility.h"
 
+class AStaticMeshActor;
+class ASkeletalMeshActor;
 class UWidget;
 
 // 辅助 FlowStateContext 管理资源
@@ -15,19 +17,38 @@ public:
 	void AddToCache(T Target, EFlowStateLifetime Lifetime);
 
 	template<class T>
+	void SwitchCache(T Target, EFlowStateLifetime FromLifetime, EFlowStateLifetime ToLifetime);
+
+	template<class T>
 	void RemoveFromCache(T Target, EFlowStateLifetime Lifetime);
 
 	template<class T>
-	bool FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, T*& OutTarget) const;
+	bool FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, T& OutTarget);
+
+	template<class T>
+	EFlowStateLifetime FindRefByCache(FName Tag, T& OutTarget);
+
+	void HiddenCache();
+	void KillCache();
 
 	void ClearAllCache();
 
 	void ClearCacheBy(EFlowStateLifetime Lifetime);
 
 protected:
-	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& OutTarget) const;
-	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, UWidget*& OutTarget) const;
-	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ULevel*& OutTarget) const;
+	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& OutTarget);
+	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ASkeletalMeshActor*& OutTarget);
+	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AStaticMeshActor*& OutTarget);
+	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, UWidget*& OutTarget);
+	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ULevel*& OutTarget);
+
+	void _KillCacheFrom(AActor* Actor);
+	void _KillCacheFrom(UWidget* Widget);
+	void _KillCacheFrom(FName SubLevel);
+
+	void _HiddenCacheFrom(AActor* Actor);
+	void _HiddenCacheFrom(UWidget* Widget);
+	void _HiddenCacheFrom(FName SubLevel);
 
 private:
 #define CREATE_CACHE_OBJECT_HELPER(ClassType, Name) \
@@ -38,15 +59,15 @@ private:
 	protected:\
 		void _AddToStaticBy(ClassType Target)\
 		{\
-			Static_##Name.Add(Target);\
+			Static_##Name.AddUnique(Target);\
 		}\
 		void _AddToHiddenBy(ClassType Target)\
 		{\
-			Hidden_##Name.Add(Target);\
+			Hidden_##Name.AddUnique(Target);\
 		}\
 		void _AddToKillBy(ClassType Target)\
 		{\
-			Kill_##Name.Add(Target);\
+			Kill_##Name.AddUnique(Target);\
 		}\
 		void _RemoveFromStatic(ClassType Target)\
 		{\
@@ -74,7 +95,7 @@ void FSMGC::AddToCache(T Target, EFlowStateLifetime Lifetime)
 {
 	switch (Lifetime)
 	{
-	case EFlowStateLifetime::None:
+	case EFlowStateLifetime::Static:
 		_AddToStaticBy(Target);
 		break;
 	case EFlowStateLifetime::Kill:
@@ -87,11 +108,18 @@ void FSMGC::AddToCache(T Target, EFlowStateLifetime Lifetime)
 }
 
 template <class T>
+void FSMGC::SwitchCache(T Target, EFlowStateLifetime FromLifetime, EFlowStateLifetime ToLifetime)
+{
+	RemoveFromCache(Target, FromLifetime);
+	AddToCache(Target, ToLifetime);
+}
+
+template <class T>
 void FSMGC::RemoveFromCache(T Target, EFlowStateLifetime Lifetime)
 {
 	switch (Lifetime)
 	{
-	case EFlowStateLifetime::None:
+	case EFlowStateLifetime::Static:
 		_RemoveFromStatic(Target);
 		break;
 	case EFlowStateLifetime::Kill:
@@ -104,7 +132,28 @@ void FSMGC::RemoveFromCache(T Target, EFlowStateLifetime Lifetime)
 }
 
 template <class T>
-bool FSMGC::FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, T*& OutTarget) const
+bool FSMGC::FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, T& OutTarget)
 {
 	return _FindRefByCache(Tag, Lifetime, OutTarget);
+}
+
+template <class T>
+EFlowStateLifetime FSMGC::FindRefByCache(FName Tag, T& OutTarget)
+{
+	_FindRefByCache(Tag, EFlowStateLifetime::Static, OutTarget);
+	if (OutTarget != nullptr)
+	{
+		return EFlowStateLifetime::Static;
+	}
+	_FindRefByCache(Tag, EFlowStateLifetime::Kill, OutTarget);
+	if (OutTarget != nullptr)
+	{
+		return EFlowStateLifetime::Kill;
+	}
+	_FindRefByCache(Tag, EFlowStateLifetime::Hidden, OutTarget);
+	if (OutTarget != nullptr)
+	{
+		return EFlowStateLifetime::Hidden;
+	}
+	return EFlowStateLifetime::None;
 }

@@ -21,7 +21,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UFSMRuntimeNode* RootRuntimeNode;
 
-	/** 状态机根节点的装饰器子节点 */
+	/** 状态机的所有零散节点（无法被RootNode追溯到节点） */
 	UPROPERTY(VisibleAnywhere)
 	TArray<UFSMRuntimeNode*> ScatteredNodes;
 

@@ -1,8 +1,82 @@
 ﻿#include "SM/FSMGC.h"
 
+#include "Components/Widget.h"
+
+void FSMGC::HiddenCache()
+{
+	for (int i = 0; i < Hidden_Actors.Num(); ++i)
+	{
+		TWeakObjectPtr<AActor> Actor = Hidden_Actors[i];
+		if (Actor.IsValid())
+		{
+			_HiddenCacheFrom(Actor.Get());
+		}
+		else
+		{
+			Hidden_Actors.RemoveAt(i--);
+		}
+	}
+
+	for (int i = 0; i < Hidden_Widgets.Num(); ++i)
+	{
+		TWeakObjectPtr<UWidget> Widget = Hidden_Widgets[i];
+		if (Widget.IsValid())
+		{
+			_HiddenCacheFrom(Widget.Get());
+		}
+		else
+		{
+			Hidden_Widgets.RemoveAt(i--);
+		}
+	}
+
+	for (int i = 0; i < Hidden_SubLevels.Num(); ++i)
+	{
+		FName SubLevel = Hidden_SubLevels[i];
+		if (SubLevel != NAME_None)
+		{
+			_HiddenCacheFrom(SubLevel);
+		}
+		else
+		{
+			Hidden_SubLevels.RemoveAt(i--);
+		}
+	}
+}
+
+void FSMGC::KillCache()
+{
+	for (TWeakObjectPtr<AActor> KillActor : Kill_Actors)
+	{
+		if (KillActor.IsValid())
+		{
+			_KillCacheFrom(KillActor.Get());
+		}
+	}
+	Kill_Actors.Empty();
+
+	for (TWeakObjectPtr<UWidget> KillWidget : Kill_Widgets)
+	{
+		if (KillWidget.IsValid())
+		{
+			_KillCacheFrom(KillWidget.Get());
+		}
+	}
+	Kill_Widgets.Empty();
+	
+	for (FName KillSubLevel : Kill_SubLevels)
+	{
+		if (KillSubLevel != NAME_None)
+		{
+			_KillCacheFrom(KillSubLevel);
+		}
+	}
+	Kill_SubLevels.Empty();
+}
+
 void FSMGC::ClearAllCache()
 {
-	ClearCacheBy(EFlowStateLifetime::None);
+	ClearCacheBy(EFlowStateLifetime::Static);
 	ClearCacheBy(EFlowStateLifetime::Kill);
 	ClearCacheBy(EFlowStateLifetime::Hidden);
 }
@@ -11,7 +85,7 @@ void FSMGC::ClearCacheBy(EFlowStateLifetime Lifetime)
 {
 	switch (Lifetime)
 	{
-	case EFlowStateLifetime::None:
+	case EFlowStateLifetime::Static:
 		Static_Actors.Empty();
 		Static_Widgets.Empty();
 		Static_SubLevels.Empty();
@@ -29,13 +103,14 @@ void FSMGC::ClearCacheBy(EFlowStateLifetime Lifetime)
 	}
 }
 
-bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& OutTarget) const
+bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& OutTarget)
 {
 	switch (Lifetime)
 	{
-	case EFlowStateLifetime::None:
-		for (TWeakObjectPtr<AActor> CacheItem : Static_Actors)
+	case EFlowStateLifetime::Static:
+		for (int i = 0; i < Static_Actors.Num(); ++i)
 		{
+			TWeakObjectPtr<AActor> CacheItem = Static_Actors[i];
 			if (CacheItem.IsValid())
 			{
 				if (CacheItem->Tags.Contains(Tag))
@@ -43,12 +118,18 @@ bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& Out
 					OutTarget = CacheItem.Get();
 					return true;
 				}
+			}
+			else
+			{
+				Static_Actors.RemoveAt(i);
+				i--;
 			}
 		}
 		break;
 	case EFlowStateLifetime::Kill:
-		for (TWeakObjectPtr<AActor> CacheItem : Kill_Actors)
+		for (int i = 0; i < Kill_Actors.Num(); ++i)
 		{
+			TWeakObjectPtr<AActor> CacheItem = Kill_Actors[i];
 			if (CacheItem.IsValid())
 			{
 				if (CacheItem->Tags.Contains(Tag))
@@ -57,11 +138,17 @@ bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& Out
 					return true;
 				}
 			}
+			else
+			{
+				Kill_Actors.RemoveAt(i);
+				i--;
+			}
 		}
 		break;
 	case EFlowStateLifetime::Hidden:
-		for (TWeakObjectPtr<AActor> CacheItem : Hidden_Actors)
+		for (int i = 0; i < Hidden_Actors.Num(); ++i)
 		{
+			TWeakObjectPtr<AActor> CacheItem = Hidden_Actors[i];
 			if (CacheItem.IsValid())
 			{
 				if (CacheItem->Tags.Contains(Tag))
@@ -69,6 +156,11 @@ bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& Out
 					OutTarget = CacheItem.Get();
 					return true;
 				}
+			}
+			else
+			{
+				Hidden_Actors.RemoveAt(i);
+				i--;
 			}
 		}
 		break;
@@ -76,13 +168,24 @@ bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& Out
 	return false;
 }
 
-bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, UWidget*& OutTarget) const
+bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ASkeletalMeshActor*& OutTarget)
+{
+	return _FindRefByCache(Tag, Lifetime, (AActor*&)OutTarget);
+}
+
+bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AStaticMeshActor*& OutTarget)
+{
+	return _FindRefByCache(Tag, Lifetime, (AActor*&)OutTarget);
+}
+
+bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, UWidget*& OutTarget)
 {
 	switch (Lifetime)
 	{
-	case EFlowStateLifetime::None:
-		for (TWeakObjectPtr<UWidget> CacheItem : Static_Widgets)
+	case EFlowStateLifetime::Static:
+		for (int i = 0; i < Static_Widgets.Num(); ++i)
 		{
+			TWeakObjectPtr<UWidget> CacheItem = Static_Widgets[i];
 			if (CacheItem.IsValid())
 			{
 				checkNoEntry()
@@ -90,8 +193,9 @@ bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, UWidget*& Ou
 		}
 		break;
 	case EFlowStateLifetime::Kill:
-		for (TWeakObjectPtr<UWidget> CacheItem : Kill_Widgets)
+		for (int i = 0; i < Kill_Widgets.Num(); ++i)
 		{
+			TWeakObjectPtr<UWidget> CacheItem = Kill_Widgets[i];
 			if (CacheItem.IsValid())
 			{
 				checkNoEntry()
@@ -99,8 +203,9 @@ bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, UWidget*& Ou
 		}
 		break;
 	case EFlowStateLifetime::Hidden:
-		for (TWeakObjectPtr<UWidget> CacheItem : Hidden_Widgets)
+		for (int i = 0; i < Hidden_Widgets.Num(); ++i)
 		{
+			TWeakObjectPtr<UWidget> CacheItem = Hidden_Widgets[i];
 			if (CacheItem.IsValid())
 			{
 				checkNoEntry()
@@ -111,10 +216,41 @@ bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, UWidget*& Ou
 	return false;
 }
 
-bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ULevel*& OutTarget) const
+bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ULevel*& OutTarget)
 {
 	checkNoEntry()
 	return false;
+}
+
+void FSMGC::_KillCacheFrom(AActor* Actor)
+{
+	check(Actor)
+	Actor->Destroy();
+}
+
+void FSMGC::_KillCacheFrom(UWidget* Widget)
+{
+	check(Widget)
+	Widget->RemoveFromParent();
+}
+
+void FSMGC::_KillCacheFrom(FName SubLevel)
+{
+}
+
+void FSMGC::_HiddenCacheFrom(AActor* Actor)
+{
+	Actor->SetActorHiddenInGame(true);
+}
+
+void FSMGC::_HiddenCacheFrom(UWidget* Widget)
+{
+	Widget->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void FSMGC::_HiddenCacheFrom(FName SubLevel)
+{
+	checkNoEntry();
 }
 
 

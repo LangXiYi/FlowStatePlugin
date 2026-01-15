@@ -83,14 +83,14 @@ UUserWidget* UFSMFunctionLibrary::CreateAndBindWidget(UObject* WorldContextObjec
 	return nullptr;
 }
 
-bool UFSMFunctionLibrary::FindActorFromCache(UObject* WorldContextObject, FName ActorTag, AActor*& FindActor)
+EFlowStateLifetime UFSMFunctionLibrary::FindActorFromCache(UObject* WorldContextObject, FName ActorTag, AActor*& FindActor)
 {
 	UFlowStateContext* FlowStateContext = GetFlowStateContext(WorldContextObject);
 	if (FlowStateContext)
 	{
 		return FlowStateContext->FindByCache(ActorTag, FindActor);
 	}
-	return false;
+	return EFlowStateLifetime::None;
 }
 
 AActor* UFSMFunctionLibrary::InitActorLifetimeState(AActor* Target, EFlowStateLifetime Lifetime, FName ActorTag)
@@ -106,7 +106,6 @@ AActor* UFSMFunctionLibrary::InitActorLifetimeState(AActor* Target, EFlowStateLi
 		UE_LOG(LogFlowStateMachine, Error, TEXT("%hs FlowStateContext is nullptr."), __FUNCTION__)
 		return nullptr;
 	}
-	check(Lifetime != EFlowStateLifetime::None);
 	if (ActorTag != NAME_None)
 	{
 		Target->Tags.AddUnique(ActorTag);

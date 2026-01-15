@@ -23,8 +23,9 @@ END_NAMESPACE_FSM
 UENUM(BlueprintType)
 enum class EFlowStateLifetime : uint8
 {
-	// 长期存在
 	None = 0,
+	// 长期存在
+	Static,
 	// 当前状态结束后死亡
 	Kill,
 	// 当前状态结束后隐藏
