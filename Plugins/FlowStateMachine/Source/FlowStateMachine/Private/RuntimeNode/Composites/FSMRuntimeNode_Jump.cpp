@@ -12,11 +12,20 @@ void UFSMRuntimeNode_JumpStart::OnEnter()
 	TrySwitchTo(0);
 }
 
+FString UFSMRuntimeNode_JumpStart::GetNodeName() const
+{
+	return NodeName.Len() ? NodeName : "Default";
+}
+
 void UFSMRuntimeNode_JumpTo::OnEnter()
 {
 	Super::OnEnter();
-
-
 	check(StateContext)
+	check(JumpStartId.IsValid())
 	StateContext->GotoScatteredNode(JumpStartId);
+}
+
+FString UFSMRuntimeNode_JumpTo::GetNodeName() const
+{
+	return NodeName.Len() ? NodeName : FSMAsset->GetScatteredNodeName(JumpStartId);
 }

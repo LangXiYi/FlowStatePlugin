@@ -31,9 +31,6 @@ class FLOWSTATEMACHINE_API UFlowStateContext : public UObject, public FTickableG
 public:
 	UFlowStateContext(const FObjectInitializer& ObjectInitializer);
 
-	/** 初始化状态机 */
-	virtual void Initialize(EFSMExecuteMode InExecuteMode);
-
 	/** 注册状态机至运行时上下文对象 */
 	virtual void RegisterFlowStateMachine(UFlowStateMachine& FlowStateMachine);
 
@@ -153,9 +150,6 @@ protected:
 	/** 公用数据管理器 */
 	UPROPERTY(Transient)
 	UFSMCommonDataManager* CommonDataManager;
-
-	/** 状态机运行模式 */
-	EFSMExecuteMode ExecuteMode;
 	
 private:
 	// 引用资产，供运行时创建新的运行时节点使用

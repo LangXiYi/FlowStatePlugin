@@ -98,6 +98,8 @@ public:
 
 	bool IsPropertyEditable() const;
 
+	void RefreshClassPalette();
+
 protected:
 	virtual void SaveAsset_Execute() override;
 
@@ -119,7 +121,7 @@ private:
 	TSharedPtr<FFSMEditorToolbar> ToolbarBuilder;
 
 	// 资产的细节面板
-	TSharedPtr<IDetailsView> AssetDetailsView;
+	// TSharedPtr<IDetailsView> AssetDetailsView;
 	// 节点的细节面板
 	TSharedPtr<IDetailsView> DetailsView;
 	// 状态节点面板，支持拖拽放置新的节点

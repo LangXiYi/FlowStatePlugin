@@ -20,7 +20,6 @@
 void SFSMGraphPalette::Construct(const FArguments& InArgs, UFlowStateMachine* InAsset)
 {
 	FSMAsset = InAsset;
-	OwnerOfTemporaries =  NewObject<UEdGraph>((UObject*)GetTransientPackage());
 
 	// Auto expand the palette as there's so few nodes
 	SGraphPalette::Construct(SGraphPalette::FArguments().AutoExpandActionMenu(true));
@@ -29,6 +28,11 @@ void SFSMGraphPalette::Construct(const FArguments& InArgs, UFlowStateMachine* In
 	DelegateHandles.Add(AssetRegistryModule.Get().OnAssetAdded().AddSP(this, &SFSMGraphPalette::AddAssetFromAssetRegistry));
 	DelegateHandles.Add(AssetRegistryModule.Get().OnAssetRemoved().AddSP(this, &SFSMGraphPalette::RemoveAssetFromRegistry));
 	DelegateHandles.Add(AssetRegistryModule.Get().OnAssetRenamed().AddSP(this, &SFSMGraphPalette::RenameAssetFromRegistry));
+}
+
+void SFSMGraphPalette::RefreshActionsList(bool bPreserveExpansion)
+{
+	SGraphPalette::RefreshActionsList(bPreserveExpansion);
 }
 
 void SFSMGraphPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActions)
@@ -42,7 +46,7 @@ void SFSMGraphPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActi
 		StateAction,
 		UFSMRuntimeNode_State::StaticClass(),
 		UFSMGraphNode_State::StaticClass(),
-		OwnerOfTemporaries);
+		FSMAsset->FSMGraph);
 
 	// Composites Nodes
 	FCategorizedGraphActionListBuilder CompositesAction("Composites");
@@ -55,7 +59,7 @@ void SFSMGraphPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActi
 			CompositesAction,
 			NodeClass.GetClass(),
 			CompositesGraphNodeClass,
-			OwnerOfTemporaries);
+			FSMAsset->FSMGraph);
 	}
 
 	// Sub Nodes
@@ -64,21 +68,21 @@ void SFSMGraphPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActi
 		ActionAction,
 		UFSMRuntimeSubNode_Action::StaticClass(),
 		UFSMGraphSubNode_Action::StaticClass(),
-		OwnerOfTemporaries);
+		FSMAsset->FSMGraph);
 	
 	FCategorizedGraphActionListBuilder ServiceAction("SubNode|Service");
 	UEdGraphSchema_FSM::CollectNewSubNodeAction(
 		ServiceAction,
 		UFSMRuntimeSubNode_Service::StaticClass(),
 		UFSMGraphSubNode_Service::StaticClass(),
-		OwnerOfTemporaries);
+		FSMAsset->FSMGraph);
 
 	FCategorizedGraphActionListBuilder ConditionAction("SubNode|Condition");
 	UEdGraphSchema_FSM::CollectNewSubNodeAction(
 		ConditionAction,
 		UFSMRuntimeSubNode_Condition::StaticClass(),
 		UFSMGraphSubNode_Condition::StaticClass(),
-		OwnerOfTemporaries);
+		FSMAsset->FSMGraph);
 
 	OutAllActions.Append(StateAction);
 	OutAllActions.Append(CompositesAction);

@@ -1,5 +1,6 @@
 ﻿#include "Slate/SFSMGraphNode_State.h"
 
+#include "GraphEditorSettings.h"
 #include "IDocumentation.h"
 #include "NodeFactory.h"
 #include "SGraphPanel.h"
@@ -250,6 +251,43 @@ FString SFSMGraphNode_State::GetNodeComment() const
 	return "Test Node Comment";
 }
 
+void SFSMGraphNode_State::AddPin(const TSharedRef<SGraphPin>& PinToAdd)
+{
+	PinToAdd->SetOwner(SharedThis(this));
+
+	const UEdGraphPin* PinObj = PinToAdd->GetPinObj();
+	const bool bAdvancedParameter = (PinObj != nullptr) && PinObj->bAdvancedView;
+	if (bAdvancedParameter)
+	{
+		PinToAdd->SetVisibility( TAttribute<EVisibility>(PinToAdd, &SGraphPin::IsPinVisibleAsAdvanced) );
+	}
+
+	if (PinToAdd->GetDirection() == EEdGraphPinDirection::EGPD_Input)
+	{
+		LeftNodeBox->AddSlot()
+			.HAlign(HAlign_Left)
+			.VAlign(VAlign_Fill)
+			// .Padding(Settings->GetInputPinPadding())
+			.Padding(FMargin(2.f, 5.f))
+		[
+			PinToAdd
+		];
+		InputPins.Add(PinToAdd);
+	}
+	else // Direction == EEdGraphPinDirection::EGPD_Output
+	{
+		RightNodeBox->AddSlot()
+			.HAlign(HAlign_Right)
+			.VAlign(VAlign_Fill)
+			// .Padding(Settings->GetInputPinPadding())
+			.Padding(FMargin(2.f, 5.f))
+		[
+			PinToAdd
+		];
+		OutputPins.Add(PinToAdd);
+	}
+}
+
 void SFSMGraphNode_State::AddAction(TSharedPtr<SGraphNode> ActionWidget)
 {
 	ActionBox->AddSlot()
@@ -307,7 +345,9 @@ TSharedRef<SWidget> SFSMGraphNode_State::CreateNodeContentArea()
 	return SNew(SHorizontalBox)
 		+SHorizontalBox::Slot()
 		.AutoWidth()
-		.HAlign(HAlign_Left)
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
+		.Padding(FMargin(0, 10.f))
 		[
 			// 输入引脚
 			SAssignNew(LeftNodeBox, SVerticalBox)
@@ -318,11 +358,12 @@ TSharedRef<SWidget> SFSMGraphNode_State::CreateNodeContentArea()
 		.Padding(5.f)
 		[
 			SNew(SBox)
-			.MinDesiredWidth(80.f)
+			.MinDesiredWidth(100.f)
+			.MinDesiredHeight(100.f)
 			[
 				SNew(SBorder)
 				.BorderImage(FEditorStyle::GetBrush("Graph.StateNode.Body"))
-				.BorderBackgroundColor(FSlateColor(FLinearColor::Gray))
+				.BorderBackgroundColor(FSlateColor(FLinearColor(0.2f, 0.2f, 0.2f)))
 				.HAlign(HAlign_Fill)
 				.VAlign(VAlign_Fill)
 				[
@@ -335,11 +376,12 @@ TSharedRef<SWidget> SFSMGraphNode_State::CreateNodeContentArea()
 		.Padding(5.f)
 		[
 			SNew(SBox)
-			.MinDesiredWidth(80.f)
+			.MinDesiredWidth(100.f)
+			.MinDesiredHeight(100.f)
 			[
 				SNew(SBorder)
 				.BorderImage(FEditorStyle::GetBrush("Graph.StateNode.Body"))
-				.BorderBackgroundColor(FSlateColor(FLinearColor::Gray))
+				.BorderBackgroundColor(FSlateColor(FLinearColor(0.2f, 0.2f, 0.2f)))
 				[
 					// 行为列表
 					ActionBox.ToSharedRef()
@@ -348,7 +390,9 @@ TSharedRef<SWidget> SFSMGraphNode_State::CreateNodeContentArea()
 		]
 		+SHorizontalBox::Slot()
 		.AutoWidth()
-		.HAlign(HAlign_Right)
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
+		.Padding(FMargin(0, 10.f))
 		[
 			// 输出引脚
 			SAssignNew(RightNodeBox, SVerticalBox)
@@ -429,7 +473,7 @@ bool SFSMGraphNode_State::UseLowDetailNodeTitles() const
 
 FSlateColor SFSMGraphNode_State::GetBorderBackgroundColor() const
 {
-	return FSlateColor(FLinearColor::Black);
+	return FSlateColor(FLinearColor(0.0f, 0.0f, 0.0f));
 }
 
 FText SFSMGraphNode_State::GetPinTooltip(UEdGraphPin* Pin) const
@@ -455,35 +499,37 @@ void SGraphPin_FSM::Construct(const FArguments& InArgs, UEdGraphPin* InPin)
 {
 	SGraphPin::Construct(SGraphPin::FArguments(), InPin);
 
-	// Call utility function so inheritors can also call it since arguments can't be passed through
-	CachePinIcons();
+	this->SetCursor(EMouseCursor::Default);
+
+	bShowLabel = true;
+
+	GraphPinObj = InPin;
+	check(GraphPinObj != NULL);
+
+	const UEdGraphSchema* Schema = GraphPinObj->GetSchema();
+	check(Schema);
+
+	SBorder::Construct(SBorder::FArguments()
+		.BorderImage(this, &SGraphPin_FSM::GetPinBorder)
+		.BorderBackgroundColor(this, &SGraphPin_FSM::GetPinColor)
+		.OnMouseButtonDown(this, &SGraphPin_FSM::OnPinMouseDown)
+		.Cursor(this, &SGraphPin_FSM::GetPinCursor)
+		.Padding(FMargin(6.0f))
+		);
 }
 
 TSharedRef<SWidget> SGraphPin_FSM::GetDefaultValueWidget()
 {
-	return SGraphPin::GetDefaultValueWidget();
+	return SNew(STextBlock);
 }
 
-const FSlateBrush* SGraphPin_FSM::GetPinIcon() const
+FSlateColor SGraphPin_FSM::GetPinColor() const
 {
-	const FSlateBrush* Brush = NULL;
-
-	if (IsConnected())
-	{
-		Brush = IsHovered() ? CachedImg_Pin_ConnectedHovered : CachedImg_Pin_Connected;
-	}
-	else
-	{
-		Brush = IsHovered() ? CachedImg_Pin_DisconnectedHovered : CachedImg_Pin_Disconnected;
-	}
-
-	return Brush;
+	return FSlateColor(IsHovered() ? FLinearColor(1.f,1.f,0, 0.5f) : FLinearColor(0.5f,0.5f,0.5f,0.5));
 }
 
-void SGraphPin_FSM::CachePinIcons()
+const FSlateBrush* SGraphPin_FSM::GetPinBorder() const
 {
-	CachedImg_Pin_ConnectedHovered = FEditorStyle::GetBrush(TEXT("Graph.ExecPin.ConnectedHovered"));
-	CachedImg_Pin_Connected = FEditorStyle::GetBrush(TEXT("Graph.ExecPin.Connected"));
-	CachedImg_Pin_DisconnectedHovered = FEditorStyle::GetBrush(TEXT("Graph.ExecPin.DisconnectedHovered"));
-	CachedImg_Pin_Disconnected = FEditorStyle::GetBrush(TEXT("Graph.ExecPin.Disconnected"));
+	return FEditorStyle::GetBrush(TEXT("Graph.StateNode.Body"));
 }
+

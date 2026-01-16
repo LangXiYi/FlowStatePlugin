@@ -28,7 +28,7 @@ public:
 	 * @return 
 	 */
 	UFUNCTION(BlueprintCallable, Category = "FlowStateMachineSubsystem")
-	bool RunFlowStateMachine(UFlowStateMachine* StateMachine, EFSMExecuteMode ExecuteMode);
+	bool RunFlowStateMachine(UFlowStateMachine* StateMachine);
 
 	UFUNCTION(BlueprintCallable, Category = "FlowStateMachineSubsystem")
 	void StopFlowStateMachine();

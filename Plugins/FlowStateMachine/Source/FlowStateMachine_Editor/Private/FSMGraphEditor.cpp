@@ -4,6 +4,7 @@
 #include "EdGraphUtilities.h"
 #include "FlowStateMachine_EditorModule.h"
 #include "FSMEditorToolbar.h"
+#include "GraphEditAction.h"
 #include "GraphEditorActions.h"
 #include "Graph/FSMGraph.h"
 #include "Data/FSMCommonData.h"
@@ -175,6 +176,11 @@ bool FFSMGraphEditor::IsPropertyEditable() const
 	return FocusedGraphEd.IsValid() && FocusedGraphEd->GetCurrentGraph() && FocusedGraphEd->GetCurrentGraph()->bEditable;
 }
 
+void FFSMGraphEditor::RefreshClassPalette()
+{
+	ClassPalette->RefreshActionsList(true);
+}
+
 void FFSMGraphEditor::PostUndo(bool bSuccess)
 {
 	IFlowStateMachineEditor::PostUndo(bSuccess);
@@ -336,7 +342,9 @@ TSharedRef<SWidget> FFSMGraphEditor::CreateFlowStateMachineGraphEditor(const FWo
 	InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FFSMGraphEditor::OnSelectedNodesChanged);
 	InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FFSMGraphEditor::OnNodeDoubleClicked);
 	// InEvents.OnTextCommitted = FOnNodeTextCommitted::CreateSP(this, &FBehaviorTreeEditor::OnNodeTitleCommitted);
-	
+
+	InGraph->OnScatteredNodesChanged.AddRaw(this, &FFSMGraphEditor::RefreshClassPalette);
+
 	// Make full graph editor
 	const bool bGraphIsEditable = InGraph->bEditable;
 	return SNew(SGraphEditor)
@@ -358,18 +366,9 @@ TSharedRef<SWidget> FFSMGraphEditor::CreateFlowStateMachineDetailView(const FWor
 	DetailsView = PropertyEditor.CreateDetailView(PropertyViewArgs);
 	DetailsView->SetIsPropertyEditingEnabledDelegate(FIsPropertyEditingEnabled::CreateSP(this, &FFSMGraphEditor::IsPropertyEditable));
 
-	AssetDetailsView = PropertyEditor.CreateDetailView(PropertyViewArgs);
-	AssetDetailsView->SetIsPropertyEditingEnabledDelegate(FIsPropertyEditingEnabled::CreateSP(this, &FFSMGraphEditor::IsPropertyEditable));
-
-	AssetDetailsView->SetObject(nullptr);
 	DetailsView->SetObject(nullptr);
 
 	return SNew(SVerticalBox)
-		+SVerticalBox::Slot()
-		.FillHeight(1.f)
-		[
-			AssetDetailsView.ToSharedRef()
-		]
 		+SVerticalBox::Slot()
 		.FillHeight(1.f)
 		[
@@ -423,7 +422,6 @@ void FFSMGraphEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSelection)
 	// 若选中数量为 1 则改变 DetailView 的显示对象
 	if (SelectionNodes.Num() == 1)
 	{
-		AssetDetailsView->SetObject(SelectionNodes[0]);
 		// 设置细节面板显示的对象为运行时节点
 		DetailsView->SetObject(static_cast<UFSMGraphNodeBase*>(SelectionNodes[0])->RuntimeNode);
 	}
@@ -438,7 +436,6 @@ void FFSMGraphEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSelection)
 				break;
 			}
 		}
-		AssetDetailsView->SetObject(FlowStateMachine);
 		DetailsView->SetObject(RootNode);
 	}
 }

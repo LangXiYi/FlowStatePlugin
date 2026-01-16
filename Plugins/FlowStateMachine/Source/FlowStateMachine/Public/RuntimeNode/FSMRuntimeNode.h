@@ -72,29 +72,19 @@ public:
 
 public:
 	/** 子级节点 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<UFSMRuntimeNode*> ChildrenNodes;
 
 protected:
 	/** 次要节点：行为列表 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<class UFSMRuntimeSubNode_Action*> Actions;
 
 	/** 次要节点：服务列表 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<class UFSMRuntimeSubNode_Service*> Services;
 
 	/** 次要节点：条件列表 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<class UFSMRuntimeSubNode_Condition*> Conditions;
-
-private:
-	/** depth first index (execution order) */
-	UPROPERTY(VisibleAnywhere)
-	uint16 ExecutionIndex;
-
-	/** instance memory offset */
-	UPROPERTY(VisibleAnywhere)
-	uint16 MemoryOffset;
-
 };

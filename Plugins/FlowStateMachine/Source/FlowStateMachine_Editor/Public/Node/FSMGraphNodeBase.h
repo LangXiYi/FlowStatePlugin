@@ -20,7 +20,7 @@ public:
 	// UEdGraphNode Function
 	/////////////////////////////////////////////////////
 
-	/** 当节点被放置后调用，创建 RuntimeNode 实例 */
+	/** 当节点被粘贴后调用，创建 RuntimeNode 实例 */
 	virtual void PostPasteNode() override;
 
 	/** 当节点被放置后调用，创建 RuntimeNode 实例 */
@@ -34,6 +34,8 @@ public:
 	/** 获取节点的名称 */
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 
+	virtual FString GetNodeTitleFormatString() const;
+	
 	/** 获取节点的提示文本 */
 	virtual FText GetTooltipText() const override;
 
@@ -98,7 +100,7 @@ protected:
 
 public:
 	/** 所有次要节点 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<UFSMGraphNodeBase*> SubNodes;
 
 	/** 类型数据，目前使用的是 AIGraphType 中定义的类型，后续可以考虑使用自定义的类型 */
@@ -106,11 +108,11 @@ public:
 	FGraphNodeClassData ClassData;
 
 	/**	运行时节点实例 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	UFSMRuntimeNodeBase* RuntimeNode;
 
 	/** 父级节点 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	UFSMGraphNodeBase* ParentNode;
 
 	bool bIsRootNode = false;

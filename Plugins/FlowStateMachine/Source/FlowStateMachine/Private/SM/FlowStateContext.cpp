@@ -24,11 +24,6 @@ UFlowStateContext::UFlowStateContext(const FObjectInitializer& ObjectInitializer
 	// CommonDataManager->Initialize(this);
 }
 
-void UFlowStateContext::Initialize(EFSMExecuteMode InExecuteMode)
-{
-	ExecuteMode = InExecuteMode;
-}
-
 void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMachine)
 {
 	StateMachine = &FlowStateMachine;
@@ -121,7 +116,7 @@ bool UFlowStateContext::GotoScatteredNode(FGuid Key)
 
 void UFlowStateContext::Tick(float DeltaTime)
 {
-	if (bIsRegisterFlowStateMachine == false)
+	if (bIsRegisterFlowStateMachine == false || IsPendingKillOrUnreachable())
 	{
 		return;
 	}

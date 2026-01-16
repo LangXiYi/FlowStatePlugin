@@ -10,6 +10,8 @@ class UFSMRuntimeNodeBase;
 class UFSMRuntimeNode;
 class UFSMGraphNode;
 
+DECLARE_MULTICAST_DELEGATE(FOnScatteredNodesChanged);
+
 UCLASS()
 class FLOWSTATEMACHINE_EDITOR_API UFSMGraph : public UEdGraph
 {
@@ -69,17 +71,32 @@ protected:
 
 public:
 	/** 创建所有的子级节点 */
-	static void CreateChildrenNodes(UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode, UFSMGraphNode* GraphRootNode, TArray<UObject*>& Stack);
+	static void CreateChildrenNodes(UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode, const UFSMGraphNode* GraphRootNode, TArray<UObject*>& Stack);
 
 	/** 创建所有的零散节点 */
-	static void CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TArray<UFSMGraphNode*>& ScatteredNodes);
+	static void CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TArray<const UFSMGraphNode*>& ScatteredNodes);
 
 	/** 更新节点的错误信息 */
 	static void UpdateNodeErrorMessage(UFSMGraphNodeBase& FSMNode);
 	
 public:
+	void AddScatteredNode(const UFSMGraphNode* Node)
+	{
+		ScatteredNodes.Add(Node);
+		OnScatteredNodesChanged.Broadcast();
+	}
+	void RemoveScatteredNode(const UFSMGraphNode* Node)
+	{
+		ScatteredNodes.Remove(Node);
+		OnScatteredNodesChanged.Broadcast();
+	}
+	const TArray<const UFSMGraphNode*>& GetScatteredNodes() const { return ScatteredNodes; }
+
+	FOnScatteredNodesChanged OnScatteredNodesChanged;
+
+protected:
 	UPROPERTY()
-	TArray<UFSMGraphNode*> ScatteredNodes;
+	TArray<const UFSMGraphNode*> ScatteredNodes;
 	
 private:
 	bool bLockUpdates;

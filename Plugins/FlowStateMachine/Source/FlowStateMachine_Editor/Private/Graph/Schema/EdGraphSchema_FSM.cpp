@@ -25,7 +25,7 @@ UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEd
 {
 	UFSMGraphNodeBase* ResultNode = nullptr;
 	// 创建图表节点
-	if (NodeTemplate != nullptr)
+	if (NodeTemplateClass != nullptr)
 	{
 		ParentGraph->Modify();
 		if (FromPin)
@@ -33,11 +33,8 @@ UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEd
 			FromPin->Modify();
 		}
 
-		// 通过 Rename 函数重设节点模板的 Outer，之前的 Outer 为临时图表
-		ResultNode = Cast<UFSMGraphNodeBase>(StaticDuplicateObject(NodeTemplate, ParentGraph));
-		ResultNode->ClassData = NodeTemplate->ClassData;
-		// ResultNode->Rename(NULL, ParentGraph, REN_NonTransactional);
-		ParentGraph->AddNode(ResultNode, true);
+		ResultNode = NewObject<UFSMGraphNodeBase>(ParentGraph, NodeTemplateClass);
+		InitializeGraphNode(ResultNode);
 
 		ResultNode->CreateNewGuid();
 		ResultNode->PostPlacedNewNode();
@@ -47,6 +44,8 @@ UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEd
 		
 		ResultNode->AllocateDefaultPins();
 		ResultNode->AutowireNewNode(FromPin);
+
+		ParentGraph->AddNode(ResultNode, true);
 	}
 	return ResultNode;
 }
@@ -57,13 +56,19 @@ UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, TAr
 	return FEdGraphSchemaAction::PerformAction(ParentGraph, FromPins, Location, bSelectNewNode);
 }
 
-void FFSMSchemaAction_NewNode::AddReferencedObjects(FReferenceCollector& Collector)
+void FFSMSchemaAction_NewNode::InitializeGraphNode(UFSMGraphNodeBase* GraphNode)
 {
-	FEdGraphSchemaAction::AddReferencedObjects(Collector);
+	GraphNode->ClassData = ClassData;
+}
 
-	// 确保操作期间该对象不会被回收？
-	Collector.AddReferencedObject(NodeTemplate);
-	Collector.AddReferencedObject(ParentGraphNode);
+void FFSMSchemaAction_NewJumpNode::InitializeGraphNode(UFSMGraphNodeBase* GraphNode)
+{
+	FFSMSchemaAction_NewNode::InitializeGraphNode(GraphNode);
+
+	if (UFSMGraphNode_JumpTo* JumpToNode = Cast<UFSMGraphNode_JumpTo>(GraphNode))
+	{
+		JumpToNode->JumpStartId = JumpStartID;
+	}
 }
 
 UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode)
@@ -71,11 +76,11 @@ UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentG
 	// TODO::子节点需要放置在父节点上才能正确添加，获取当前鼠标悬浮的节点设置为 ParentGraphNode
 	if (ParentGraphNode != nullptr)
 	{
-		UFSMGraphSubNode* ResultNode = Cast<UFSMGraphSubNode>(StaticDuplicateObject(NodeTemplate, ParentGraph));
-		ResultNode->ClassData = NodeTemplate->ClassData;
+		UFSMGraphSubNode* ResultNode = NewObject<UFSMGraphSubNode>(ParentGraph, NodeTemplateClass);
+		ResultNode->ClassData = ClassData;
 		ParentGraphNode->AddSubNode(ResultNode, ParentGraph);
 	}
-	return NULL;
+	return nullptr;
 }
 
 UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentGraph, TArray<UEdGraphPin*>& FromPins, const FVector2D Location, bool bSelectNewNode)
@@ -88,7 +93,6 @@ void FFSMSchemaAction_NewSubNode::AddReferencedObjects(FReferenceCollector& Coll
 	FEdGraphSchemaAction::AddReferencedObjects(Collector);
 
 	// These don't get saved to disk, but we want to make sure the objects don't get GC'd while the action array is around
-	Collector.AddReferencedObject(NodeTemplate);
 	Collector.AddReferencedObject(ParentGraphNode);
 }
 
@@ -116,34 +120,28 @@ void UEdGraphSchema_FSM::GetGraphContextActions(FGraphContextMenuBuilder& Contex
 	{
 		FCategorizedGraphActionListBuilder TasksBuilder(TEXT("FlowState"));
 
-		TArray<FGraphNodeClassData> NodeClasses;
-		ClassCache->GatherClasses(UFSMRuntimeNode_State::StaticClass(), NodeClasses);
-
-		for (FGraphNodeClassData& NodeClassData : NodeClasses)
-		{
-			if (NodeClassData.GetClass() != nullptr)
-			{
-				CollectNewNodeAction(TasksBuilder, NodeClassData.GetClass(), UFSMGraphNode_State::StaticClass(), ContextMenuBuilder.OwnerOfTemporaries/*const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph)*/);
-			}
-		}
+		CollectNewNodeAction(
+			TasksBuilder,
+			UFSMRuntimeNode_State::StaticClass(),
+			UFSMGraphNode_State::StaticClass(),
+			ContextMenuBuilder.CurrentGraph);
 		ContextMenuBuilder.Append(TasksBuilder);
 	}
 
 	if (bIsAllowCreateComposites)
 	{
-		
+		// Composites Nodes
 		FCategorizedGraphActionListBuilder TasksBuilder(TEXT("Composites"));
-
-		TArray<FGraphNodeClassData> NodeClasses;
-		ClassCache->GatherClasses(UFSMRuntimeNode_Composites::StaticClass(), NodeClasses);
-
-		for (FGraphNodeClassData& NodeClass : NodeClasses)
+		TArray<FGraphNodeClassData> CompositesNodeClasses;
+		ClassCache->GatherClasses(UFSMRuntimeNode_Composites::StaticClass(), CompositesNodeClasses);
+		for (FGraphNodeClassData& NodeClass : CompositesNodeClasses)
 		{
-			if (NodeClass.GetClass() != nullptr)
-			{
-				UClass* CompositesGraphNodeClass = GetCompositesGraphNodeClass(NodeClass.GetClass());
-				CollectNewNodeAction(TasksBuilder, NodeClass.GetClass(), CompositesGraphNodeClass, ContextMenuBuilder.OwnerOfTemporaries/*const_cast<UEdGraph*>(ContextMenuBuilder.CurrentGraph)*/);
-			}
+			UClass* CompositesGraphNodeClass = UEdGraphSchema_FSM::GetCompositesGraphNodeClass(NodeClass.GetClass());
+			CollectNewNodeAction(
+				TasksBuilder,
+				NodeClass.GetClass(),
+				CompositesGraphNodeClass,
+				ContextMenuBuilder.CurrentGraph);
 		}
 		ContextMenuBuilder.Append(TasksBuilder);
 	}
@@ -200,18 +198,15 @@ void UEdGraphSchema_FSM::GetGraphNodeContextActions(FGraphContextMenuBuilder& Co
 
 	if (GraphNodeClass)
 	{
-		for (const auto& NodeClass : NodeClasses)
+		for (const auto& NodeClassData : NodeClasses)
 		{
-			const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClass.ToString(), false));
+			const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClassData.ToString(), false));
 
-			// 创建一个子节点模板
-			UFSMGraphSubNode* OpNode = NewObject<UFSMGraphSubNode>(ContextMenuBuilder.OwnerOfTemporaries, GraphNodeClass);
-			OpNode->ClassData = NodeClass;
-
-			TSharedPtr<FFSMSchemaAction_NewSubNode> AddOpAction = UEdGraphSchema_FSM::AddNewSubNodeAction(ContextMenuBuilder, NodeClass.GetCategory(), NodeTypeName, FText::GetEmpty());
+			TSharedPtr<FFSMSchemaAction_NewSubNode> AddOpAction = UEdGraphSchema_FSM::AddNewSubNodeAction(ContextMenuBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
 			// 记录操作的父级节点为当前图表选中的首个节点
 			AddOpAction->ParentGraphNode = Cast<UFSMGraphNode>(ContextMenuBuilder.SelectedObjects[0]);
-			AddOpAction->NodeTemplate = OpNode;
+			AddOpAction->NodeTemplateClass = GraphNodeClass;
+			AddOpAction->ClassData = NodeClassData;
 		}
 	}
 }
@@ -242,7 +237,7 @@ void UEdGraphSchema_FSM::GetSubNodeClasses(EFSMSubNodeType SubNodeFlags, TArray<
 }
 
 void UEdGraphSchema_FSM::CollectNewNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder,
-	UClass* RuntimeNodeClass, UClass* GraphNodeClass, UEdGraph* InGraph)
+	UClass* RuntimeNodeClass, UClass* GraphNodeClass, const UEdGraph* InGraph)
 {
 	if (InGraph == nullptr)
 	{
@@ -276,15 +271,14 @@ void UEdGraphSchema_FSM::CollectNewNodeAction(FCategorizedGraphActionListBuilder
 			TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
 
 			// 创建一个图表节点的模板给操作类
-			UFSMGraphNode* OpNode = NewObject<UFSMGraphNode>(InGraph, GraphNodeClass);
-			OpNode->ClassData = NodeClassData;
-			AddOpAction->NodeTemplate = OpNode;
+			AddOpAction->NodeTemplateClass = GraphNodeClass;
+			AddOpAction->ClassData = NodeClassData;
 		}
 	}
 }
 
 void UEdGraphSchema_FSM::CollectNewSubNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder,
-                                                 UClass* RuntimeNodeClass, UClass* GraphNodeClass, UEdGraph* Owner)
+                                                 UClass* RuntimeNodeClass, UClass* GraphNodeClass, const UEdGraph* Owner)
 {
 	if (Owner == nullptr)
 	{
@@ -304,21 +298,17 @@ void UEdGraphSchema_FSM::CollectNewSubNodeAction(FCategorizedGraphActionListBuil
 		}
 		const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClassData.ToString(), false));
 
-		// 创建一个子节点模板
-		UFSMGraphSubNode* OpNode = NewObject<UFSMGraphSubNode>(Owner, GraphNodeClass);
-		OpNode->ClassData = NodeClassData;
-
 		TSharedPtr<FFSMSchemaAction_NewSubNode> AddOpAction = UEdGraphSchema_FSM::AddNewSubNodeAction(TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
 		// 记录操作的父级节点为当前图表选中的首个节点
-		// AddOpAction->ParentGraphNode = Cast<UFSMGraphNode>(ContextMenuBuilder.SelectedObjects[0]);
-		AddOpAction->NodeTemplate = OpNode;
+		AddOpAction->NodeTemplateClass = GraphNodeClass;
+		AddOpAction->ClassData = NodeClassData;
 	}
 }
 
 void UEdGraphSchema_FSM::CollectJumpNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder,
-	const FGraphNodeClassData& NodeClassData, UClass* GraphNodeClass, UEdGraph* InGraph)
+	const FGraphNodeClassData& NodeClassData, UClass* GraphNodeClass, const UEdGraph* InGraph)
 {
-	 const auto& GetJumpToActionName = [](UFSMGraphNodeBase* InGraphNode)->FText
+	 const auto& GetJumpToActionName = [](const UFSMGraphNodeBase* InGraphNode)->FText
 	 {
 		 if (InGraphNode && InGraphNode->RuntimeNode)
 		 {
@@ -327,22 +317,19 @@ void UEdGraphSchema_FSM::CollectJumpNodeAction(FCategorizedGraphActionListBuilde
 		 return FText::FromString(TEXT("Error None"));
 	 };
 	
-	if (UFSMGraph* MyGraph = Cast<UFSMGraph>(InGraph))
+	if (const UFSMGraph* MyGraph = Cast<UFSMGraph>(InGraph))
 	{
 		// 查找图表中的所有零散节点
-		for (UFSMGraphNode* ScatteredNode : MyGraph->ScatteredNodes)
+		for (const UFSMGraphNode* ScatteredNode : MyGraph->GetScatteredNodes())
 		{
-			if (UFSMGraphNode_JumpStart* JumpStartNode = Cast<UFSMGraphNode_JumpStart>(ScatteredNode))
+			if (const UFSMGraphNode_JumpStart* JumpStartNode = Cast<UFSMGraphNode_JumpStart>(ScatteredNode))
 			{
 				const FText NodeTypeName = GetJumpToActionName(JumpStartNode);
 				// 添加创建状态节点到图表右键菜单
-				TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
-
-				// 创建一个图表节点的模板给操作类
-				UFSMGraphNode_JumpTo* OpNode = NewObject<UFSMGraphNode_JumpTo>(MyGraph, GraphNodeClass);
-				OpNode->JumpStartId = JumpStartNode->JumpStartId;
-				OpNode->ClassData = NodeClassData;
-				AddOpAction->NodeTemplate = OpNode;
+				TSharedPtr<FFSMSchemaAction_NewJumpNode> AddOpAction = AddNewJumpNodeAction(TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
+				AddOpAction->NodeTemplateClass = GraphNodeClass;
+				AddOpAction->ClassData = NodeClassData;
+				AddOpAction->JumpStartID = JumpStartNode->JumpStartId;
 			}
 		}
 	}
@@ -352,6 +339,14 @@ TSharedPtr<FFSMSchemaAction_NewNode> UEdGraphSchema_FSM::AddNewNodeAction(
 	FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip)
 {
 	TSharedPtr<FFSMSchemaAction_NewNode> NewAction = MakeShareable(new FFSMSchemaAction_NewNode(Category, MenuDesc, Tooltip, 0));
+	ContextMenuBuilder.AddAction(NewAction);
+	return NewAction;
+}
+
+TSharedPtr<FFSMSchemaAction_NewJumpNode> UEdGraphSchema_FSM::AddNewJumpNodeAction(
+	FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip)
+{
+	TSharedPtr<FFSMSchemaAction_NewJumpNode> NewAction = MakeShareable(new FFSMSchemaAction_NewJumpNode(Category, MenuDesc, Tooltip, 0));
 	ContextMenuBuilder.AddAction(NewAction);
 	return NewAction;
 }
@@ -380,6 +375,11 @@ UClass* UEdGraphSchema_FSM::GetCompositesGraphNodeClass(const UClass* RuntimeNod
 
 const FPinConnectionResponse UEdGraphSchema_FSM::CanCreateConnection(const UEdGraphPin* PinA, const UEdGraphPin* PinB) const
 {
+	if (PinA == nullptr || PinB == nullptr)
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("Invalid Pin"));
+	}
+
 	const UFSMGraphNodeBase* OwningNodeA = Cast<UFSMGraphNodeBase>(PinA->GetOwningNodeUnchecked());
 	const UFSMGraphNodeBase* OwningNodeB = Cast<UFSMGraphNodeBase>(PinB->GetOwningNodeUnchecked());
 

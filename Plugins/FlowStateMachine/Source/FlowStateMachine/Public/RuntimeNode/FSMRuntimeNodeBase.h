@@ -28,7 +28,7 @@ public:
 
 	virtual class UWorld* GetWorld() const override;
 
-	FString GetNodeName() const;
+	virtual FString GetNodeName() const;
 
 #if WITH_EDITOR
 
@@ -48,15 +48,15 @@ public:
 
 public:
 	/** 调用的父级节点 */
-	UPROPERTY(VisibleAnywhere, Transient)
+	UPROPERTY(Transient)
 	UFSMRuntimeNodeBase* ParentNode;
 
 	/** 次要节点 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<UFSMRuntimeNodeBase*> SubNodes;
 
 	// 是否为根节点
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	bool bIsRootNode = false;
 
 	/** 该实例是否是模板实例(不会参与实际运行，仅作为运行的参考) */
@@ -71,12 +71,11 @@ protected:
 	FString NodeName;
 
 	/** 所有父级节点 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<UFSMRuntimeNodeBase*> AllParentNodes;
 
-private:
 	// 静态资产实例，可以通过他访问到我们的黑板资产
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	UFlowStateMachine* FSMAsset;
 
 };

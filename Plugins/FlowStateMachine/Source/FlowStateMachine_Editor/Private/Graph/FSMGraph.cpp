@@ -2,6 +2,7 @@
 
 // #include "RuntimeNode/FSMRuntimeNode_State.h"
 #include "FSMEditorTypes.h"
+#include "GraphEditAction.h"
 #include "Node/FSMGraphNode.h"
 #include "Node/FSMGraphNode_Root.h"
 #include "Node/FSMGraphSubNode.h"
@@ -338,7 +339,7 @@ bool UFSMGraph::CanRemoveNestedObject(UObject* TestObject) const
 }
 
 void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRuntimeNode* RuntimeRootNode,
-	UFSMGraphNode* GraphRootNode, TArray<UObject*>& Stack)
+	const UFSMGraphNode* GraphRootNode, TArray<UObject*>& Stack)
 {
 	// 递归结束条件1：确保传入的运行时节点以及图表节点为空
 	// 递归结束条件2：GraphRootNode 的输出引脚数量为 0 或 引脚未连接其他节点
@@ -409,11 +410,11 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 	Stack.Pop();
 }
 
-void UFSMGraph::CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TArray<UFSMGraphNode*>& ScatteredNodes)
+void UFSMGraph::CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TArray<const UFSMGraphNode*>& ScatteredNodes)
 {
 	TArray<UObject*> Stack;
 	FSMAsset->ScatteredNodes.Empty();
-	for (UFSMGraphNode* ScatteredGraphNode : ScatteredNodes)
+	for (const UFSMGraphNode* ScatteredGraphNode : ScatteredNodes)
 	{
 		UFSMRuntimeNode* ScatteredRuntimeNode = Cast<UFSMRuntimeNode>(ScatteredGraphNode->RuntimeNode);
 		if (ScatteredRuntimeNode == nullptr)

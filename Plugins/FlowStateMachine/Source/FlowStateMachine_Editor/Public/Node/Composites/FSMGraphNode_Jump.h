@@ -16,9 +16,11 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_JumpStart : public UFSMGraphNode
 
 public:
 	UFSMGraphNode_JumpStart(const FObjectInitializer& ObjectInitializer);
+	virtual void PostPasteNode() override;
 	virtual void PostPlacedNewNode() override;
+	virtual void DestroyNode() override;
 	virtual void AllocateDefaultPins() override;
-	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
+	virtual FString GetNodeTitleFormatString() const override;
 	virtual FPinConnectionResponse CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const override;
 
 
@@ -38,7 +40,7 @@ class FLOWSTATEMACHINE_EDITOR_API UFSMGraphNode_JumpTo : public UFSMGraphNode_Co
 public:
 	virtual void AllocateDefaultPins() override;
 	virtual void PostPlacedNewNode() override;
-	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
+	virtual FString GetNodeTitleFormatString() const override;
 
 	virtual bool IsDeprecated() const override;
 	virtual bool HasDeprecatedReference() const override;

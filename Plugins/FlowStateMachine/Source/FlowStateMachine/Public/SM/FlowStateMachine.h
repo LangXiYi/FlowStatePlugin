@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
 #include "UObject/Object.h"
 #include "FlowStateMachine.generated.h"
 
@@ -41,6 +42,21 @@ public:
 	/** Graph For State Machine */
 	UPROPERTY()
 	class UEdGraph*	FSMGraph;
+
+	FString GetScatteredNodeName(FGuid InScatteredNodeID) const
+	{
+		for (UFSMRuntimeNode* ScatteredNode : ScatteredNodes)
+		{
+			if (auto JumpStartNode = Cast<UFSMRuntimeNode_JumpStart>(ScatteredNode))
+			{
+				if (JumpStartNode->JumpStartId == InScatteredNodeID)
+				{
+					return JumpStartNode->GetNodeName();
+				}
+			}
+		}
+		return "Default";
+	}
 
 #endif
 

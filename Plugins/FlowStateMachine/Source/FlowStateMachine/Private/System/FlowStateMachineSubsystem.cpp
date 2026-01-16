@@ -6,7 +6,7 @@
 #include "SM/FlowStateContext.h"
 
 
-bool UFlowStateMachineSubsystem::RunFlowStateMachine(UFlowStateMachine* StateMachine, EFSMExecuteMode ExecuteMode)
+bool UFlowStateMachineSubsystem::RunFlowStateMachine(UFlowStateMachine* StateMachine)
 {
 	if (StateMachine == nullptr)
 	{
@@ -24,7 +24,6 @@ bool UFlowStateMachineSubsystem::RunFlowStateMachine(UFlowStateMachine* StateMac
 		UE_LOG(LogFlowStateMachine, Error, TEXT("Create 'StateContext' failed, It's a nullptr."))
 		return false;
 	}
-	RunningStateContext->Initialize(ExecuteMode);
 	// 将 StateMachine 注册至 FlowStateContext
 	RunningStateContext->RegisterFlowStateMachine(*StateMachine);
 	return true;
@@ -34,7 +33,7 @@ void UFlowStateMachineSubsystem::StopFlowStateMachine()
 {
 	if (RunningStateContext)
 	{
-		// TODO::停止运行状态机
+		RunningStateContext->ConditionalBeginDestroy();
 		RunningStateContext = nullptr;
 	}
 }

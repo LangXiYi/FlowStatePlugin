@@ -1,6 +1,7 @@
 ﻿#include "IFlowStateMachineEditor.h"
 
 #include "EdGraphUtilities.h"
+#include "GraphEditAction.h"
 #include "GraphEditorActions.h"
 #include "Framework/Commands/GenericCommands.h"
 #include "Graph/FSMGraph.h"
@@ -409,6 +410,7 @@ void IFlowStateMachineEditor::PasteNodesHere(const FVector2D& Location)
 		}
 	}
 
+	// 添加次要节点到指定位置
 	for (TSet<UEdGraphNode*>::TIterator It(PastedNodes); It; ++It)
 	{
 		UFSMGraphSubNode* PasteNode = Cast<UFSMGraphSubNode>(*It);

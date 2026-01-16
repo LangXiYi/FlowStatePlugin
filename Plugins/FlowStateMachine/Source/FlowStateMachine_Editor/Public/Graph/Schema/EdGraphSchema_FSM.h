@@ -13,32 +13,47 @@ struct FLOWSTATEMACHINE_EDITOR_API FFSMSchemaAction_NewNode : public FEdGraphSch
 	GENERATED_USTRUCT_BODY();
 
 	/** Template of node we want to create */
-	UPROPERTY()
-	class UFSMGraphNode* NodeTemplate;
 
-	/** parent node */
+	/** Template of node we want to create */
 	UPROPERTY()
-	class UFSMGraphNode* ParentGraphNode;
+	TSubclassOf<UFSMGraphNode> NodeTemplateClass;
+
+	UPROPERTY()
+	FGraphNodeClassData ClassData;
 
 	FFSMSchemaAction_NewNode()
 		: FEdGraphSchemaAction()
-		, NodeTemplate(nullptr)
-		, ParentGraphNode(nullptr)
 	{}
 
 	FFSMSchemaAction_NewNode(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping)
 		: FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping)
-		, NodeTemplate(nullptr)
-		, ParentGraphNode(nullptr)
 	{}
 
 	//~ Begin FEdGraphSchemaAction Interface
 	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
 	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, TArray<UEdGraphPin*>& FromPins, const FVector2D Location, bool bSelectNewNode = true) override;
-	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
 	//~ End FEdGraphSchemaAction Interface
-};
 
+	virtual void InitializeGraphNode(UFSMGraphNodeBase* GraphNode);
+};
+USTRUCT()
+struct FLOWSTATEMACHINE_EDITOR_API FFSMSchemaAction_NewJumpNode : public FFSMSchemaAction_NewNode
+{
+	GENERATED_USTRUCT_BODY();
+
+public:
+	FFSMSchemaAction_NewJumpNode()
+	{}
+
+	FFSMSchemaAction_NewJumpNode(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping)
+		: Super(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping)
+	{}
+
+	virtual void InitializeGraphNode(UFSMGraphNodeBase* GraphNode) override;
+	
+	UPROPERTY()
+	FGuid JumpStartID;	
+};
 
 /** Action to add a subnode to the selected node */
 USTRUCT()
@@ -48,7 +63,10 @@ struct FLOWSTATEMACHINE_EDITOR_API FFSMSchemaAction_NewSubNode : public FEdGraph
 
 	/** Template of node we want to create */
 	UPROPERTY()
-	class UFSMGraphSubNode* NodeTemplate;
+	TSubclassOf<UFSMGraphSubNode> NodeTemplateClass;
+
+	UPROPERTY()
+	FGraphNodeClassData ClassData;
 
 	/** parent node */
 	UPROPERTY()
@@ -56,13 +74,11 @@ struct FLOWSTATEMACHINE_EDITOR_API FFSMSchemaAction_NewSubNode : public FEdGraph
 
 	FFSMSchemaAction_NewSubNode()
 		: FEdGraphSchemaAction()
-		, NodeTemplate(nullptr)
 		, ParentGraphNode(nullptr)
 	{}
 
 	FFSMSchemaAction_NewSubNode(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping)
 		: FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping)
-		, NodeTemplate(nullptr)
 		, ParentGraphNode(nullptr)
 	{}
 
@@ -106,13 +122,13 @@ public:
 
 public:
 	// 供 GraphPalette 使用，获取所有可添加的列表
-	static void CollectNewNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, UClass* RuntimeNodeClass, UClass* GraphNodeClass, UEdGraph* InGraph);
-	static void CollectNewSubNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, UClass* RuntimeNodeClass, UClass* GraphNodeClass, UEdGraph* InGraph);
-	static void CollectJumpNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, const FGraphNodeClassData& NodeClassData, UClass* GraphNodeClass, UEdGraph* InGraph);
+	static void CollectNewNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, UClass* RuntimeNodeClass, UClass* GraphNodeClass, const UEdGraph* InGraph);
+	static void CollectNewSubNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, UClass* RuntimeNodeClass, UClass* GraphNodeClass, const UEdGraph* InGraph);
+	static void CollectJumpNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder, const FGraphNodeClassData& NodeClassData, UClass* GraphNodeClass, const UEdGraph* InGraph);
 	static UClass* GetCompositesGraphNodeClass(const UClass* RuntimeNode);
 
 protected:
 	static TSharedPtr<FFSMSchemaAction_NewNode> AddNewNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
+	static TSharedPtr<FFSMSchemaAction_NewJumpNode> AddNewJumpNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
 	static TSharedPtr<FFSMSchemaAction_NewSubNode> AddNewSubNodeAction(FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip);
-
 };

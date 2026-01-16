@@ -10,6 +10,8 @@ public:
 
 	void Construct(const FArguments& InArgs, UFlowStateMachine* InAsset);
 
+	virtual void RefreshActionsList(bool bPreserveExpansion) override;
+
 protected:
 	virtual void CollectAllActions(FGraphActionListBuilderBase& OutAllActions) override;
 
@@ -21,9 +23,6 @@ protected:
 
 private:
 	UFlowStateMachine* FSMAsset = nullptr;
-
-	// The temporary graph outer to store any template nodes created
-	UEdGraph* OwnerOfTemporaries = nullptr;
 
 	TArray<FDelegateHandle> DelegateHandles;
 };

@@ -52,8 +52,6 @@ TSharedRef<SWidget> FFSMGraphEditorSummoner::CreateTabBodyForObject(const FWorkf
 	
 	check(InGraph != NULL);
 	return StateMachineEditor->CreateFlowStateMachineGraphEditor(Info, InGraph);
-	
-	
 }
 
 const FSlateBrush* FFSMGraphEditorSummoner::GetTabIconForObject(const FWorkflowTabSpawnInfo& Info, UFSMGraph* InGraph) const

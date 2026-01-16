@@ -26,7 +26,7 @@ FLinearColor UFSMGraphSubNode::GetNodeTitleColor() const
 	{
 		return FLinearColor::Yellow;
 	}
-	return FLinearColor::Green;
+	return FLinearColor::Black;
 }
 
 bool UFSMGraphSubNode::HasDeprecatedReference() const

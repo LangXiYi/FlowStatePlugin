@@ -13,8 +13,8 @@
 
 void UFSMGraphNode_State::AllocateDefaultPins()
 {
-	CreatePin(EGPD_Input, "DefaultInput", TEXT("In"));
-	CreatePin(EGPD_Output, "DefaultOutput", TEXT("Out"));
+	CreatePin(EGPD_Input, "DefaultInput", TEXT(""));
+	CreatePin(EGPD_Output, "DefaultOutput", TEXT(""));
 }
 
 FText UFSMGraphNode_State::GetNodeTitle(ENodeTitleType::Type TitleType) const

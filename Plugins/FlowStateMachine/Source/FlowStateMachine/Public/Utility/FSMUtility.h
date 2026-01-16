@@ -40,10 +40,3 @@ namespace FCommonData
 
 	const FKey InvalidKey = FKey(-1);
 }
-
-UENUM(BlueprintType)
-enum class EFSMExecuteMode : uint8
-{
-	ExecuteOnce = 0 UMETA(DisplayName = "Only Execute Once"),
-	ExecuteAlways UMETA(DisplayName = "Execute Forever ")
-};

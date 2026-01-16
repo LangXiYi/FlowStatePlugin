@@ -44,15 +44,15 @@ public:
 	virtual void ResetNodeOwner() override;
 public:
 	/** 次要节点：条件列表 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<UFSMGraphSubNode*> Conditions;
 
 	/** 次要节点：行为列表 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<UFSMGraphSubNode*> Actions;
 
 	/** 次要节点：服务列表 */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TArray<UFSMGraphSubNode*> Services;
 
 public:

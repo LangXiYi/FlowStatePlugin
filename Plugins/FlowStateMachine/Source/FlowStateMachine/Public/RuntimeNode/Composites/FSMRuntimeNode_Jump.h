@@ -16,6 +16,7 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNode_JumpStart : public UFSMRuntimeNode_Co
 
 public:
 	virtual void OnEnter() override;
+	virtual FString GetNodeName() const override;
 
 	UPROPERTY()
 	FGuid JumpStartId;
@@ -31,6 +32,7 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNode_JumpTo : public UFSMRuntimeNode_Compo
 
 public:
 	virtual void OnEnter() override;
+	virtual FString GetNodeName() const override;
 
 	UPROPERTY()
 	FGuid JumpStartId;

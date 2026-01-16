@@ -30,6 +30,7 @@ public:
 	virtual void MoveTo(const FVector2D& NewPosition, FNodeSet& NodeFilter, bool bMarkDirty = true) override;
 	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FString GetNodeComment() const override;
+	virtual void AddPin(const TSharedRef<SGraphPin>& PinToAdd) override;
 	// End of SGraphNode interface
 
 	/** 添加行为节点的控件到该节点内 */
@@ -78,11 +79,7 @@ public:
 protected:
 	//~ Begin SGraphPin Interface
 	virtual TSharedRef<SWidget>	GetDefaultValueWidget() override;
-	virtual const FSlateBrush* GetPinIcon() const override;
+	virtual FSlateColor GetPinColor() const override;
 	//~ End SGraphPin Interface
-
-	void CachePinIcons();
-
-	const FSlateBrush* CachedImg_Pin_ConnectedHovered;
-	const FSlateBrush* CachedImg_Pin_DisconnectedHovered;
+	const FSlateBrush* GetPinBorder() const;
 };

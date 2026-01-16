@@ -167,9 +167,14 @@ FText UFSMGraphNodeBase::GetNodeTitle(ENodeTitleType::Type TitleType) const
 	FText NodeTitleSuffix = GetNodeTitleSuffix();
 	if (NodeTitleSuffix.IsEmpty())
 	{
-		return NodeTitle;
+		return FText::Format(FTextFormat::FromString(GetNodeTitleFormatString()), NodeTitle);
 	}
-	return FText::Format(FTextFormat::FromString("{0} {1}"), NodeTitle, NodeTitleSuffix);
+	return FText::Format(FTextFormat::FromString(GetNodeTitleFormatString() + "{1}"), NodeTitle, NodeTitleSuffix);
+}
+
+FString UFSMGraphNodeBase::GetNodeTitleFormatString() const
+{
+	return "{0}";
 }
 
 FText UFSMGraphNodeBase::GetTooltipText() const
@@ -294,7 +299,6 @@ UEdGraphPin* UFSMGraphNodeBase::GetInputPin() const
 			return Pin;
 		}
 	}
-	checkNoEntry();
 	return nullptr;;
 }
 

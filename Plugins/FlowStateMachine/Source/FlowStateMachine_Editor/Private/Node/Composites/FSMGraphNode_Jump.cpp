@@ -17,6 +17,12 @@ UFSMGraphNode_JumpStart::UFSMGraphNode_JumpStart(const FObjectInitializer& Objec
 	// }
 }
 
+void UFSMGraphNode_JumpStart::PostPasteNode()
+{
+	Super::PostPasteNode();
+	GetFSMGraph()->AddScatteredNode(this);
+}
+
 void UFSMGraphNode_JumpStart::PostPlacedNewNode()
 {
 	Super::PostPlacedNewNode();
@@ -27,8 +33,15 @@ void UFSMGraphNode_JumpStart::PostPlacedNewNode()
 			JumpStartId = FGuid::NewGuid();
 			JumpStartRuntimeNode->JumpStartId = JumpStartId;
 		}
+		GetFSMGraph()->AddScatteredNode(this);
 	}
 	check(JumpStartId.IsValid());
+}
+
+void UFSMGraphNode_JumpStart::DestroyNode()
+{
+	GetFSMGraph()->RemoveScatteredNode(this);
+	Super::DestroyNode();
 }
 
 void UFSMGraphNode_JumpStart::AllocateDefaultPins()
@@ -37,9 +50,9 @@ void UFSMGraphNode_JumpStart::AllocateDefaultPins()
 	CreatePin(EGPD_Output, "DefaultOutput", "Execute");
 }
 
-FText UFSMGraphNode_JumpStart::GetNodeTitle(ENodeTitleType::Type TitleType) const
+FString UFSMGraphNode_JumpStart::GetNodeTitleFormatString() const
 {
-	return FText::FromString(TEXT("Jump Start 'NodeName'"));
+	return "Jump Start {0}";
 }
 
 FPinConnectionResponse UFSMGraphNode_JumpStart::CheckPinConnection(const UFSMGraphNodeBase* OtherNode,
@@ -73,10 +86,9 @@ void UFSMGraphNode_JumpTo::PostPlacedNewNode()
 	JumpStartRuntimeNode->JumpStartId = JumpStartId;
 }
 
-FText UFSMGraphNode_JumpTo::GetNodeTitle(ENodeTitleType::Type TitleType) const
+FString UFSMGraphNode_JumpTo::GetNodeTitleFormatString() const
 {
-	FText NodeTitle = Super::GetNodeTitle(TitleType);
-	return FText::Format(FTextFormat::FromString("Jump to {0}"), NodeTitle);
+	return "Jump To {0}";
 }
 
 bool UFSMGraphNode_JumpTo::IsDeprecated() const
@@ -105,9 +117,9 @@ bool UFSMGraphNode_JumpTo::IsValidJumpNode() const
 {
 	UFSMGraph* MyGraph = GetFSMGraph();
 	if (MyGraph == nullptr) return false;
-	for (UFSMGraphNode* ScatteredNode : MyGraph->ScatteredNodes)
+	for (const UFSMGraphNode* ScatteredNode : MyGraph->GetScatteredNodes())
 	{
-		UFSMGraphNode_JumpStart* JumpStartNode = Cast<UFSMGraphNode_JumpStart>(ScatteredNode);
+		const UFSMGraphNode_JumpStart* JumpStartNode = Cast<UFSMGraphNode_JumpStart>(ScatteredNode);
 		if (JumpStartNode == nullptr) continue;
 		// 判断 Id 是否匹配
 		if (JumpStartNode->JumpStartId == JumpStartId)

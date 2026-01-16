@@ -13,6 +13,7 @@
 #include "Factories/Factory_FlowStateData.h"
 #include "Factories/Factory_FlowStateMachine.h"
 // Class Filter
+#include "FlowStateBlueprint.h"
 #include "ClassFilter/FlowStateClassParentFilter.h"
 
 #define LOCTEXT_NAMESPACE "FlowStateMachineFactories"
@@ -44,7 +45,7 @@ UObject* UFactory_FlowStateData::FactoryCreateNew(UClass* Class, UObject* InPare
 UFactory_FlowState::UFactory_FlowState(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
 {
-	SupportedClass = UFlowStateBase::StaticClass();
+	SupportedClass = UFlowStateBlueprint::StaticClass();
 	ParentClass = UFlowStateBase::StaticClass();
 	bCreateNew = true;
 	bEditAfterNew = true;
@@ -81,11 +82,12 @@ bool UFactory_FlowState::ConfigureProperties()
 
 	const FText TitleText = LOCTEXT("CreateFlowStateOptions", "Pick Flow State Class");
 	UClass* ChosenClass = nullptr;
-	const bool bPressedOk = SClassPickerDialog::PickClass(TitleText, Options, ChosenClass, UFlowStateBase::StaticClass());
+	const bool bPressedOk = SClassPickerDialog::PickClass(TitleText, Options, ChosenClass, UFlowStateBlueprint::StaticClass());
 
 	if ( bPressedOk )
 	{
 		ParentClass = ChosenClass;
+		FEditorDelegates::OnFinishPickingBlueprintClass.Broadcast(ParentClass);
 	}
 	return bPressedOk;
 }
@@ -94,7 +96,7 @@ UObject* UFactory_FlowState::FactoryCreateNew(UClass* Class, UObject* InParent, 
 	UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
 	// Make sure we are trying to factory a blueprint, then create and init one
-	check(Class->IsChildOf(UFlowStateBase::StaticClass()));
+	check(Class->IsChildOf(UFlowStateBlueprint::StaticClass()));
 
 	if ((ParentClass == nullptr) || !FKismetEditorUtilities::CanCreateBlueprintOfClass(ParentClass))
 	{
@@ -105,12 +107,8 @@ UObject* UFactory_FlowState::FactoryCreateNew(UClass* Class, UObject* InParent, 
 	}
 	else
 	{
-		UClass* BlueprintClass = nullptr;
-		UClass* BlueprintGeneratedClass = nullptr;
-
-		IKismetCompilerInterface& KismetCompilerModule = FModuleManager::LoadModuleChecked<IKismetCompilerInterface>("KismetCompiler");
-		KismetCompilerModule.GetBlueprintTypesForClass(ParentClass, BlueprintClass, BlueprintGeneratedClass);
-
+		UClass* BlueprintClass = UFlowStateBlueprint::StaticClass();
+		UClass* BlueprintGeneratedClass = UBlueprintGeneratedClass::StaticClass();
 		return FKismetEditorUtilities::CreateBlueprint(ParentClass, InParent, Name, BPTYPE_Normal, BlueprintClass, BlueprintGeneratedClass, CallingContext);
 	}
 }
