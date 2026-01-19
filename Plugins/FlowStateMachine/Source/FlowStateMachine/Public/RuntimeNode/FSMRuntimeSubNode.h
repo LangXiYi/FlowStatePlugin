@@ -21,6 +21,17 @@ public:
 	virtual UWorld* GetWorld() const override;
 
 	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlowStateContext* Context) override;
+
+	template<class T = UFSMRuntimeNodeBase>
+	T* GetParentNode() const
+	{
+		return static_cast<T*>(ParentNode);
+	}
+	
+public:
+	/** 调用的父级节点 */
+	UPROPERTY()
+	UFSMRuntimeNodeBase* ParentNode;
 };
 
 

@@ -25,7 +25,7 @@ class UFlowStateLayoutWidget;
 /**
  * 可以由蓝图继承并实现的状态基类
  */
-UCLASS(Blueprintable, BlueprintType, Abstract)
+UCLASS(Blueprintable, BlueprintType)
 class FLOWSTATEMACHINE_API UFlowStateBase : public UFSMRuntimeNode_State
 {
 	GENERATED_BODY()

@@ -7,7 +7,7 @@
 #include "UObject/Object.h"
 #include "FSMGraphNode_Root.generated.h"
 
-class UFlowStateLayoutWidget;
+class UFlowStateWidgetLayerManager;
 /**
  * 默认的图表根节点
  */
@@ -38,6 +38,6 @@ public:
 	UFSMCommonData* CommonData;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UFlowStateLayoutWidget> LayoutWidget;
+	TSubclassOf<UFlowStateWidgetLayerManager> WidgetLayerManagerClass;
 };
 

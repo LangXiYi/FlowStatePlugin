@@ -1,6 +1,9 @@
 ﻿#include "SM/FSMGC.h"
 
 #include "Components/Widget.h"
+#include "Library/UIExtensionsBFL.h"
+#include "Widgets/FlowStateLayoutWidget.h"
+#include "Widgets/GameplayTagSlot.h"
 
 void FSMGC::HiddenCache()
 {
@@ -178,39 +181,54 @@ bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AStaticMeshA
 	return _FindRefByCache(Tag, Lifetime, (AActor*&)OutTarget);
 }
 
-bool FSMGC::_FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, UWidget*& OutTarget)
+bool FSMGC::_FindRefByCache(FGameplayTag Tag, EFlowStateLifetime Lifetime, UWidget*& OutTarget)
 {
+	auto CheckFunc = [](TWeakObjectPtr<UWidget> InCacheItem, FGameplayTag InTag, UWidget*& Out)->bool
+	{
+		if (InCacheItem.IsValid())
+		{
+			if (UGameplayTagSlot* TagSlot = Cast<UGameplayTagSlot>(InCacheItem.Get()->GetParent()))
+			{
+				if (InTag.MatchesTagExact(TagSlot->Tag))
+				{
+					Out = InCacheItem.Get();
+					return true;
+				}
+			}
+		}
+		return false;
+	};
+	
 	switch (Lifetime)
 	{
 	case EFlowStateLifetime::Static:
 		for (int i = 0; i < Static_Widgets.Num(); ++i)
 		{
-			TWeakObjectPtr<UWidget> CacheItem = Static_Widgets[i];
-			if (CacheItem.IsValid())
+			if (CheckFunc(Static_Widgets[i], Tag, OutTarget))
 			{
-				checkNoEntry()
+				return true;
 			}
 		}
 		break;
 	case EFlowStateLifetime::Kill:
 		for (int i = 0; i < Kill_Widgets.Num(); ++i)
 		{
-			TWeakObjectPtr<UWidget> CacheItem = Kill_Widgets[i];
-			if (CacheItem.IsValid())
+			if (CheckFunc(Kill_Widgets[i], Tag, OutTarget))
 			{
-				checkNoEntry()
+				return true;
 			}
 		}
 		break;
 	case EFlowStateLifetime::Hidden:
 		for (int i = 0; i < Hidden_Widgets.Num(); ++i)
 		{
-			TWeakObjectPtr<UWidget> CacheItem = Hidden_Widgets[i];
-			if (CacheItem.IsValid())
+			if (CheckFunc(Hidden_Widgets[i], Tag, OutTarget))
 			{
-				checkNoEntry()
+				return true;
 			}
 		}
+		break;
+	default:
 		break;
 	}
 	return false;

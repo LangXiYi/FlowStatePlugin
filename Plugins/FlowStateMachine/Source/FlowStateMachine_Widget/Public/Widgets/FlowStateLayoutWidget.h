@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "GameplayTags.h"
+#include "Components/Overlay.h"
 #include "FlowStateLayoutWidget.generated.h"
 
 
@@ -20,20 +21,20 @@ class FLOWSTATEMACHINE_WIDGET_API UFlowStateLayoutWidget : public UUserWidget
 public:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 
-	UFUNCTION(BlueprintCallable)
-	virtual void ClearChildren();
+	UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
+	virtual void ClearChildSlots();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
 	UGameplayTagSlot* FindSlot(FGameplayTag SlotTag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
 	bool CheckSlot(FGameplayTag SlotTag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
 	void AddChildTo(FGameplayTag SlotTag, UWidget* Child);
 
 protected:
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "FlowStateWidget")
 	TArray<UGameplayTagSlot*> TagSlots;
 
 private:

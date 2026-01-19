@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "FSMRuntimeNodeBase.h"
 #include "UObject/Object.h"
+#include "Utility/FSMUtility.h"
 #include "FSMRuntimeNode.generated.h"
 
 class UFlowStateContext;
 class UFSMRuntimeSubNode;
 class UFlowStateMachine;
+
 
 /**
  * 状态机运行时节点，保存图表中编辑的各个节点的关系。
@@ -69,6 +71,9 @@ public:
 
 	/** 是否将实例加入执行链 */
 	virtual bool IsStackInstance() const { return false; }
+
+public:
+	FStateDelegate OnExitDelegate;
 
 public:
 	/** 子级节点 */

@@ -25,7 +25,6 @@ public:
 		return Tag;
 	}
 	
-protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = NameSlot)
 	FGameplayTag Tag;
 };

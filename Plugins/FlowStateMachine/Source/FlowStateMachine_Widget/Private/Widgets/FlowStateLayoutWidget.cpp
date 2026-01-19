@@ -22,7 +22,7 @@ TSharedRef<SWidget> UFlowStateLayoutWidget::RebuildWidget()
 	return Result;
 }
 
-void UFlowStateLayoutWidget::ClearChildren()
+void UFlowStateLayoutWidget::ClearChildSlots()
 {
 	for (UGameplayTagSlot* Widget : TagSlots)
 	{

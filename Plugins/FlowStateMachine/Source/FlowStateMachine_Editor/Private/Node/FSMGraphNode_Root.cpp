@@ -6,6 +6,7 @@
 #include "Graph/FSMGraph.h"
 #include "SM/FlowStateMachine.h"
 #include "Widgets/FlowStateLayoutWidget.h"
+#include "Widgets/FlowStateWidgetLayerManager.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphNode_Root"
 
@@ -45,9 +46,17 @@ void UFSMGraphNode_Root::PostEditChangeProperty(struct FPropertyChangedEvent& Pr
 			}
 		}
 	}
-	if (PropertyChangedEvent.MemberProperty && PropertyChangedEvent.MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UFSMGraphNode_Root, LayoutWidget))
+	if (PropertyChangedEvent.MemberProperty && PropertyChangedEvent.MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UFSMGraphNode_Root, WidgetLayerManagerClass))
 	{
-		
+		UFSMGraph* MyGraph = GetFSMGraph();
+		if (MyGraph)
+		{
+			UFlowStateMachine* Asset = MyGraph->GetFSMAsset();
+			if (Asset)
+			{
+				Asset->WidgetLayerManagerClass = WidgetLayerManagerClass;
+			}
+		}
 	}
 }
 
@@ -64,9 +73,9 @@ void UFSMGraphNode_Root::UpdateCommonData()
 void UFSMGraphNode_Root::UpdateLayoutWidget()
 {
 	UFlowStateMachine* FSMAsset = Cast<UFlowStateMachine>(GetFSMGraph()->GetOuter());
-	if (FSMAsset && FSMAsset->LayoutWidget != LayoutWidget)
+	if (FSMAsset && FSMAsset->WidgetLayerManagerClass != WidgetLayerManagerClass)
 	{
-		FSMAsset->LayoutWidget = LayoutWidget;
+		FSMAsset->WidgetLayerManagerClass = WidgetLayerManagerClass;
 	}
 }
 

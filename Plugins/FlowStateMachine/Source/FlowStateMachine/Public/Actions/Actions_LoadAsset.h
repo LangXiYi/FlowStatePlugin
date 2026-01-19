@@ -27,26 +27,27 @@ public:
 	UActions_LoadAsset(const FObjectInitializer& ObjectInitializer);
 	
 	virtual void ExecuteAction(UFSMRuntimeNode* Instance) override;
-	void LoadAsset(bool IsSyncLoad = false);
-	void UnloadAsset();
-	void PreloadAsset(FStateDelegate& PreInitializeDelegate);
+
+	virtual void OnPreprocessing() override;
+
 	bool HasLoadCompleted() const;
-	bool HasPreloadCompleted() const;
 
 protected:
-	void PrintLoadBoundMessage(const TArray<FName>& LoadBounds) const;
+	void LoadAsset(bool IsSyncLoad, bool IsPreload = false);
 
-	void OnExitState(UFSMRuntimeNode* ExitNode);
+	void UnloadAsset();
+
+	void OnExitState();
 
 private:
-	void CheckCondition();	
-
+	void PrintLoadBoundMessage(const TArray<FName>& LoadBounds) const;
+	
 protected:
 	/** 需要加载的资产ID, 类型主要为 FSMMetaDataAsset */
 	UPROPERTY(EditAnywhere)
 	FPrimaryAssetId AssetId;
 
-	/** 是否允许预加载，及在当前状态时会同步执行下一步骤的资产加载逻辑 */
+	/** 是否允许预加载，加载会在运行状态机时发生 */
 	UPROPERTY(EditAnywhere)
 	bool bAllowPreLoading = true;
 
@@ -58,13 +59,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Advanced")
 	bool bSyncLoad = false;
 
+private:
 	// 使用弱指针引用该资产，确保回收机制正常运行
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UFSMMetaDataAsset> MetaData;
 
 	TSharedPtr<FStreamableHandle> LoadingHandle;
-	TSharedPtr<FStreamableHandle> PreloadingHandle;
-private:
-	FDelegateHandle OnExitStateHandle;
-	FDelegateHandle OnEnterStateHandle;
 };

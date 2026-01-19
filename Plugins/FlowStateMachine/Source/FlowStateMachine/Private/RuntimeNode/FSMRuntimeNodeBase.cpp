@@ -8,6 +8,11 @@ void UFSMRuntimeNodeBase::InitializeFromAsset(UFlowStateMachine* Asset)
 	FSMAsset = Asset;
 }
 
+void UFSMRuntimeNodeBase::OnPreprocessing()
+{
+	// bIsTemplateInstance = false;
+}
+
 void UFSMRuntimeNodeBase::InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlowStateContext* Context)
 {
 	if (InParentNode)
@@ -15,6 +20,7 @@ void UFSMRuntimeNodeBase::InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlo
 		AllParentNodes.AddUnique(InParentNode);
 	}
 	StateContext = Context;
+	OnPreprocessing();
 }
 
 class UWorld* UFSMRuntimeNodeBase::GetWorld() const

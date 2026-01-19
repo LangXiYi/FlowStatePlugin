@@ -7,6 +7,7 @@
 #include "UObject/Object.h"
 #include "FlowStateMachine.generated.h"
 
+class UFlowStateWidgetLayerManager;
 class UFSMRuntimeNode;
 
 /**
@@ -64,9 +65,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	class UFSMCommonData* CommonData = nullptr;
 
-	/** 布局控件 */
+	/** 状态机的布局管理器 */
 	UPROPERTY(VisibleAnywhere)
-	TSubclassOf<class UFlowStateLayoutWidget> LayoutWidget = nullptr;
+	TSubclassOf<UFlowStateWidgetLayerManager> WidgetLayerManagerClass;
 
 	// 状态机的切换映射
 	/**

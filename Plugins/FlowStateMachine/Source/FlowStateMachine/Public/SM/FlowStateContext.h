@@ -8,14 +8,16 @@
 #include "FSMGC.h"
 #include "UObject/Object.h"
 #include "Utility/FSMUtility.h"
+#include "Widgets/FlowStateWidgetLayerManager.h"
 #include "FlowStateContext.generated.h"
 
+class UFlowStateWidgetLayerManager;
 class UFSMCommonDataManager;
 class UFlowStateBase;
 class UFlowStateMachine;
 class UFSMMetaDataAsset;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FStateDelegate, UFSMRuntimeNode*);
+// DECLARE_MULTICAST_DELEGATE_OneParam(FStateDelegate, UFSMRuntimeNode*);
 
 /**
  * 因为存在两种可执行的节点，State以及Composites，所以使用他们的公用基类 RuntimeNode
@@ -73,6 +75,8 @@ private:
 	/// GCManager Helper
 	////////////////////////////////////////////////////////////////////////
 public:
+	 TSharedPtr<FSMGC> GetGCManager() { return GCManager; }
+
 	/** 将目标添加至缓存 */
 	template<class T>
 	void AddToCache(T Target, EFlowStateLifetime Lifetime)
@@ -99,7 +103,7 @@ public:
 	////////////////////////////////////////////////////////////////////////
 public:
 	/** 获取布局控件 */
-	UFlowStateLayoutWidget* GetLayoutWidget() const { return LayoutWidget; }
+	UFlowStateLayoutWidget* GetLayoutWidget(EFlowStateWidgetLayer Layer) const;
 
 	/** 获取所有的次态对象 */
 	TArray<UFSMRuntimeNode*> GetNextStates() const;
@@ -118,14 +122,6 @@ public:
 	/** 获取所有零散节点的唯一ID */
 	UFUNCTION(BlueprintPure, Category="FlowStateContext")
 	void GetScatteredNodeIDs(TArray<FGuid>& OutData) const { return ScatteredNodeMapping.GenerateKeyArray(OutData); }
-
-	////////////////////////////////////////////////////////////////////////
-	/// Events
-	////////////////////////////////////////////////////////////////////////
-public:
-	FStateDelegate OnExitState;
-	FStateDelegate OnEnterState;
-	FStateDelegate OnPreInitializeState;
 
 protected:
 	/** 当前状态 */
@@ -150,7 +146,7 @@ protected:
 	/** 公用数据管理器 */
 	UPROPERTY(Transient)
 	UFSMCommonDataManager* CommonDataManager;
-	
+
 private:
 	// 引用资产，供运行时创建新的运行时节点使用
 	UPROPERTY(Transient)
@@ -158,7 +154,7 @@ private:
 
 	/** 布局控件 */
 	UPROPERTY(Transient)
-	UFlowStateLayoutWidget* LayoutWidget;
+	UFlowStateWidgetLayerManager* WidgetLayers;
 
 	/** 资源回收管理器 */
 	TSharedPtr<FSMGC> GCManager;

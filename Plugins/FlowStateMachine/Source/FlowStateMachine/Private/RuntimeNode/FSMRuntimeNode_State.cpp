@@ -11,7 +11,7 @@ void UFSMRuntimeNode_State::OnInitialize()
 	Super::OnInitialize();
 
 	// 初始化当前状态的用户控件
-	UFlowStateLayoutWidget* LayoutWidget = StateContext->GetLayoutWidget();
+	/*UFlowStateLayoutWidget* LayoutWidget = StateContext->GetLayoutWidget();
 	if (LayoutWidget)
 	{
 		OnInitWidget(LayoutWidget);
@@ -19,5 +19,5 @@ void UFSMRuntimeNode_State::OnInitialize()
 	else
 	{
 		FSMLOGW("状态机中的布局控件为空！！！")
-	}
+	}*/
 }

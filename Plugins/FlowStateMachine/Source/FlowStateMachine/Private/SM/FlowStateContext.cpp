@@ -55,6 +55,18 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMac
 		{
 			CommonDataManager->Initialize(*StateMachine->CommonData);
 		}
+
+		// 初始化状态机的控件布局管理器
+		if (StateMachine->WidgetLayerManagerClass)
+		{
+			WidgetLayers = CreateWidget<UFlowStateWidgetLayerManager>(GetWorld(), StateMachine->WidgetLayerManagerClass);
+			WidgetLayers->AddToViewport();
+		}
+		else
+		{
+			FSMLOGE("Widget Layer Manager Class is nullptr.")
+		}
+
 		GotoStateNode(RootState);
 
 		// 所有对象全部转换完成后即可清除缓存，避免无效的内存占用。
@@ -163,7 +175,6 @@ void UFlowStateContext::OnExitCurState()
 	{
 		CurState->OnExit();
 	}
-	OnExitState.Broadcast(CurState);
 	CurState = nullptr;
 
 	// 通知GC清理缓存
@@ -176,12 +187,10 @@ void UFlowStateContext::OnEnterNewState(UFSMRuntimeNode* NewState)
 	if (NewState)
 	{
 		// 在修改当前状态之前广播事件，可以保证监听该事件的对象可以同时访问旧状态以及新状态
-		OnPreInitializeState.Broadcast(NewState);
 		CurState = NewState;
 		NewState->OnInitialize();
 
 		NewState->OnEnter();
-		OnEnterState.Broadcast(CurState);
 	}
 }
 
@@ -288,6 +297,11 @@ void UFlowStateContext::CreateScatteredInstance(TArray<UFSMRuntimeNodeBase*>& St
 			}
 		}
 	}
+}
+
+UFlowStateLayoutWidget* UFlowStateContext::GetLayoutWidget(EFlowStateWidgetLayer Layer) const
+{
+	return 	WidgetLayers ? WidgetLayers->GetLayerWidget(Layer) : nullptr;
 }
 
 TArray<UFSMRuntimeNode*> UFlowStateContext::GetNextStates() const

@@ -20,6 +20,9 @@ class FLOWSTATEMACHINE_API UFSMRuntimeNodeBase : public UObject
 public:
 	virtual void InitializeFromAsset(UFlowStateMachine* Asset);
 
+	/** 预处理运行时实例 */
+	virtual void OnPreprocessing();
+
 	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlowStateContext* Context = nullptr);
 
 	// 定义访问公共数据的方法
@@ -30,6 +33,8 @@ public:
 
 	virtual FString GetNodeName() const;
 
+	UFlowStateMachine* GetStateMachine() const { return FSMAsset; }
+
 #if WITH_EDITOR
 
 	/** 【Only Editor】 在创建新的图表节点后调用 */
@@ -37,19 +42,13 @@ public:
 	
 #endif
 
-	template<class T = UFSMRuntimeNodeBase>
-	T* GetParentNode() const
-	{
-		return static_cast<T*>(ParentNode);
-	}
+
 
 	UFUNCTION(BlueprintPure)
 	UFlowStateContext* GetStateContext() const { return StateContext; }
 
 public:
-	/** 调用的父级节点 */
-	UPROPERTY(Transient)
-	UFSMRuntimeNodeBase* ParentNode;
+
 
 	/** 次要节点 */
 	UPROPERTY()

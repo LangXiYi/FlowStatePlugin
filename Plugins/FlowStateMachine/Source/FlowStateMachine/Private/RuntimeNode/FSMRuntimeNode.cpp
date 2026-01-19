@@ -26,6 +26,7 @@ void UFSMRuntimeNode::OnEnter()
 
 void UFSMRuntimeNode::OnExit()
 {
+	OnExitDelegate.Broadcast();
 	/** 实现自定义的退出函数 */
 }
 
@@ -82,7 +83,6 @@ void UFSMRuntimeNode::AddSubNode(UFSMRuntimeNodeBase* InSubNode)
 		checkNoEntry();
 	}
 
-	InSubNode->ParentNode = this;
 	SubNodes.Add(InSubNode);
 }
 

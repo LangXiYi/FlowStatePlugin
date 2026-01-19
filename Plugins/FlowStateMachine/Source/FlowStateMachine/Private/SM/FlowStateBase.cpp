@@ -29,6 +29,6 @@ void UFlowStateBase::OnInitialize()
 
 void UFlowStateBase::OnExit()
 {
-	Super::OnExit();
 	NativeOnExit();
+	Super::OnExit();
 }

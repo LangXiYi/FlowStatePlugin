@@ -20,6 +20,9 @@ BEGIN_NAMESPACE_FSM
 
 END_NAMESPACE_FSM
 
+// Delegates --------------------------
+DECLARE_MULTICAST_DELEGATE(FStateDelegate);
+
 UENUM(BlueprintType)
 enum class EFlowStateLifetime : uint8
 {
@@ -31,6 +34,8 @@ enum class EFlowStateLifetime : uint8
 	// 当前状态结束后隐藏
 	Hidden,
 };
+
+
 
 namespace FCommonData
 {

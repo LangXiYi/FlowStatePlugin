@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Utility/FSMUtility.h"
+#include "GameplayTagContainer.h"
 
 class AStaticMeshActor;
 class ASkeletalMeshActor;
@@ -22,11 +23,11 @@ public:
 	template<class T>
 	void RemoveFromCache(T Target, EFlowStateLifetime Lifetime);
 
-	template<class T>
-	bool FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, T& OutTarget);
+	template<class KeyType, class ValeType>
+	bool FindRefByCache(const KeyType& Tag, EFlowStateLifetime Lifetime, ValeType& OutTarget);
 
-	template<class T>
-	EFlowStateLifetime FindRefByCache(FName Tag, T& OutTarget);
+	template<class KeyType, class ValeType>
+	EFlowStateLifetime FindRefByCache(const KeyType& Tag, ValeType& OutTarget);
 
 	void HiddenCache();
 	void KillCache();
@@ -39,7 +40,7 @@ protected:
 	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& OutTarget);
 	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ASkeletalMeshActor*& OutTarget);
 	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AStaticMeshActor*& OutTarget);
-	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, UWidget*& OutTarget);
+	bool _FindRefByCache(FGameplayTag Tag, EFlowStateLifetime Lifetime, UWidget*& OutTarget);
 	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ULevel*& OutTarget);
 
 	void _KillCacheFrom(AActor* Actor);
@@ -131,14 +132,14 @@ void FSMGC::RemoveFromCache(T Target, EFlowStateLifetime Lifetime)
 	}
 }
 
-template <class T>
-bool FSMGC::FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, T& OutTarget)
+template <class KeyType, class ValeType>
+bool FSMGC::FindRefByCache(const KeyType& Tag, EFlowStateLifetime Lifetime, ValeType& OutTarget)
 {
 	return _FindRefByCache(Tag, Lifetime, OutTarget);
 }
 
-template <class T>
-EFlowStateLifetime FSMGC::FindRefByCache(FName Tag, T& OutTarget)
+template <class KeyType, class ValeType>
+EFlowStateLifetime FSMGC::FindRefByCache(const KeyType& Tag, ValeType& OutTarget)
 {
 	_FindRefByCache(Tag, EFlowStateLifetime::Static, OutTarget);
 	if (OutTarget != nullptr)

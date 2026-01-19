@@ -27,26 +27,30 @@ class FLOWSTATEMACHINE_API UFSMCreateActorHelper : public UObject
 
 public:
 	virtual void CreateActor(UFlowStateContext* InStateContext);
-	/** 获取需要创建的对象类 */
-	UFUNCTION(BlueprintNativeEvent)
-	TSubclassOf<AActor> GetCreateClass() const;
-	/** 重载目标属性，不论Actor是否已经存在都会触发该函数 */
-	UFUNCTION(BlueprintNativeEvent)
-	void OverrideActorProperty(AActor* ResultActor);
-	/** 改变目标的位置信息 */
-	UFUNCTION(BlueprintNativeEvent)
-	void UpdateActorTransform(AActor* ResultActor);
-	/** 初始化目标角色，只会在对象被创建的是否触发 */
-	UFUNCTION(BlueprintNativeEvent)
-	void InitializeActor(AActor* Target);
 
+protected:
+	/** 初始化目标角色（只执行一次），只会在对象被创建的是否触发 */
+	virtual void InitializeActor(AActor* Target);
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "InitializeActor")
+	void NativeInitializeActor(AActor* Target);
+
+	/** 重载目标属性(会多次触发)，不论Actor是否已经存在都会触发该函数 */
+	virtual void OverrideProperty(AActor* ResultActor);
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "OverrideProperty")
+	void NativeOverrideProperty(AActor* ResultActor);
+
+	/** 获取需要创建的对象类 */
+	TSubclassOf<AActor> GetCreateClass() const;
+	virtual TSubclassOf<AActor> GetDefaultCreateClass() const;
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "GetCreateClass")
+	TSubclassOf<AActor> NativeGetCreateClass() const;
+
+	/** 改变目标的位置信息 */
+	virtual void UpdateActorTransform(AActor* ResultActor);
+
+public:
 	/** 返回对象的有效性 */
 	virtual bool IsValid() const;
-
-	/** 将目标添加至缓存 */
-	virtual void AddActorToCache(UFlowStateContext* InStateContext, AActor* ResultActor);
-	/** 切换目标的缓冲区 */
-	virtual void SwitchActorCache(UFlowStateContext* InStateContext, AActor* ResultActor, EFlowStateLifetime OldLifetime);
 
 protected:
 	/** 用于标识对象的唯一名称 */
@@ -72,10 +76,11 @@ class UCreateSkeletalActorHelper : public UFSMCreateActorHelper
 	GENERATED_BODY()
 
 public:
-	virtual void InitializeActor_Implementation(AActor* Target) override;
-	virtual TSubclassOf<AActor> GetCreateClass_Implementation() const override;
-	virtual void OverrideActorProperty_Implementation(AActor* ResultActor) override;
+	virtual void InitializeActor(AActor* Target) override;
+	virtual void OverrideProperty(AActor* ResultActor) override;
 
+	virtual TSubclassOf<AActor> GetDefaultCreateClass() const override;
+	
 protected:
 	/** 模型资产，若找到了同名的Actor会自动将模型替换为新值 */
 	UPROPERTY(EditAnywhere, Category = "SkeletalMeshActor")
@@ -100,11 +105,12 @@ class UCreateStaticActorHelper : public UFSMCreateActorHelper
 	GENERATED_BODY()
 
 public:
-	virtual void InitializeActor_Implementation(AActor* Target) override;
-	virtual TSubclassOf<AActor> GetCreateClass_Implementation() const override;
-	virtual void OverrideActorProperty_Implementation(AActor* ResultActor) override;
-	virtual void UpdateActorTransform_Implementation(AActor* ResultActor) override;
-
+	virtual void InitializeActor(AActor* Target) override;
+	virtual void OverrideProperty(AActor* ResultActor) override;
+	virtual void UpdateActorTransform(AActor* ResultActor) override;
+	
+	virtual TSubclassOf<AActor> GetDefaultCreateClass() const override;
+	
 protected:
 	/** 模型资产，若找到了同名的Actor会自动将模型替换为新值 */
 	UPROPERTY(EditAnywhere, Category = "StaticMeshActor")
