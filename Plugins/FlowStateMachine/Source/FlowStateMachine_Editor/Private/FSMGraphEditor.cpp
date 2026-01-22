@@ -6,6 +6,7 @@
 #include "FSMEditorToolbar.h"
 #include "GraphEditAction.h"
 #include "GraphEditorActions.h"
+#include "Components/SlateWrapperTypes.h"
 #include "Graph/FSMGraph.h"
 #include "Data/FSMCommonData.h"
 #include "Framework/Commands/GenericCommands.h"
@@ -20,6 +21,7 @@
 #include "SM/FlowStateMachine.h"
 #include "TabFactories/FSMTabSummoner.h"
 #include "Node/FSMGraphSubNode.h"
+#include "Slate/SFSMGraphNodeBase.h"
 
 FName const FFSMGraphEditor::FlowStateMachineMode = FName("FlowStateMachine");
 FName const FFSMGraphEditor::CommonDataMode = FName("CommonData");
@@ -373,6 +375,36 @@ TSharedRef<SWidget> FFSMGraphEditor::CreateFlowStateMachineDetailView(const FWor
 		.FillHeight(1.f)
 		[
 			DetailsView.ToSharedRef()
+		]
+		+SVerticalBox::Slot()
+		.VAlign(VAlign_Fill)
+		.AutoHeight()
+		[
+			SNew(SHorizontalBox)
+			+SHorizontalBox::Slot()
+			.VAlign(VAlign_Fill)
+			.HAlign(HAlign_Fill)
+			.Padding(FMargin(5.f, 2.f))
+			[
+				// Refresh Node Button
+				SNew(SOverlay)
+				+SOverlay::Slot()
+				.HAlign(HAlign_Fill)
+				.VAlign(VAlign_Fill)
+				[
+					SNew(SButton)
+					.OnClicked(this, &FFSMGraphEditor::OnNodeRefreshClicked)
+				]
+				+SOverlay::Slot()
+				.HAlign(HAlign_Center)
+				.VAlign(VAlign_Center)
+				[
+					SNew(STextBlock)
+					.Text(LOCTEXT("FSMGraphEditor", "Refresh Node"))
+					.ColorAndOpacity(FSlateColor(FLinearColor::Black))
+					.Visibility(EVisibility::SelfHitTestInvisible)
+				]
+			]
 		];
 }
 
@@ -408,6 +440,7 @@ FGraphAppearanceInfo FFSMGraphEditor::GetGraphAppearance() const
 void FFSMGraphEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSelection)
 {
 	UFSMGraph* MyGraph = Cast<UFSMGraph>(FlowStateMachine->FSMGraph);
+	SelectedNode = nullptr;
 
 	TArray<UObject*> SelectionNodes;
 	SelectionNodes.Reserve(NewSelection.Num());
@@ -419,11 +452,16 @@ void FFSMGraphEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSelection)
 			SelectionNodes.Add(Selection);
 		}
 	}
+	
 	// 若选中数量为 1 则改变 DetailView 的显示对象
 	if (SelectionNodes.Num() == 1)
 	{
-		// 设置细节面板显示的对象为运行时节点
-		DetailsView->SetObject(static_cast<UFSMGraphNodeBase*>(SelectionNodes[0])->RuntimeNode);
+		if (UFSMGraphNodeBase* FSMGraphNode = Cast<UFSMGraphNodeBase>(SelectionNodes[0]))
+		{
+			// 设置细节面板显示的对象为运行时节点
+			DetailsView->SetObject(FSMGraphNode->RuntimeNode);
+			SelectedNode = FSMGraphNode;
+		}
 	}
 	else
 	{
@@ -455,6 +493,17 @@ void FFSMGraphEditor::OnNodeDoubleClicked(UEdGraphNode* EdGraphNode)
 			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(BlueprintOb);
 		}
 	}
+}
+
+FReply FFSMGraphEditor::OnNodeRefreshClicked()
+{
+	if (SelectedNode.IsValid() && SelectedNode->RuntimeNode)
+	{
+		TArray<FStatePinInfo> StatePinInfos;
+		SelectedNode->RefreshStatePins();
+		return FReply::Handled();
+	}
+	return FReply::Unhandled();
 }
 
 void FFSMGraphEditor::SaveAsset_Execute()

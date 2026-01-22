@@ -106,7 +106,7 @@ public:
 	UFlowStateLayoutWidget* GetLayoutWidget(EFlowStateWidgetLayer Layer) const;
 
 	/** 获取所有的次态对象 */
-	TArray<UFSMRuntimeNode*> GetNextStates() const;
+	TArray<FStateChildNodeHelper> GetNextStates() const;
 
 	/** 获取当前的状态对象 */
 	UFUNCTION(BlueprintPure, Category="FlowStateContext")

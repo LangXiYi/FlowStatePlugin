@@ -3,6 +3,7 @@
 
 #include "Utility/FSMCreateWidgetHelper.h"
 
+#include "FlowStateCollectInterface.h"
 #include "Actions/Actions_CreateWidgets.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "SM/FlowStateContext.h"
@@ -57,32 +58,24 @@ void UFSMCreateWidgetHelper::CreateWidget(UFlowStateContext* InStateContext)
 	CreateWidget->SetVisibility(Visibility);
 }
 
+void UFSMCreateWidgetHelper::GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const
+{
+	if (WidgetClass == nullptr)
+	{
+		return;
+	}
+	const UObject* DefaultObject = WidgetClass->GetDefaultObject();
+	if (DefaultObject->Implements<UFlowStateCollectInterface>())
+	{
+		IFlowStateCollectInterface::Execute_GetStatePinInfos(DefaultObject, PinInfos);
+	}
+}
+
 bool UFSMCreateWidgetHelper::IsValid() const
 {
 	return WidgetTag.IsValid() && WidgetClass != nullptr && WidgetLifetime != EFlowStateLifetime::None;
 }
 
-#if WITH_EDITOR
-
-void UFSMCreateWidgetHelper::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
-{
-	UObject::PostEditChangeProperty(PropertyChangedEvent);
-	if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(UFSMCreateWidgetHelper, Events))
-	{
-		UObject* MyOuter = GetOuter();
-		if (UFSMRuntimeSubNode* RuntimeNode = Cast<UFSMRuntimeSubNode>(GetOuter()))
-		{
-			UFSMRuntimeNode* ParentNode = RuntimeNode->GetParentNode<UFSMRuntimeNode>();
-			if (ParentNode)
-			{
-				// TODO::为节点添加额外的引脚
-				FSMLOGW("Post Edit Change Property Events")
-			}
-		} 
-	}
-}
-
-#endif
 
 APlayerController* UFSMCreateWidgetHelper::GetPlayerController_Implementation()
 {

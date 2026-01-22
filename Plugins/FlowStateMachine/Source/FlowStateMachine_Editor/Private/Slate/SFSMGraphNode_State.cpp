@@ -56,6 +56,8 @@ void SFSMGraphNode_State::UpdateGraphNode()
 	RightNodeBox.Reset();
 	LeftNodeBox.Reset();
 
+	TSharedPtr<SVerticalBox> MainVerticalBox;
+
 	if (ConditionBox.IsValid())
 	{
 		ConditionBox->ClearChildren();
@@ -147,61 +149,61 @@ void SFSMGraphNode_State::UpdateGraphNode()
 	FGraphNodeMetaData TagMeta(TEXT("Graphnode"));
 	PopulateMetaTag(&TagMeta);
 	
-	TSharedPtr<SVerticalBox> InnerVerticalBox;
+	TSharedPtr<SVerticalBox> InnerVerticalBox = SNew(SVerticalBox)
+		// 节点标题
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		.HAlign(HAlign_Fill)
+		[
+			TitleAreaWidget.ToSharedRef()
+		]
+		// 附加内容
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		.HAlign(HAlign_Fill)
+		[
+			AppendAreaWidget.ToSharedRef()
+		]
+		// 主体内容区域
+		+SVerticalBox::Slot()
+		.AutoHeight()
+		.HAlign(HAlign_Fill)
+		[
+			CenterAreaWidget.ToSharedRef()
+		];
 	this->ContentScale.Bind( this, &SGraphNode::GetContentScale );
 	
 	// 获得节点内容槽
-	GetOrAddSlot(ENodeZone::Center)
-	.HAlign(HAlign_Fill)
-	.VAlign(VAlign_Fill)
+	this->GetOrAddSlot( ENodeZone::Center )
+	.HAlign(HAlign_Center)
+	.VAlign(VAlign_Center)
 	[
-		SNew(SBorder)
-		.AddMetaData<FGraphNodeMetaData>(TagMeta)
-		.BorderImage(FEditorStyle::GetBrush("Graph.StateNode.Body"))
-		.BorderBackgroundColor(this, &SFSMGraphNode_State::GetBorderBackgroundColor)
-		.OnMouseButtonDown(this, &SFSMGraphNode_State::OnMouseButtonDown)
-		.HAlign(HAlign_Fill)
-		.VAlign(VAlign_Fill)
-		.Padding(0.f)
+		SAssignNew(MainVerticalBox, SVerticalBox)
+		+SVerticalBox::Slot()
+		.AutoHeight()
 		[
 			SNew(SOverlay)
-
-			// 节点内容区域
+			.AddMetaData<FGraphNodeMetaData>(TagMeta)
+			+SOverlay::Slot()
+			.Padding(Settings->GetNonPinNodeBodyPadding())
+			[
+				SNew(SImage)
+				.Image(GetNodeBodyBrush())
+				.ColorAndOpacity(this, &SGraphNode::GetNodeBodyColor)
+			]
 			+SOverlay::Slot()
 			[
-				SNew(SVerticalBox)
-				// 节点标题
-				+SVerticalBox::Slot()
-				.AutoHeight()
-				.HAlign(HAlign_Fill)
-				[
-					TitleAreaWidget.ToSharedRef()
-				]
-				// 附加内容
-				+SVerticalBox::Slot()
-				.AutoHeight()
-				.HAlign(HAlign_Fill)
-				[
-					AppendAreaWidget.ToSharedRef()
-				]
-				// 主体内容区域
-				+SVerticalBox::Slot()
-				.AutoHeight()
-				.HAlign(HAlign_Fill)
-				[
-					CenterAreaWidget.ToSharedRef()
-				]
+				InnerVerticalBox.ToSharedRef()
 			]
-
-			// 拖拽遮罩
-			/*+SOverlay::Slot()
-			[
-				
-			]*/
-		]
+		]			
 	];
 
+	CreateBelowWidgetControls(MainVerticalBox);
 	CreatePinWidgets();
+	CreateInputSideAddButton(LeftNodeBox);
+	CreateOutputSideAddButton(RightNodeBox);
+	CreateBelowPinControls(InnerVerticalBox);
+	CreateAdvancedViewArrow(InnerVerticalBox);
 }
 
 void SFSMGraphNode_State::CreatePinWidgets()
@@ -345,8 +347,6 @@ TSharedRef<SWidget> SFSMGraphNode_State::CreateNodeContentArea()
 	return SNew(SHorizontalBox)
 		+SHorizontalBox::Slot()
 		.AutoWidth()
-		.HAlign(HAlign_Fill)
-		.VAlign(VAlign_Fill)
 		.Padding(FMargin(0, 10.f))
 		[
 			// 输入引脚
@@ -354,7 +354,6 @@ TSharedRef<SWidget> SFSMGraphNode_State::CreateNodeContentArea()
 		]
 		+SHorizontalBox::Slot()
 		.HAlign(HAlign_Fill)
-		.VAlign(VAlign_Fill)
 		.Padding(5.f)
 		[
 			SNew(SBox)
@@ -364,8 +363,6 @@ TSharedRef<SWidget> SFSMGraphNode_State::CreateNodeContentArea()
 				SNew(SBorder)
 				.BorderImage(FEditorStyle::GetBrush("Graph.StateNode.Body"))
 				.BorderBackgroundColor(FSlateColor(FLinearColor(0.2f, 0.2f, 0.2f)))
-				.HAlign(HAlign_Fill)
-				.VAlign(VAlign_Fill)
 				[
 					// 条件框
 					ConditionBox.ToSharedRef()
@@ -373,6 +370,7 @@ TSharedRef<SWidget> SFSMGraphNode_State::CreateNodeContentArea()
 			]
 		]
 		+SHorizontalBox::Slot()
+		.HAlign(HAlign_Fill)
 		.Padding(5.f)
 		[
 			SNew(SBox)
@@ -390,8 +388,6 @@ TSharedRef<SWidget> SFSMGraphNode_State::CreateNodeContentArea()
 		]
 		+SHorizontalBox::Slot()
 		.AutoWidth()
-		.HAlign(HAlign_Fill)
-		.VAlign(VAlign_Fill)
 		.Padding(FMargin(0, 10.f))
 		[
 			// 输出引脚
@@ -478,21 +474,8 @@ FSlateColor SFSMGraphNode_State::GetBorderBackgroundColor() const
 
 FText SFSMGraphNode_State::GetPinTooltip(UEdGraphPin* Pin) const
 {
-	FText HoverText = FText::GetEmpty();
-
-	check(Pin != nullptr);
-	UEdGraphNode* OwningGraphNode = Pin->GetOwningNode();
-	if (OwningGraphNode != nullptr)
-	{
-		FString HoverStr;
-		OwningGraphNode->GetPinHoverText(*Pin, /*out*/HoverStr);
-		if (!HoverStr.IsEmpty())
-		{
-			HoverText = FText::FromString(HoverStr);
-		}
-	}
-
-	return HoverText;
+	return Pin ? /*Pin->bAllowFriendlyName ? Pin->PinFriendlyName :*/ FText::FromName(Pin->PinName)
+		: FText::FromString("None Pin");
 }
 
 void SGraphPin_FSM::Construct(const FArguments& InArgs, UEdGraphPin* InPin)
@@ -525,6 +508,22 @@ TSharedRef<SWidget> SGraphPin_FSM::GetDefaultValueWidget()
 
 FSlateColor SGraphPin_FSM::GetPinColor() const
 {
+	UEdGraphPin* GraphPin = GetPinObj();
+	if (GraphPin && !GraphPin->IsPendingKill())
+	{
+		if (GraphPin->bIsDiffing)
+		{
+			return FSlateColor(FLinearColor(0.9f, 0.2f, 0.15f));
+		}
+		if (GraphPin->bOrphanedPin)
+		{
+			return FSlateColor(FLinearColor::Red);
+		}
+	}
+	else
+	{
+		return FSlateColor(FLinearColor::Yellow);
+	}
 	return FSlateColor(IsHovered() ? FLinearColor(1.f,1.f,0, 0.5f) : FLinearColor(0.5f,0.5f,0.5f,0.5));
 }
 

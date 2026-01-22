@@ -103,6 +103,75 @@ FEdGraphNodeDeprecationResponse UFSMGraphNodeBase::GetDeprecationResponse(
 	return Response;
 }
 
+void UFSMGraphNodeBase::PinConnectionListChanged(UEdGraphPin* Pin)
+{
+	if (Pin->bOrphanedPin && Pin->LinkedTo.Num() == 0)
+	{
+		RemovePin(Pin);
+		MarkNodeRequiresSynchronization(false);
+	}
+	Super::PinConnectionListChanged(Pin);
+}
+
+void UFSMGraphNodeBase::RefreshStatePins()
+{
+	bool bIsDirty = false;
+	TArray<FStatePinInfo> StatePinInfos;
+	TMap<FName, FStatePinInfo> ValidPinNames;
+
+	// 获取所有状态引脚的信息
+	RuntimeNode->GetStatePinInfos(StatePinInfos);
+	// 移除无效数据
+	for (int i = StatePinInfos.Num() - 1; i >= 0; --i)
+	{
+		const FStatePinInfo& StatePinInfo = StatePinInfos[i];
+		if (!StatePinInfo.IsValid())
+		{
+			StatePinInfos.RemoveAt(i);
+			continue;
+		}
+		ValidPinNames.Add(StatePinInfo.PinName, StatePinInfo);
+
+		// 添加引脚
+		UEdGraphPin* FoundPins = FindPin(StatePinInfo.PinName);
+		if (FoundPins == nullptr)
+		{
+			CreatePin(EGPD_Output, StatePinInfo.PinCategory, StatePinInfo.PinName);
+			bIsDirty = true;
+		}
+	}
+
+	for (int i = 0; i < Pins.Num(); ++i)
+	{
+		UEdGraphPin* NodePin = Pins[i];
+		// 旧引脚在新的引脚数据集中不存在
+		if(NodePin->Direction == EGPD_Output && !ValidPinNames.Contains(NodePin->PinName))
+		{
+			// 已经标记为过期的引脚则直接移除
+			if (NodePin->bOrphanedPin)
+			{
+				RemovePin(NodePin);
+				bIsDirty = true;
+				i--;
+			}
+			else
+			{
+				// 标记该引脚为过期的
+				NodePin->bOrphanedPin = true;
+			}
+		}
+		else
+		{
+			// 取消过期标记
+			NodePin->bOrphanedPin = false;
+		}
+	}
+	if (bIsDirty)
+	{
+		MarkNodeRequiresSynchronization(false);
+	}
+}
+
 void UFSMGraphNodeBase::PrepareForCopying()
 {
 	if (RuntimeNode)
@@ -137,7 +206,7 @@ void UFSMGraphNodeBase::InitializeInstance()
 	if (RuntimeNode && FSMAsset)
 	{
 		RuntimeNode->InitializeFromAsset(FSMAsset);
-		RuntimeNode->OnNodeCreated();
+		// RuntimeNode->OnNodeCreated();
 	}
 }
 
@@ -215,6 +284,11 @@ FText UFSMGraphNodeBase::GetTooltipText() const
 	return TooltipDesc;
 }
 
+void UFSMGraphNodeBase::GetPinHoverText(const UEdGraphPin& Pin, FString& HoverTextOut) const
+{
+	Super::GetPinHoverText(Pin, HoverTextOut);
+}
+
 void UFSMGraphNodeBase::ResetNodeOwner()
 {
 	if (RuntimeNode)
@@ -262,6 +336,15 @@ bool UFSMGraphNodeBase::UserBlueprint() const
 	return RuntimeNode && RuntimeNode->GetClass()->HasAnyClassFlags(CLASS_CompiledFromBlueprint);
 }
 
+void UFSMGraphNodeBase::MarkNodeRequiresSynchronization(bool bIsUpdateAsset, const FString& Reason)
+{
+	if (bIsUpdateAsset)
+	{
+		GetFSMGraph()->UpdateAsset(Reason);
+	}
+	GetGraph()->NotifyGraphChanged();
+}
+
 #if WITH_EDITOR
 
 void UFSMGraphNodeBase::PostEditUndo()
@@ -286,7 +369,11 @@ void UFSMGraphNodeBase::PostEditImport()
 
 FPinConnectionResponse UFSMGraphNodeBase::CheckPinConnection(const UFSMGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const
 {
-	return FPinConnectionResponse(CONNECT_RESPONSE_MAKE, TEXT("Connect node"));
+	if (FromDirection == EGPD_Output)
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_A, TEXT("Connect node Break A"));
+	}
+	return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_B, TEXT("Connect node Break B"));
 }
 
 UEdGraphPin* UFSMGraphNodeBase::GetInputPin() const

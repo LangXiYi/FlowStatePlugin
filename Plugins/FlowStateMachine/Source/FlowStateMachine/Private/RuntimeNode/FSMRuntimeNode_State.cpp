@@ -21,3 +21,9 @@ void UFSMRuntimeNode_State::OnInitialize()
 		FSMLOGW("状态机中的布局控件为空！！！")
 	}*/
 }
+
+void UFSMRuntimeNode_State::GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const
+{
+	PinInfos.Insert(FStatePinInfo("DefaultPin", "Then"), 0);
+	Super::GetStatePinInfos(PinInfos);
+}

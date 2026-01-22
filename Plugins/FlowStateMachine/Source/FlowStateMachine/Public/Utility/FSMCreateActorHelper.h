@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "FlowStateCollectInterface.h"
 #include "Utility/FSMUtility.h"
 #include "FSMCreateActorHelper.generated.h"
 
@@ -21,12 +22,14 @@ enum class ECreateActorActionMode : uint8
  * 采用建造者模式，抽象所有不可控步骤给子类实现
  */
 UCLASS(Abstract, Blueprintable, EditInlineNew)
-class FLOWSTATEMACHINE_API UFSMCreateActorHelper : public UObject
+class FLOWSTATEMACHINE_API UFSMCreateActorHelper : public UObject, public IFlowStateCollectInterface
 {
 	GENERATED_BODY()
 
 public:
 	virtual void CreateActor(UFlowStateContext* InStateContext);
+
+	virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const override;
 
 protected:
 	/** 初始化目标角色（只执行一次），只会在对象被创建的是否触发 */

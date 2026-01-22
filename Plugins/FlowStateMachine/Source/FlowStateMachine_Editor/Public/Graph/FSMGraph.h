@@ -25,9 +25,11 @@ public:
 	/** 当执行保存文件时触发 */
 	virtual void OnSave();
 	/** 更新资产 */
-	virtual void UpdateAsset(int32 UpdateFlags = 0);
+	virtual void UpdateAsset(FString UpdateReason = "");
 
 	void OnNodesPasted(const FString& String);
+
+	virtual void NotifyGraphChanged() override;
 
 	/** 根据图表得到内容创建状态机 */
 	virtual void CreateFSMFromGraph(UFSMGraphNode* RootEdNode);

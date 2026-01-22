@@ -22,6 +22,7 @@ END_NAMESPACE_FSM
 
 // Delegates --------------------------
 DECLARE_MULTICAST_DELEGATE(FStateDelegate);
+DECLARE_DYNAMIC_DELEGATE(FStateExecuteDelegate);
 
 UENUM(BlueprintType)
 enum class EFlowStateLifetime : uint8
@@ -36,7 +37,6 @@ enum class EFlowStateLifetime : uint8
 };
 
 
-
 namespace FCommonData
 {
 	// const FName KeySelf = TEXT("SelfActor");
@@ -45,3 +45,51 @@ namespace FCommonData
 
 	const FKey InvalidKey = FKey(-1);
 }
+
+class UFSMRuntimeNode;
+
+USTRUCT(BlueprintType)
+struct FStatePinInfo
+{
+	GENERATED_BODY()
+public:
+	FStatePinInfo() {}
+
+	FStatePinInfo(FName InPinCategory,FName InPinName) :
+		PinCategory(InPinCategory), PinName(InPinName)
+	{
+		
+	}
+
+	bool IsValid() const
+	{
+		return PinCategory != NAME_None && PinName != NAME_None;
+	}
+
+	UPROPERTY(BlueprintReadWrite, Category = "FlowStateCollectData")
+	FName PinCategory;
+	
+	UPROPERTY(BlueprintReadWrite, Category = "FlowStateCollectData")
+	FName PinName;
+};
+
+
+USTRUCT()
+struct FStateChildNodeHelper
+{
+	GENERATED_BODY()
+
+	FStateChildNodeHelper() {}
+
+	FStateChildNodeHelper(FName InPinName, UFSMRuntimeNode* InChildNodeInstance):
+		PinName(InPinName), ChildNodeInstance(InChildNodeInstance)
+	{
+		
+	}
+	
+	UPROPERTY()
+	FName PinName;
+
+	UPROPERTY()
+	UFSMRuntimeNode* ChildNodeInstance;
+};

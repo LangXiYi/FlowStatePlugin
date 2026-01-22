@@ -57,7 +57,7 @@ public:
 	/////////////////////////////////////////////////////////////////////
 public:
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "FSMFunctionLibrary", meta = (WorldContext = "WorldContextObject", DeterminesOutputType = "Class", BlueprintInternalUseOnly = "true"))
-	static UUserWidget* CreateAndBindWidget(UObject* WorldContextObject, UFlowStateLayoutWidget* WidgetLayout, TSubclassOf<UUserWidget> WidgetType, FGameplayTag WidgetSlotTag, EFlowStateLifetime Lifetime = EFlowStateLifetime::Kill);
+	static UUserWidget* CreateAndBindWidget(UObject* WorldContextObject, UFlowStateLayoutWidget* WidgetLayout, TSubclassOf<UUserWidget> WidgetType, FGameplayTag WidgetSlotTag, EFlowStateLifetime Lifetime);
 
 	UFUNCTION(BlueprintCallable, Category = "FSMFunctionLibrary", meta = (BlueprintInternalUseOnly = "true"))
 	static AActor* InitActorLifetimeState(AActor* Target, EFlowStateLifetime Lifetime, FName ActorTag);

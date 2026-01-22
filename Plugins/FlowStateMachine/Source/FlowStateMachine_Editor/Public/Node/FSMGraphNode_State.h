@@ -26,6 +26,6 @@ public:
 
 	virtual FEdGraphNodeDeprecationResponse GetDeprecationResponse(EEdGraphNodeDeprecationType DeprecationType) const override;
 
-	void CreateCustomPin(EEdGraphPinDirection Direction, const FString& PinName);
+	virtual TSharedPtr<SGraphNode> CreateVisualWidget() override;
 
 };

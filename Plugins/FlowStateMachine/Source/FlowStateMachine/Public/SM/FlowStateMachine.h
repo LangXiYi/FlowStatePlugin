@@ -44,22 +44,9 @@ public:
 	UPROPERTY()
 	class UEdGraph*	FSMGraph;
 
-	FString GetScatteredNodeName(FGuid InScatteredNodeID) const
-	{
-		for (UFSMRuntimeNode* ScatteredNode : ScatteredNodes)
-		{
-			if (auto JumpStartNode = Cast<UFSMRuntimeNode_JumpStart>(ScatteredNode))
-			{
-				if (JumpStartNode->JumpStartId == InScatteredNodeID)
-				{
-					return JumpStartNode->GetNodeName();
-				}
-			}
-		}
-		return "Default";
-	}
-
 #endif
+
+	FString GetScatteredNodeName(FGuid InScatteredNodeID) const;
 
 	/** 黑板 */
 	UPROPERTY(VisibleAnywhere)

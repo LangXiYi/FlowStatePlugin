@@ -245,18 +245,16 @@ UFSMRuntimeNode* UFlowStateContext::CreateChildrenInstance(const UFSMRuntimeNode
 	// 使用模板对节点实例进行初始化
 	RootNodeInstance->InitializeNode(ParentNode, this);
 	
-	// 替换运行时实例的所有子级节点为运行时实例化的对象
-	for (int i = 0; i < RootNodeInstance->ChildrenNodes.Num(); ++i)
+	const TArray<FStateChildNodeHelper>& StateChildren = RootNodeInstance->GetStateChildren();
+	for (int i = StateChildren.Num() - 1; i >= 0; --i)
 	{
-		UFSMRuntimeNode* ChildNodeInstance = CreateChildrenInstance(RootNodeInstance->ChildrenNodes[i], RootNodeInstance, Stack);
+		UFSMRuntimeNode* ChildNodeInstance = CreateChildrenInstance(StateChildren[i].ChildNodeInstance, RootNodeInstance, Stack);
 		if (ChildNodeInstance)
-		{
-			RootNodeInstance->ReplaceChildNode(ChildNodeInstance, i);
-		}
+			// 替换运行时实例的所有子级节点为运行时实例化的对象
+			RootNodeInstance->ReplaceChildState(ChildNodeInstance, i);
 		else
-		{
-			RootNodeInstance->ChildrenNodes.RemoveAt(i--);
-		}
+			// 移除无效数据
+			RootNodeInstance->RemoveChildState(i);
 	}
 	// 换运行时实例的所有次要节点为运行时实例化的对象
 	for (int i = 0; i < RootNodeInstance->SubNodes.Num(); ++i)
@@ -304,15 +302,7 @@ UFlowStateLayoutWidget* UFlowStateContext::GetLayoutWidget(EFlowStateWidgetLayer
 	return 	WidgetLayers ? WidgetLayers->GetLayerWidget(Layer) : nullptr;
 }
 
-TArray<UFSMRuntimeNode*> UFlowStateContext::GetNextStates() const
+TArray<FStateChildNodeHelper> UFlowStateContext::GetNextStates() const
 {
-	TArray<UFSMRuntimeNode*> NextStates;
-	for (UFSMRuntimeNodeBase* Node : CurState->ChildrenNodes)
-	{
-		if (UFSMRuntimeNode* RuntimeNode = Cast<UFSMRuntimeNode>(Node))
-		{
-			NextStates.Add(RuntimeNode);
-		}
-	}
-	return NextStates;
+	return CurState->GetStateChildren();
 }

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FlowStateCollectInterface.h"
 #include "UObject/Object.h"
 #include "FSMRuntimeNodeBase.generated.h"
 
@@ -13,7 +14,7 @@ class UFlowStateMachine;
  * 
  */
 UCLASS(Abstract)
-class FLOWSTATEMACHINE_API UFSMRuntimeNodeBase : public UObject
+class FLOWSTATEMACHINE_API UFSMRuntimeNodeBase : public UObject, public IFlowStateCollectInterface
 {
 	GENERATED_BODY()
 
@@ -35,17 +36,33 @@ public:
 
 	UFlowStateMachine* GetStateMachine() const { return FSMAsset; }
 
-#if WITH_EDITOR
-
-	/** 【Only Editor】 在创建新的图表节点后调用 */
-	virtual void OnNodeCreated() {}
-	
-#endif
-
-
-
 	UFUNCTION(BlueprintPure)
 	UFlowStateContext* GetStateContext() const { return StateContext; }
+
+	// Begin IFlowStateCollectInterface
+	virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const override;
+	// End of IFlowStateCollectInterface
+
+#if WITH_EDITOR
+
+public:
+	// virtual void OnNode
+	
+	/** 【Only Editor】 在创建新的图表节点后调用 */
+	virtual void OnNodeCreated(UFSMRuntimeNodeBase* InParentNode)
+	{
+		// TODO::区分编辑环境与运行环境下的函数调用
+		if (InParentNode)
+		{
+			AllParentNodes.AddUnique(InParentNode);
+		}
+		// GraphNode = InGraphNode;
+	}
+
+	/** 【Only Editor】 在图表节点更新后调用 */
+	virtual void OnNodeUpdate() {}
+
+#endif
 
 public:
 

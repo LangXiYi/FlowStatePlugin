@@ -1,5 +1,6 @@
 ﻿#include "Utility/FSMCreateActorHelper.h"
 
+#include "FlowStateCollectInterface.h"
 #include "Animation/SkeletalMeshActor.h"
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/GameplayStatics.h"
@@ -49,6 +50,20 @@ void UFSMCreateActorHelper::CreateActor(UFlowStateContext* InStateContext)
 		UpdateActorTransform(ResultActor);
 	}
 	ResultActor->SetActorHiddenInGame(false);
+}
+
+void UFSMCreateActorHelper::GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const
+{
+	UClass* CreateClass = GetCreateClass();
+	if (CreateClass == nullptr)
+	{
+		return;
+	}
+	const UObject* DefaultObject = CreateClass->GetDefaultObject();
+	if (DefaultObject->Implements<UFlowStateCollectInterface>())
+	{
+		IFlowStateCollectInterface::Execute_GetStatePinInfos(DefaultObject, PinInfos);
+	}
 }
 
 TSubclassOf<AActor> UFSMCreateActorHelper::GetCreateClass() const

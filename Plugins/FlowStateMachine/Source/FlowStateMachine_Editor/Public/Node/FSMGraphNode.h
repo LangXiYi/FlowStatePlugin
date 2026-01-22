@@ -42,6 +42,9 @@ public:
 	virtual bool CanUserDeleteNode() const override;
 
 	virtual void ResetNodeOwner() override;
+
+	virtual void GetPinHoverText(const UEdGraphPin& Pin, FString& HoverTextOut) const override;
+	
 public:
 	/** 次要节点：条件列表 */
 	UPROPERTY()

@@ -8,10 +8,10 @@
 #include "Utility/FSMUtility.h"
 #include "FSMRuntimeNode.generated.h"
 
+class UFSMRuntimeNode;
 class UFlowStateContext;
 class UFSMRuntimeSubNode;
 class UFlowStateMachine;
-
 
 /**
  * 状态机运行时节点，保存图表中编辑的各个节点的关系。
@@ -38,6 +38,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "FlowStateMachine")
 	virtual bool TrySwitchTo(int Index);
 
+	/** 尝试切换至其他节点 */
+	UFUNCTION(BlueprintCallable, Category = "FlowStateMachine")
+	virtual bool SwitchToByName(FName Name);
+
 	/** Tick 函数每帧执行 */
 	virtual void Tick(float DeltaTime) {}
 
@@ -46,7 +50,6 @@ public:
 
 	/** 替换次要节点，使用新的次要节点替换原有的节点 */
 	virtual void ReplaceSubNode(UFSMRuntimeNodeBase* NewSubNode, int Index);
-	virtual void ReplaceChildNode(UFSMRuntimeNode* NewChildNode, int Index);
 
 	/** 清除子节点 */
 	virtual void ClearSubNodes();
@@ -75,10 +78,29 @@ public:
 public:
 	FStateDelegate OnExitDelegate;
 
+	//////////////////////////////////////////////////////////////////////////
+	// Runtime Child State
+	//////////////////////////////////////////////////////////////////////////
+
 public:
-	/** 子级节点 */
+#if WITH_EDITOR
+	/** 【Only Editor】 增加子级状态节点 */
+	void AddChildState(FName FromPinName, UFSMRuntimeNode* NodeInstance);
+	/** 【Only Editor】 移除子级状态节点 */
+	void RemoveChildState(int Index);
+	/** 【Only Editor】 清空子级状态节点 */
+	void ClearChildStates();
+	/** 【Only Editor】 获取所有子级状态节点 */
+#endif
+	/** 替换子级节点为指定的新对象 */
+	void ReplaceChildState(UFSMRuntimeNode* NewChildNode, int Index);
+	/** 获取所有的子级节点 */
+	const TArray<FStateChildNodeHelper>& GetStateChildren() const { return ChildStateHelpers; }
+
+protected:
+	// 【Only Runtime】该属性在运行时会被新的值替换
 	UPROPERTY()
-	TArray<UFSMRuntimeNode*> ChildrenNodes;
+	TArray<FStateChildNodeHelper> ChildStateHelpers;
 
 protected:
 	/** 次要节点：行为列表 */

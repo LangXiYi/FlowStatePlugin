@@ -21,4 +21,7 @@ public:
 	TArray<UFSMCreateActorHelper*> CreateActors;
 
 	virtual void ExecuteAction(UFSMRuntimeNode* Instance) override;
+
+	/** 返回该子节点需要创建的引脚信息 */
+	virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const override;
 };

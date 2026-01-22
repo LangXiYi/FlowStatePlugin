@@ -16,8 +16,11 @@ class FLOWSTATEMACHINE_API UActions_CreateWidgets : public UFSMRuntimeSubNode_Ac
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Instanced, Category = "CreateActors")
+	UPROPERTY(EditAnywhere, Instanced, Category = "CreateWidgets")
 	TArray<UFSMCreateWidgetHelper*> CreateWidgets;
 
 	virtual void ExecuteAction(UFSMRuntimeNode* Instance) override;
+
+	/** 返回该子节点需要创建的引脚信息 */
+	virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const override;
 };

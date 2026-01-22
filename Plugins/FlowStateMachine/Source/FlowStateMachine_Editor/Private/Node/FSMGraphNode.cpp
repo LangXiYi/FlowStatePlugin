@@ -29,6 +29,12 @@ void UFSMGraphNode::ResetNodeOwner()
 	}
 }
 
+void UFSMGraphNode::GetPinHoverText(const UEdGraphPin& Pin, FString& HoverTextOut) const
+{
+	ensure(Pin.GetOwningNode() == this);
+	HoverTextOut = Pin.PinName.ToString();
+}
+
 void UFSMGraphNode::RemoveAllSubNode()
 {
 	SubNodes.Empty();
@@ -94,16 +100,18 @@ void UFSMGraphNode::AddSubNode(UFSMGraphNodeBase* SubNode, class UEdGraph* Paren
 	SubNodes.Add(SubNode);
 	OnSubNodeAdded(SubNode);
 
-	ParentGraph->NotifyGraphChanged();
-	GetFSMGraph()->UpdateAsset();
+	MarkNodeRequiresSynchronization(true, "Add SubNode");
 }
 
 void UFSMGraphNode::RemoveSubNode(UFSMGraphNodeBase* SubNode)
 {
-	SubNodes.RemoveSingle(SubNode);
+	GetGraph()->Modify();
 	Modify();
+	SubNodes.RemoveSingle(SubNode);
 
 	OnSubNodeRemoved(SubNode);
+
+	MarkNodeRequiresSynchronization(true, "Remove SubNode");
 }
 
 void UFSMGraphNode::OnSubNodeRemoved(UFSMGraphNodeBase* SubNode)

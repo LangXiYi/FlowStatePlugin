@@ -8,6 +8,7 @@
 #include "Node/FSMGraphSubNode.h"
 #include "Node/Composites/FSMGraphNode_Jump.h"
 #include "RuntimeNode/FSMRuntimeNode.h"
+#include "RuntimeNode/FSMRuntimeSubNode.h"
 #include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
 #include "SM/FlowStateMachine.h"
 #include "Utility/FSMUtility.h"
@@ -30,8 +31,13 @@ void UFSMGraph::OnSave()
 	UpdateAsset();
 }
 
-void UFSMGraph::UpdateAsset(int32 UpdateFlags)
+void UFSMGraph::UpdateAsset(FString UpdateReason)
 {
+	if (!UpdateReason.IsEmpty())
+	{
+		FSMLOG("Update Asset %s -- UPDATE REASON: %s", *GetFSMAsset()->GetName(), *UpdateReason)
+	}
+
 	UFSMGraphNode_Root* RootNode = nullptr;
 
 	ScatteredNodes.Empty();
@@ -45,21 +51,25 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 			RootNode = Cast<UFSMGraphNode_Root>(NodeBase);
 		}
 
-		// 遍历次要节点，更新其父级节点
-		for (UFSMGraphNodeBase* SubNode : NodeBase->SubNodes)
-		{
-			if (SubNode)
-			{
-				SubNode->ParentNode = NodeBase;
-			}
-		}
-
 		// 重置节点实例
 		UFSMRuntimeNode* RuntimeNode = Cast<UFSMRuntimeNode>(NodeBase->RuntimeNode);
 		if (RuntimeNode != nullptr)
 		{
 			// 先将所有节点标记为未连接状态，之后从根节点出发的路径会用有效的值对其进行替换。
 			RuntimeNode->InitializeNode(nullptr);
+			RuntimeNode->ClearSubNodes();
+			// 遍历次要节点，更新其父级节点，这里针对的是所有的节点进行的操作
+			for (UFSMGraphNodeBase* SubNode : NodeBase->SubNodes)
+			{
+				if (SubNode != nullptr)
+				{
+					SubNode->ParentNode = NodeBase;
+					if (UFSMRuntimeSubNode* RuntimeSubNode = Cast<UFSMRuntimeSubNode>(SubNode->RuntimeNode))
+					{
+						RuntimeNode->AddSubNode(RuntimeSubNode);
+					}
+				}
+			}
 		}
 
 		// 记录所有零碎节点: 跳跃节点、...
@@ -90,6 +100,11 @@ void UFSMGraph::UpdateAsset(int32 UpdateFlags)
 
 void UFSMGraph::OnNodesPasted(const FString& String)
 {
+}
+
+void UFSMGraph::NotifyGraphChanged()
+{
+	Super::NotifyGraphChanged();
 }
 
 void UFSMGraph::CreateFSMFromGraph(UFSMGraphNode* RootEdNode)
@@ -370,19 +385,19 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 	}
 
 	// 清理子对象
-	RuntimeRootNode->ChildrenNodes.Empty();
+	RuntimeRootNode->ClearChildStates();
 	// 收集子节点
 	for (int32 Idx = 0; Idx < GraphRootNode->Pins.Num(); ++Idx)
 	{
 		UEdGraphPin* Pin = GraphRootNode->Pins[Idx];
-		// 过滤非输出引脚
-		if (Pin->Direction != EGPD_Output)
+		// 过滤非输出引脚以及错误引脚
+		if (Pin->Direction != EGPD_Output || Pin->bOrphanedPin || Pin->bIsDiffing)
 		{
 			continue;
 		}
 
 		// sort connections so that they're organized the same as user can see in the editor
-		Pin->LinkedTo.Sort(FCompareNodeYLocation());
+		// Pin->LinkedTo.Sort(FCompareNodeYLocation());
 		// 遍历节点引脚获得当前节点下的所有子节点
 		for (int i = 0; i < Pin->LinkedTo.Num(); ++i)
 		{
@@ -401,7 +416,7 @@ void UFSMGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMRunti
 			// 初始化节点
 			RuntimeNode->InitializeNode(RuntimeRootNode);
 
-			RuntimeRootNode->ChildrenNodes.Add(RuntimeNode);
+			RuntimeRootNode->AddChildState(Pin->PinName, RuntimeNode);
 			// 递归添加子节点
 			CreateChildrenNodes(FSMAsset, RuntimeNode, GraphNode, Stack);
 		}

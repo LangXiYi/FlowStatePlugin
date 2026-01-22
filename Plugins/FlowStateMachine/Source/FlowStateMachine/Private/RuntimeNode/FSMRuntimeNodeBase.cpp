@@ -57,3 +57,13 @@ FString UFSMRuntimeNodeBase::GetNodeName() const
 	};
 	return NodeName.Len() ? NodeName : GetShortTypeName(this);
 }
+
+void UFSMRuntimeNodeBase::GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const
+{
+	IFlowStateCollectInterface::Execute_GetStatePinInfos(this, PinInfos);
+	for (UFSMRuntimeNodeBase* SubNode : SubNodes)
+	{
+		if (SubNode == nullptr) continue;
+		SubNode->GetStatePinInfos(PinInfos);
+	} 
+}

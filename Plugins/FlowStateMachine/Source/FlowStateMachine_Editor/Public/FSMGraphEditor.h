@@ -94,6 +94,8 @@ public:
 
 	virtual void OnNodeDoubleClicked(UEdGraphNode* EdGraphNode);
 
+	virtual FReply OnNodeRefreshClicked();
+
 	void OnGraphEditorFocused(TSharedRef<SGraphEditor> InGraphEditor);
 
 	bool IsPropertyEditable() const;
@@ -127,4 +129,5 @@ private:
 	// 状态节点面板，支持拖拽放置新的节点
 	TSharedPtr<class SFSMGraphPalette> ClassPalette;
 
+	TWeakObjectPtr<UFSMGraphNodeBase> SelectedNode = nullptr;
 };

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AIGraph/Classes/AIGraphTypes.h"
 #include "EdGraph/EdGraphNode.h"
+#include "Utility/FSMUtility.h"
 #include "FSMGraphNodeBase.generated.h"
 
 class UFSMRuntimeNodeBase;
@@ -39,6 +40,8 @@ public:
 	/** 获取节点的提示文本 */
 	virtual FText GetTooltipText() const override;
 
+	virtual void GetPinHoverText(const UEdGraphPin& Pin, FString& HoverTextOut) const override;
+
 	/** 自动连接创建的新节点 */
 	virtual void AutowireNewNode(UEdGraphPin* FromPin) override;
 
@@ -47,6 +50,9 @@ public:
 
 	/** 节点连接改变事件 */
 	virtual void NodeConnectionListChanged() override;
+
+	/** 引脚连接改变事件 */
+	virtual void PinConnectionListChanged(UEdGraphPin* Pin) override;
 
 	/** 为节点提供差异化比较 */
 	virtual void FindDiffs(class UEdGraphNode* OtherNode, FDiffResults& Results) override;
@@ -64,6 +70,9 @@ public:
 	// FSMGraphNodeBase Function
 	/////////////////////////////////////////////////////
 
+	/** TODO::监听 RuntimeNode 类的改变，当它发生变化时刷新引脚 */
+	virtual void RefreshStatePins();
+
 	virtual void PostCopyNode();
 
 	/** 初始化运行时节点实例时调用  */
@@ -80,6 +89,9 @@ public:
 	class UFSMGraph* GetFSMGraph() const;
 
 	bool UserBlueprint() const;
+
+	/** 识别出此节点已发生更改，这些更改需要与编译后的脚本进行同步。*/
+	void MarkNodeRequiresSynchronization(bool bIsUpdateAsset, const FString& Reason = "");
 
 #if WITH_EDITOR
 

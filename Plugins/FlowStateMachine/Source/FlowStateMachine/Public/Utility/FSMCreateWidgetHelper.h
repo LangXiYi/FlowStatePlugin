@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FlowStateCollectInterface.h"
 #include "FSMUtility.h"
 #include "GameplayTagContainer.h"
 #include "Components/SlateWrapperTypes.h"
@@ -14,30 +15,20 @@ class UFlowStateLayoutWidget;
 class UWidget;
 class UFlowStateContext;
 
-USTRUCT()
-struct FLOWSTATEMACHINE_API FFSMWidgetEvent
-{
-	GENERATED_BODY()
-
-public:
-	FName UniqueName;
-
-	#if WITH_EDITOR
-	FString DisplayName;
-#endif
-};
-
 /**
  * 
  */
 UCLASS(EditInlineNew)
-class FLOWSTATEMACHINE_API UFSMCreateWidgetHelper : public UObject
+class FLOWSTATEMACHINE_API UFSMCreateWidgetHelper : public UObject, public IFlowStateCollectInterface
 {
 	GENERATED_BODY()
 
 public:
 	virtual void CreateWidget(UFlowStateContext* InStateContext);
 
+	virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const override;
+
+protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OverrideProperty(UWidget* Widget);
 
@@ -47,12 +38,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	APlayerController* GetPlayerController();
 
+public:
 	bool IsValid() const;
 
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
-	
 protected:
 	UPROPERTY(EditAnywhere, Category = "Basic")
 	TSubclassOf<UUserWidget> WidgetClass;
@@ -66,12 +54,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Basic")
 	EFlowStateWidgetLayer WidgetLayer;
-
-	UPROPERTY(EditAnywhere, Category = "Basic|Advanced")
-	int WidgetPriority = 0;
-
-	UPROPERTY(EditAnywhere, Category = "Basic|Advanced")
-	TArray<FFSMWidgetEvent> Events;
 
 	UPROPERTY(EditAnywhere, Category = "Basic|Advanced")
 	ESlateVisibility Visibility = ESlateVisibility::SelfHitTestInvisible;

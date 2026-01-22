@@ -30,10 +30,10 @@ public:
 		{
 			return SNew(SFSMGraphNode_Root, RootNode);
 		}
-		if (UFSMGraphNode_State* StateNode = Cast<UFSMGraphNode_State>(Node))
+		/*if (UFSMGraphNode_State* StateNode = Cast<UFSMGraphNode_State>(Node))
 		{
 			return SNew(SFSMGraphNode_State, StateNode);
-		}
+		}*/
 		if (UFSMGraphSubNode* SubNode = Cast<UFSMGraphSubNode>(Node))
 		{
 			return SNew(SFSMGraphSubNode, SubNode);

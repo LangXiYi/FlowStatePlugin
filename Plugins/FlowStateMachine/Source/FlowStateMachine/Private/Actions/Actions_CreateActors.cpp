@@ -10,15 +10,17 @@ void UActions_CreateActors::ExecuteAction(UFSMRuntimeNode* Instance)
 {
 	for (UFSMCreateActorHelper* Helper : CreateActors)
 	{
-		if (Helper == nullptr)
-		{
-			continue;
-		}
-		if (!Helper->IsValid())
-		{
-			FSMLOGW("Create Actor (%s) Failed, UniqueName or Lifetime is none.", *Helper->GetName());
-			continue;
-		}
+		if (Helper == nullptr || !Helper->IsValid()) continue;
 		Helper->CreateActor(StateContext);
 	}
+}
+
+void UActions_CreateActors::GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const
+{
+	for (const UFSMCreateActorHelper* Helper : CreateActors)
+	{
+		if (Helper == nullptr || !Helper->IsValid() || !Helper->Implements<UFlowStateCollectInterface>()) continue;
+		Helper->GetStatePinInfos(PinInfos);
+	}
+	Super::GetStatePinInfos(PinInfos);
 }

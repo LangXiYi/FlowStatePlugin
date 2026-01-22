@@ -7,14 +7,15 @@
 #include "ToolMenu.h"
 #include "ToolMenuDelegates.h"
 #include "Node/FSMGraphSubNode.h"
+#include "Slate/SFSMGraphNode_State.h"
 
 
 #define LOCTEXT_NAMESPACE "FSMGraphNode_State"
 
 void UFSMGraphNode_State::AllocateDefaultPins()
 {
-	CreatePin(EGPD_Input, "DefaultInput", TEXT(""));
-	CreatePin(EGPD_Output, "DefaultOutput", TEXT(""));
+	CreatePin(EGPD_Input, "DefaultPin", TEXT("Execute"));
+	CreatePin(EGPD_Output, "DefaultPin", TEXT("Then"));
 }
 
 FText UFSMGraphNode_State::GetNodeTitle(ENodeTitleType::Type TitleType) const
@@ -115,8 +116,9 @@ FEdGraphNodeDeprecationResponse UFSMGraphNode_State::GetDeprecationResponse(
 	return Response;
 }
 
-void UFSMGraphNode_State::CreateCustomPin(EEdGraphPinDirection Direction, const FString& PinName)
+TSharedPtr<SGraphNode> UFSMGraphNode_State::CreateVisualWidget()
 {
+	return SNew(SFSMGraphNode_State, this);
 }
 
 #undef LOCTEXT_NAMESPACE

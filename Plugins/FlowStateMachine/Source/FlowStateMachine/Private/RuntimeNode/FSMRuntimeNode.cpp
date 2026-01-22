@@ -45,17 +45,25 @@ bool UFSMRuntimeNode::CheckCondition()
 
 bool UFSMRuntimeNode::TrySwitchTo(int Index)
 {
-	if (!StateContext || !ChildrenNodes.IsValidIndex(Index))
+	if (StateContext && ChildStateHelpers.IsValidIndex(Index))
 	{
-		FSMLOGW("状态机上下文不存在或下标索引 [%d] 非法", Index);
-		return false;
+		return StateContext->GotoStateNode(ChildStateHelpers[Index].ChildNodeInstance);
 	}
-	if (UFSMRuntimeNode* Node = Cast<UFSMRuntimeNode>(ChildrenNodes[Index]))
+	return false;
+}
+
+bool UFSMRuntimeNode::SwitchToByName(FName Name)
+{
+	if (StateContext)
 	{
-		return StateContext->GotoStateNode(Node);
+		for (int i = 0; i < ChildStateHelpers.Num(); ++i)
+		{
+			if (ChildStateHelpers[i].PinName == Name)
+			{
+				return StateContext->GotoStateNode(ChildStateHelpers[i].ChildNodeInstance);
+			}
+		}
 	}
-	// 这里不应该会被执行，因为正常来说 ChildrenNodes 中所有的对象都继承自 UFSMRuntimeNode 。
-	checkNoEntry()
 	return false;
 }
 
@@ -108,13 +116,6 @@ void UFSMRuntimeNode::ReplaceSubNode(UFSMRuntimeNodeBase* NewSubNode, int Index)
 	SubNodes[Index] = NewSubNode;
 }
 
-void UFSMRuntimeNode::ReplaceChildNode(UFSMRuntimeNode* NewChildNode, int Index)
-{
-	check(NewChildNode && ChildrenNodes.IsValidIndex(Index))
-	checkf(!NewChildNode->bIsTemplateInstance, TEXT("不得使用模板节点作为运行时实例"))
-	ChildrenNodes[Index] = NewChildNode;
-}
-
 void UFSMRuntimeNode::ClearSubNodes()
 {
 	SubNodes.Empty();
@@ -146,3 +147,41 @@ UWorld* UFSMRuntimeNode::GetWorld() const
 	return Super::GetWorld();
 }
 
+
+#if WITH_EDITOR
+
+void UFSMRuntimeNode::AddChildState(FName FromPinName, UFSMRuntimeNode* NodeInstance)
+{
+	for (FStateChildNodeHelper& Helper : ChildStateHelpers)
+	{
+		if (Helper.PinName == FromPinName)
+		{
+			// 默认情况下，一个引脚只能有一个输出
+			checkNoEntry()
+			return;
+		}
+	} 
+	ChildStateHelpers.Add(FStateChildNodeHelper(FromPinName, NodeInstance));
+}
+
+void UFSMRuntimeNode::RemoveChildState(int Index)
+{
+	ChildStateHelpers.RemoveAt(Index);
+}
+
+void UFSMRuntimeNode::ClearChildStates()
+{
+	ChildStateHelpers.Empty();
+}
+
+#endif
+
+void UFSMRuntimeNode::ReplaceChildState(UFSMRuntimeNode* NewChildNode, int Index)
+{
+	checkf(NewChildNode, TEXT("The replaced child state is nullptr"));
+	checkf(!NewChildNode->bIsTemplateInstance, TEXT("The replaced child state is template instance."))
+	if (ChildStateHelpers.IsValidIndex(Index))
+	{
+		ChildStateHelpers[Index].ChildNodeInstance = NewChildNode;
+	}
+}
