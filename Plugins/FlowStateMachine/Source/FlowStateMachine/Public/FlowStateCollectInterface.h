@@ -8,7 +8,7 @@
 #include "FlowStateCollectInterface.generated.h"
 
 UINTERFACE()
-class UFlowStateCollectInterface : public UInterface
+class FLOWSTATEMACHINE_API UFlowStateCollectInterface : public UInterface
 {
 	GENERATED_BODY()
 

@@ -21,3 +21,13 @@ void UFSMRuntimeSubNode::InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlow
 	ParentNode = InParentNode;
 	Super::InitializeNode(InParentNode, Context);
 }
+
+bool UFSMRuntimeSubNode::TrySwitchTo(int Index)
+{
+	return ParentNode ? ParentNode->TrySwitchTo(Index) : Super::TrySwitchTo(Index);
+}
+
+bool UFSMRuntimeSubNode::SwitchToByName(FName Name)
+{
+	return ParentNode ? ParentNode->SwitchToByName(Name) : Super::SwitchToByName(Name);
+}

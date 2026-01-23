@@ -18,11 +18,11 @@ class FLOWSTATEMACHINE_API UFSMCommonDataFunctionLibrary : public UBlueprintFunc
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
+	/*UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
 	static UFSMCommonDataManager* GetStateCommonData(UFSMRuntimeNodeBase* NodeOwner);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static UFlowStateContext* GetStateContext(const UFSMRuntimeNodeBase* NodeOwner);
+	static UFlowStateContext* GetStateContext(const UFSMRuntimeNodeBase* NodeOwner);*/
 	
 	/*
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))

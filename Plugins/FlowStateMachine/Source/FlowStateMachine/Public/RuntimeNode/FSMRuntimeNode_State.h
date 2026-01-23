@@ -23,6 +23,4 @@ public:
 
 protected:
 	virtual void OnInitWidget(class UFlowStateLayoutWidget* Layout) {}
-
-	virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const override;
 };

@@ -32,12 +32,12 @@ void UFSMCreateActorHelper::CreateActor(UFlowStateContext* InStateContext)
 	if (ResultActor == nullptr)
 	{
 		ResultActor = UGameplayStatics::BeginDeferredActorSpawnFromClass(InStateContext, GetCreateClass(), Transform);
+		InitializeActor(ResultActor);
 		OverrideProperty(ResultActor);
 		UGameplayStatics::FinishSpawningActor(ResultActor, Transform);
 
 		ResultActor->Tags.AddUnique(UniqueName);
 		InStateContext->AddToCache(ResultActor, Lifetime);
-		InitializeActor(ResultActor);
 	}
 	else
 	{
@@ -120,6 +120,7 @@ void UCreateSkeletalActorHelper::InitializeActor(AActor* Target)
 	if (MeshActor != nullptr)
 	{
 		MeshActor->GetSkeletalMeshComponent()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+		MeshActor->GetSkeletalMeshComponent()->SetPosition(InitAnimPos, false);
 	}
 }
 
@@ -139,7 +140,7 @@ void UCreateSkeletalActorHelper::OverrideProperty(AActor* ResultActor)
 		UAnimationAsset* LoadedAnim = AnimationAsset.LoadSynchronous();
 		MeshActor->GetSkeletalMeshComponent()->SetAnimation(LoadedAnim);
 		MeshActor->GetSkeletalMeshComponent()->SetPosition(InitAnimPos);
-		if (bIsAutoPlay)
+		if (bIsAutoPlay && AnimationAsset.IsValid())
 		{
 			MeshActor->GetSkeletalMeshComponent()->Play(bIsLoop);
 		}
@@ -152,7 +153,8 @@ void UCreateStaticActorHelper::InitializeActor(AActor* Target)
 	AStaticMeshActor* MeshActor = Cast<AStaticMeshActor>(Target);
 	if (MeshActor != nullptr)
 	{
-		MeshActor->GetStaticMeshComponent()->Mobility = bMoveable ? EComponentMobility::Movable : EComponentMobility::Static;
+		// 静态模型要动态修改, 所以不能设置 Mobility 为 Static，否则会导致后续模型无法动态替换。
+		MeshActor->GetStaticMeshComponent()->Mobility = EComponentMobility::Movable;
 	}
 	Super::InitializeActor(Target);
 }
@@ -172,12 +174,4 @@ void UCreateStaticActorHelper::OverrideProperty(AActor* ResultActor)
 		MeshActor->GetStaticMeshComponent()->SetStaticMesh(LoadedMesh);
 	}
 	Super::OverrideProperty(ResultActor);
-}
-
-void UCreateStaticActorHelper::UpdateActorTransform(AActor* ResultActor)
-{
-	if (bMoveable)
-	{
-		Super::UpdateActorTransform(ResultActor);
-	}
 }

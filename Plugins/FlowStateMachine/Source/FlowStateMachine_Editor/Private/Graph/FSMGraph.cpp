@@ -24,6 +24,19 @@ void UFSMGraph::OnCreateGraph()
 
 void UFSMGraph::OnLoadedGraph()
 {
+	RefreshAllNodes();
+}
+
+void UFSMGraph::RefreshAllNodes()
+{
+	for (UEdGraphNode* GraphNode : Nodes)
+	{
+		UFSMGraphNodeBase* FSMNodeBase = Cast<UFSMGraphNodeBase>(GraphNode);
+		if (FSMNodeBase)
+		{
+			FSMNodeBase->ReconstructNode();
+		}
+	}
 }
 
 void UFSMGraph::OnSave()

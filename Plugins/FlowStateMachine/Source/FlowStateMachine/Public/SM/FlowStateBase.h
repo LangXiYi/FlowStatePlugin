@@ -33,7 +33,6 @@ class FLOWSTATEMACHINE_API UFlowStateBase : public UFSMRuntimeNode_State
 public:
 	virtual void OnEnter() override;
 	virtual void OnExit() override;
-	virtual void OnInitWidget(UFlowStateLayoutWidget* Layout) override;
 	virtual void OnInitialize() override;
 
 	/** 每帧执行事件 */
@@ -51,10 +50,6 @@ public:
 	/** 退出当前状态事件 */
 	UFUNCTION(BlueprintImplementableEvent, Category="FlowState", DisplayName = OnExit)
 	void NativeOnExit();
-
-	/** 初始化控件事件 */
-	UFUNCTION(BlueprintImplementableEvent, Category="FlowState", DisplayName = OnInitWidget)
-	void NativeOnInitWidget(UFlowStateLayoutWidget* Layout);
 		
 	////////////////////////////////////////////////////////////////////////
 	/// Get or Set

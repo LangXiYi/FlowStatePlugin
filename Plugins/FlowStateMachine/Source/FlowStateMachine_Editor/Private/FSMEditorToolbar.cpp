@@ -1,5 +1,6 @@
 ﻿#include "FSMEditorToolbar.h"
 
+#include "Framework/MultiBox/SToolBarButtonBlock.h"
 #include "WorkflowOrientedApp/SModeWidget.h"
 
 #define LOCTEXT_NAMESPACE "FSMEditorToolbar"
@@ -40,6 +41,9 @@ void FFSMEditorToolbar::AddModesToolbar(TSharedPtr<FExtender> Extender)
 		EExtensionHook::After,
 		StateMachineEditorPtr->GetToolkitCommands(),
 		FToolBarExtensionDelegate::CreateSP( this, &FFSMEditorToolbar::FillModesToolbar ) );
+
+	/*Extender->AddToolBarExtension(
+		"")*/
 }
 
 void FFSMEditorToolbar::AddDebuggerToolbar(TSharedPtr<FExtender> Extender)
@@ -94,6 +98,15 @@ void FFSMEditorToolbar::FillDebuggerToolbar(FToolBarBuilder& ToolbarBuilder)
 
 void FFSMEditorToolbar::FillBehaviorTreeToolbar(FToolBarBuilder& ToolbarBuilder)
 {
+	check(FlowStateMachineEditor.IsValid());
+	TSharedPtr<FFSMGraphEditor> StateMachineEditorPtr = FlowStateMachineEditor.Pin();
+
+	// TODO::Add Refresh All Node button
+	
+	/*StateMachineEditorPtr->AddToolbarWidget(
+		SNew(SToolBarButtonBlock)
+		
+		);*/
 }
 
 

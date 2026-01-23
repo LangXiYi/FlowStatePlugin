@@ -18,7 +18,7 @@ class UFlowStateContext;
 /**
  * 
  */
-UCLASS(EditInlineNew)
+UCLASS(Blueprintable, EditInlineNew)
 class FLOWSTATEMACHINE_API UFSMCreateWidgetHelper : public UObject, public IFlowStateCollectInterface
 {
 	GENERATED_BODY()
@@ -29,12 +29,15 @@ public:
 	virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const override;
 
 protected:
+	/** 覆盖控件属性，该操作会执行多次 */
 	UFUNCTION(BlueprintImplementableEvent)
 	void OverrideProperty(UWidget* Widget);
 
+	/** 初始化控件，只会在控件被创建时执行一次，不会重复调用 */
 	UFUNCTION(BlueprintImplementableEvent)
 	void InitializeWidget(UWidget* ResultWidget);
 
+	/** 获取玩家控制器，默认返回本地玩家控制器 */
 	UFUNCTION(BlueprintNativeEvent)
 	APlayerController* GetPlayerController();
 

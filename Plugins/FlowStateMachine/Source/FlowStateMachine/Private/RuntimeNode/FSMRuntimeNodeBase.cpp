@@ -3,6 +3,8 @@
 
 #include "RuntimeNode/FSMRuntimeNodeBase.h"
 
+#include "SM/FlowStateContext.h"
+
 void UFSMRuntimeNodeBase::InitializeFromAsset(UFlowStateMachine* Asset)
 {
 	FSMAsset = Asset;
@@ -21,6 +23,18 @@ void UFSMRuntimeNodeBase::InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlo
 	}
 	StateContext = Context;
 	OnPreprocessing();
+}
+
+bool UFSMRuntimeNodeBase::TrySwitchTo(int Index)
+{
+	checkNoEntry()
+	return false;
+}
+
+bool UFSMRuntimeNodeBase::SwitchToByName(FName Name)
+{
+	checkNoEntry()
+	return false;
 }
 
 class UWorld* UFSMRuntimeNodeBase::GetWorld() const
@@ -56,6 +70,11 @@ FString UFSMRuntimeNodeBase::GetNodeName() const
 		return TypeDesc;
 	};
 	return NodeName.Len() ? NodeName : GetShortTypeName(this);
+}
+
+TSharedPtr<FSMGC> UFSMRuntimeNodeBase::GetGCManager() const
+{
+	return StateContext ? StateContext->GetGCManager() : nullptr;
 }
 
 void UFSMRuntimeNodeBase::GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const

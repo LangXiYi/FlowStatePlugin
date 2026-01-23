@@ -15,12 +15,6 @@ void UFlowStateBase::OnEnter()
 	NativeOnEnter();
 }
 
-void UFlowStateBase::OnInitWidget(UFlowStateLayoutWidget* Layout)
-{
-	Super::OnInitWidget(Layout);
-	NativeOnInitWidget(Layout);
-}
-
 void UFlowStateBase::OnInitialize()
 {
 	Super::OnInitialize();

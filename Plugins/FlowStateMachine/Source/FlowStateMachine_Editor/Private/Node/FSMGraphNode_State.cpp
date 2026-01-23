@@ -8,14 +8,15 @@
 #include "ToolMenuDelegates.h"
 #include "Node/FSMGraphSubNode.h"
 #include "Slate/SFSMGraphNode_State.h"
+#include "Utility/FSMEditorCore.h"
 
 
 #define LOCTEXT_NAMESPACE "FSMGraphNode_State"
 
 void UFSMGraphNode_State::AllocateDefaultPins()
 {
-	CreatePin(EGPD_Input, "DefaultPin", TEXT("Execute"));
-	CreatePin(EGPD_Output, "DefaultPin", TEXT("Then"));
+	CreatePin(EGPD_Input, FStateNodePinHelper::Input_PinCategory, FStateNodePinHelper::InPut_DefaultPinName);
+	// CreatePin(EGPD_Output, FStateNodePinHelper::Output_PinCategory, FStateNodePinHelper::Output_DefaultPinName);
 }
 
 FText UFSMGraphNode_State::GetNodeTitle(ENodeTitleType::Type TitleType) const

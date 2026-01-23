@@ -65,13 +65,18 @@ public:
 
 	/** 子类重写该函数，并返回自定义的错误日志 */
 	virtual FEdGraphNodeDeprecationResponse GetDeprecationResponse(EEdGraphNodeDeprecationType DeprecationType) const override;
+
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
 	
 	/////////////////////////////////////////////////////
 	// FSMGraphNodeBase Function
 	/////////////////////////////////////////////////////
 
-	/** TODO::监听 RuntimeNode 类的改变，当它发生变化时刷新引脚 */
-	virtual void RefreshStatePins();
+	// 监听 RuntimeNode 类的改变，当它发生变化时刷新引脚
+	virtual void ReconstructNode() override;
+	virtual void RefreshStateNode(bool bIsAutoRemoveOrphanedNode);
 
 	virtual void PostCopyNode();
 

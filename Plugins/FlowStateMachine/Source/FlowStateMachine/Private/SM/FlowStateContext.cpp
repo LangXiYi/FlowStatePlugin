@@ -34,6 +34,7 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMac
 
 		// 创建垃圾管理器
 		GCManager = MakeShareable(new FSMGC);
+		GCManager->Initialize(GetWorld());
 
 		// 重置执行链
 		InstanceStack.Empty();

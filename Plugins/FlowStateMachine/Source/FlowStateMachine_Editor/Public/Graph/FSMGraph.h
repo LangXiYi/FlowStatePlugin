@@ -22,6 +22,9 @@ public:
 	virtual void OnCreateGraph();
 	virtual void OnLoadedGraph();
 
+	/** 刷新图表内的所有节点 */
+	virtual void RefreshAllNodes();
+
 	/** 当执行保存文件时触发 */
 	virtual void OnSave();
 	/** 更新资产 */

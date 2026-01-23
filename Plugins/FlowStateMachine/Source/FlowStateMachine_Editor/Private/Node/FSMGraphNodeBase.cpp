@@ -7,6 +7,7 @@
 #include "Graph/FSMGraph.h"
 #include "RuntimeNode/FSMRuntimeNode.h"
 #include "SM/FlowStateMachine.h"
+#include "Utility/FSMEditorCore.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphNodeBase"
 
@@ -103,6 +104,18 @@ FEdGraphNodeDeprecationResponse UFSMGraphNodeBase::GetDeprecationResponse(
 	return Response;
 }
 
+void UFSMGraphNodeBase::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	RefreshStateNode(false);
+}
+
+void UFSMGraphNodeBase::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	RefreshStateNode(false);
+}
+
 void UFSMGraphNodeBase::PinConnectionListChanged(UEdGraphPin* Pin)
 {
 	if (Pin->bOrphanedPin && Pin->LinkedTo.Num() == 0)
@@ -113,8 +126,14 @@ void UFSMGraphNodeBase::PinConnectionListChanged(UEdGraphPin* Pin)
 	Super::PinConnectionListChanged(Pin);
 }
 
-void UFSMGraphNodeBase::RefreshStatePins()
+
+void UFSMGraphNodeBase::RefreshStateNode(bool bIsAutoRemoveOrphanedNode)
 {
+	if (RuntimeNode == nullptr)
+	{
+		return;
+	}
+	
 	bool bIsDirty = false;
 	TArray<FStatePinInfo> StatePinInfos;
 	TMap<FName, FStatePinInfo> ValidPinNames;
@@ -141,18 +160,18 @@ void UFSMGraphNodeBase::RefreshStatePins()
 		}
 	}
 
-	for (int i = 0; i < Pins.Num(); ++i)
+	for (int i = Pins.Num() - 1; i >= 0 ; --i)
 	{
 		UEdGraphPin* NodePin = Pins[i];
-		// 旧引脚在新的引脚数据集中不存在
-		if(NodePin->Direction == EGPD_Output && !ValidPinNames.Contains(NodePin->PinName))
+		if (NodePin->Direction == EGPD_Output &&
+			NodePin->PinName != FStateNodePinHelper::Output_DefaultPinName &&
+			!ValidPinNames.Contains(NodePin->PinName))
 		{
-			// 已经标记为过期的引脚则直接移除
-			if (NodePin->bOrphanedPin)
+			if (NodePin->bOrphanedPin && bIsAutoRemoveOrphanedNode)
 			{
+				// 已经标记为过期的引脚则直接移除
 				RemovePin(NodePin);
 				bIsDirty = true;
-				i--;
 			}
 			else
 			{
@@ -170,6 +189,11 @@ void UFSMGraphNodeBase::RefreshStatePins()
 	{
 		MarkNodeRequiresSynchronization(false);
 	}
+}
+
+void UFSMGraphNodeBase::ReconstructNode()
+{
+	RefreshStateNode(false);
 }
 
 void UFSMGraphNodeBase::PrepareForCopying()

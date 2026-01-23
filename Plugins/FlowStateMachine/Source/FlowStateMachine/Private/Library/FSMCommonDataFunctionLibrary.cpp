@@ -6,6 +6,7 @@
 #include "RuntimeNode/FSMRuntimeNodeBase.h"
 #include "SM/FlowStateContext.h"
 
+/*
 UFSMCommonDataManager* UFSMCommonDataFunctionLibrary::GetStateCommonData(UFSMRuntimeNodeBase* NodeOwner)
 {
 	UFlowStateContext* StateContext = GetStateContext(NodeOwner);
@@ -20,3 +21,4 @@ UFlowStateContext* UFSMCommonDataFunctionLibrary::GetStateContext(const UFSMRunt
 {
 	return NodeOwner->GetStateContext();
 }
+*/

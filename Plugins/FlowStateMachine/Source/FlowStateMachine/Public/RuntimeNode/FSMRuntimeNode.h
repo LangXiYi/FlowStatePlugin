@@ -35,12 +35,10 @@ public:
 	virtual bool CheckCondition();
 
 	/** 尝试切换至其他节点 */
-	UFUNCTION(BlueprintCallable, Category = "FlowStateMachine")
-	virtual bool TrySwitchTo(int Index);
+	virtual bool TrySwitchTo(int Index) override;
 
 	/** 尝试切换至其他节点 */
-	UFUNCTION(BlueprintCallable, Category = "FlowStateMachine")
-	virtual bool SwitchToByName(FName Name);
+	virtual bool SwitchToByName(FName Name) override;
 
 	/** Tick 函数每帧执行 */
 	virtual void Tick(float DeltaTime) {}

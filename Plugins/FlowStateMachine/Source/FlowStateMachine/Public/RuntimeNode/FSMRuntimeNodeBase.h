@@ -7,6 +7,7 @@
 #include "UObject/Object.h"
 #include "FSMRuntimeNodeBase.generated.h"
 
+class FSMGC;
 class UFlowStateContext;
 class UFlowStateMachine;
 
@@ -30,6 +31,14 @@ public:
 	// float GetCommonDataAsFloat(FString PropName);
 	// ...
 
+	/** 尝试切换至其他节点 */
+	UFUNCTION(BlueprintCallable, Category = "FlowStateMachine")
+	virtual bool TrySwitchTo(int Index);
+
+	/** 尝试切换至其他节点 */
+	UFUNCTION(BlueprintCallable, Category = "FlowStateMachine")
+	virtual bool SwitchToByName(FName Name);
+
 	virtual class UWorld* GetWorld() const override;
 
 	virtual FString GetNodeName() const;
@@ -38,6 +47,8 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	UFlowStateContext* GetStateContext() const { return StateContext; }
+
+	TSharedPtr<FSMGC> GetGCManager() const;
 
 	// Begin IFlowStateCollectInterface
 	virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const override;

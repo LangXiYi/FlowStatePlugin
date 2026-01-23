@@ -5,6 +5,7 @@
 
 #include "Graph/FSMGraph.h"
 #include "SM/FlowStateMachine.h"
+#include "Utility/FSMEditorCore.h"
 #include "Widgets/FlowStateLayoutWidget.h"
 #include "Widgets/FlowStateWidgetLayerManager.h"
 
@@ -13,7 +14,7 @@
 void UFSMGraphNode_Root::AllocateDefaultPins()
 {
 	Super::AllocateDefaultPins();
-	CreatePin(EGPD_Output, "DefaultOutput", "Execute");
+	CreatePin(EGPD_Output, FStateNodePinHelper::Output_PinCategory, FStateNodePinHelper::Output_DefaultPinName);
 }
 
 bool UFSMGraphNode_Root::IsDeprecated() const

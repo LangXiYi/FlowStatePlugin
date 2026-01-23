@@ -60,7 +60,7 @@ bool UFSMRuntimeNode::SwitchToByName(FName Name)
 		{
 			if (ChildStateHelpers[i].PinName == Name)
 			{
-				return StateContext->GotoStateNode(ChildStateHelpers[i].ChildNodeInstance);
+				return TrySwitchTo(i);
 			}
 		}
 	}

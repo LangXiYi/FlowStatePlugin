@@ -10,6 +10,7 @@
 #include "Slate/SGraphEditorActionMenu_FSM.h"
 #include "RuntimeNode/FSMRuntimeNode.h"
 #include "SM/FlowStateMachine.h"
+#include "Utility/FSMEditorCore.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphNode"
 

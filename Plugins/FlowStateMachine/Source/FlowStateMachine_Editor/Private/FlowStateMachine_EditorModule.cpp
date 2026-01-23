@@ -4,6 +4,7 @@
 #include "FSMGraphEditor.h"
 #include "SGraphPin.h"
 #include "AIGraph/Classes/AIGraphTypes.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Node/FSMGraphNode.h"
 #include "Node/FSMGraphSubNode.h"
 #include "Slate/SFSMGraphNode_State.h"
@@ -79,11 +80,21 @@ void FFlowStateMachine_EditorModule::StartupModule()
 	StyleSet->Set("FlowStateMachineEditor.NodeAddPinIcon", NodeAddPinIcon);
 	StyleSet->Set("FlowStateMachineEditor.NodeDeletePinIcon", NodeDeletePinIcon);
 	StyleSet->Set("FlowStateMachineEditor.NodeDeleteNodeIcon", NodeDeleteNodeIcon);
+
+	// 监听 AssetRegister 的资产加载事件，
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::GetModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	AssetAddedHandle = AssetRegistryModule.Get().OnAssetAdded().AddRaw(this, &FFlowStateMachine_EditorModule::OnAssetAdded);
 }
 
 void FFlowStateMachine_EditorModule::ShutdownModule()
 {
 	ClassCache.Reset();
+
+	/*FAssetRegistryModule& AssetRegistryModule = FModuleManager::GetModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+	AssetRegistryModule.Get().OnAssetAdded().Remove(AssetAddedHandle);*/
+
+	// 正常来说这里应该需要解除绑定的蓝图编译事件的，但是编辑器的生命周期在引擎阶段，所以影响也不大，可以不做处理，当然如果出现了bug还是需要额外处理的，
+	// 不过，暂时也够用了。
 }
 
 TSharedRef<FFSMGraphEditor> FFlowStateMachine_EditorModule::CreateFlowStateMachineEditor(
@@ -100,6 +111,25 @@ TSharedRef<FFSMGraphEditor> FFlowStateMachine_EditorModule::CreateFlowStateMachi
 	TSharedRef< FFSMGraphEditor > NewBehaviorTreeEditor( new FFSMGraphEditor() );
 	NewBehaviorTreeEditor->InitFlowStateMachineEditor( Mode, InitToolkitHost, Object );
 	return NewBehaviorTreeEditor;	
+}
+
+void FFlowStateMachine_EditorModule::OnAssetAdded(const FAssetData& AssetData)
+{
+	UClass* AssetClass = AssetData.GetClass();
+	if (AssetClass->IsChildOf(UBlueprint::StaticClass()))
+	{
+		// 如果添加的资产是蓝图资产，则监听该蓝图编译事件
+		UBlueprint* BlueprintAsset = Cast<UBlueprint>(AssetData.GetAsset());
+		BlueprintAsset->OnCompiled().AddRaw(this, &FFlowStateMachine_EditorModule::OnBlueprintCompiled);
+	}
+}
+
+void FFlowStateMachine_EditorModule::OnBlueprintCompiled(UBlueprint* Blueprint)
+{
+	if (Blueprint->GeneratedClass->ImplementsInterface(UFlowStateCollectInterface::StaticClass()))
+	{
+		OnUpdateStateCollect.Broadcast(Blueprint);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -22,6 +22,10 @@ public:
 
 	virtual void InitializeNode(UFSMRuntimeNodeBase* InParentNode, UFlowStateContext* Context) override;
 
+	virtual bool TrySwitchTo(int Index) override;
+	
+	virtual bool SwitchToByName(FName Name) override;
+
 	template<class T = UFSMRuntimeNodeBase>
 	T* GetParentNode() const
 	{

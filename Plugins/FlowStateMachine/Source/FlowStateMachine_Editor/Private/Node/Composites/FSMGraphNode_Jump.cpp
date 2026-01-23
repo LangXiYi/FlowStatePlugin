@@ -5,6 +5,7 @@
 
 #include "Graph/FSMGraph.h"
 #include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
+#include "Utility/FSMEditorCore.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphNodeJump"
 
@@ -47,7 +48,7 @@ void UFSMGraphNode_JumpStart::DestroyNode()
 void UFSMGraphNode_JumpStart::AllocateDefaultPins()
 {
 	Super::AllocateDefaultPins();
-	CreatePin(EGPD_Output, "DefaultOutput", "Execute");
+	CreatePin(EGPD_Output, FStateNodePinHelper::Output_PinCategory, FStateNodePinHelper::Output_DefaultPinName);
 }
 
 FString UFSMGraphNode_JumpStart::GetNodeTitleFormatString() const
@@ -75,7 +76,7 @@ void UFSMGraphNode_JumpTo::AllocateDefaultPins()
 {
 	Super::AllocateDefaultPins();
 
-	CreatePin(EGPD_Input, "DefaultInput", "Then");
+	// CreatePin(EGPD_Input, FStateNodePinHelper::Input_PinCategory, FStateNodePinHelper::InPut_DefaultPinName);
 }
 
 void UFSMGraphNode_JumpTo::PostPlacedNewNode()

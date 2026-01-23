@@ -1,9 +1,32 @@
 ﻿#include "SM/FSMGC.h"
 
+#include "Camera/CameraActor.h"
 #include "Components/Widget.h"
+#include "Kismet/GameplayStatics.h"
 #include "Library/UIExtensionsBFL.h"
 #include "Widgets/FlowStateLayoutWidget.h"
 #include "Widgets/GameplayTagSlot.h"
+
+void FSMGC::Initialize(UWorld* InWorld)
+{
+	if (InWorld)
+	{
+		UGameplayStatics::GetAllActorsOfClass(InWorld, ACameraActor::StaticClass(), CameraActors);
+		World = InWorld;
+	}
+}
+
+AActor* FSMGC::FindCamera(const FString& CameraName)
+{
+	for (AActor* CameraActor : CameraActors)
+	{
+		if (CameraActor->GetName() == CameraName)
+		{
+			return CameraActor;
+		}
+	}
+	return nullptr;
+}
 
 void FSMGC::HiddenCache()
 {

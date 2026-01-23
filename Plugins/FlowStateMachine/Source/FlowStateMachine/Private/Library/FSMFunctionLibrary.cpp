@@ -1,8 +1,11 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 #include "Library/FSMFunctionLibrary.h"
 
+#include "Chaos/GeometryParticlesfwd.h"
+#include "Engine/StaticMeshActor.h"
 #include "FlowStateMachine_Widget/Public/Widgets/FlowStateLayoutWidget.h"
 #include "FlowStateMachine_Widget/Public/Widgets/GameplayTagSlot.h"
+#include "Library/FSMMetaDataFunctionLibrary.h"
 #include "SM/FlowStateContext.h"
 #include "System/FlowStateMachineSubsystem.h"
 
@@ -83,12 +86,36 @@ UUserWidget* UFSMFunctionLibrary::CreateAndBindWidget(UObject* WorldContextObjec
 	return nullptr;
 }
 
+UFSMCommonDataManager* UFSMFunctionLibrary::GetCommonDataManager(UObject* WorldContextObject)
+{
+	if (UFlowStateContext* FlowStateContext = GetFlowStateContext(WorldContextObject))
+	{
+		return FlowStateContext->GetCommonDataManager();
+	}
+	return nullptr;
+}
+
 EFlowStateLifetime UFSMFunctionLibrary::FindActorFromCache(UObject* WorldContextObject, FName ActorTag, AActor*& FindActor)
 {
-	UFlowStateContext* FlowStateContext = GetFlowStateContext(WorldContextObject);
-	if (FlowStateContext)
+	if (UFlowStateContext* FlowStateContext = GetFlowStateContext(WorldContextObject))
 	{
-		return FlowStateContext->FindByCache(ActorTag, FindActor);
+		if (TSharedPtr<FSMGC> Manager = FlowStateContext->GetGCManager())
+		{
+			return Manager->FindRefByCache(ActorTag, FindActor);
+		}
+	}
+	return EFlowStateLifetime::None;
+}
+
+EFlowStateLifetime UFSMFunctionLibrary::FindWidgetFromCache(UObject* WorldContextObject, FGameplayTag WidgetTag,
+	UWidget*& FindActor)
+{
+	if (UFlowStateContext* FlowStateContext = GetFlowStateContext(WorldContextObject))
+	{
+		if (TSharedPtr<FSMGC> Manager = FlowStateContext->GetGCManager())
+		{
+			return Manager->FindRefByCache(WidgetTag, FindActor);
+		}
 	}
 	return EFlowStateLifetime::None;
 }

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "IFlowStateMachineEditor.h"
 #include "Graph/FSMGraph.h"
+#include "SM/FlowStateMachine.h"
 #include "WorkflowOrientedApp/WorkflowTabManager.h"
 
 struct FFSMEditorToolbar;
@@ -52,6 +53,9 @@ public:
 	/** Check whether the blackboard mode can be accessed (i.e whether we have a valid blackboard to edit) */
 	bool CanAccessCommonDataMode() const;
 
+	/** 当窗口关闭时触发该事件 */
+	virtual void OnClose() override;
+
 	//////////////////////////////////////////////////////////////
 	/// Slate Widget
 	//////////////////////////////////////////////////////////////
@@ -72,6 +76,8 @@ public:
 	/** Get editing asset */
 	FORCEINLINE UFlowStateMachine* GetFlowStateMachine() const { return FlowStateMachine; }
 	FORCEINLINE UFSMCommonData* GetCommonData() const { return CommonData; }
+
+	UFSMGraph* GetFSMGraph() const { return FlowStateMachine ? (UFSMGraph*)FlowStateMachine->FSMGraph : nullptr; }
 
 	/** Access the toolbar builder for this editor */
 	FORCEINLINE TSharedPtr<FFSMEditorToolbar> GetToolbarBuilder() const { return ToolbarBuilder; }
@@ -102,6 +108,8 @@ public:
 
 	void RefreshClassPalette();
 
+	void OnCollectState(UBlueprint* Blueprint);
+
 protected:
 	virtual void SaveAsset_Execute() override;
 
@@ -130,4 +138,6 @@ private:
 	TSharedPtr<class SFSMGraphPalette> ClassPalette;
 
 	TWeakObjectPtr<UFSMGraphNodeBase> SelectedNode = nullptr;
+
+	FDelegateHandle StateCollectHandle;
 };

@@ -7,6 +7,8 @@ class FSlateStyleSet;
 class FFSMGraphEditor;
 class IFlowStateMachineEditor;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnUpdateStateCollect, UBlueprint*);
+
 /**
  * 在移动类的文件路径后，使用复制会报错，注意检查问题
  */
@@ -20,6 +22,16 @@ public:
 
     TSharedPtr<struct FGraphNodeClassHelper> GetClassCache() { return ClassCache; }
 
+    ////////////////////////////////////////////////////
+    /// Events
+    ////////////////////////////////////////////////////
+    void OnAssetAdded(const FAssetData& AssetData);
+
+    void OnBlueprintCompiled(UBlueprint* Blueprint);
+
+public:
+    FOnUpdateStateCollect OnUpdateStateCollect;
+    
 public:
     static const FName FlowStateMachineAppIdentifier;
     
@@ -27,4 +39,6 @@ private:
     TSharedPtr<struct FGraphNodeClassHelper> ClassCache;
 
     TSharedPtr<FSlateStyleSet> StyleSet;
+
+    FDelegateHandle AssetAddedHandle;
 };

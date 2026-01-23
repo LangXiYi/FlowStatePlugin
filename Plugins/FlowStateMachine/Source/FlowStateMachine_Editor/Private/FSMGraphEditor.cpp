@@ -6,6 +6,7 @@
 #include "FSMEditorToolbar.h"
 #include "GraphEditAction.h"
 #include "GraphEditorActions.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Graph/FSMGraph.h"
 #include "Data/FSMCommonData.h"
@@ -125,6 +126,10 @@ void FFSMGraphEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode,
 
 	// OnClassListUpdated();
 	RegenerateMenusAndToolbars();
+
+	// 在打开编辑器后监听资产改变事件
+	FFlowStateMachine_EditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateMachine_EditorModule>(TEXT("FlowStateMachine_Editor"));
+	StateCollectHandle = FSMEditorModule.OnUpdateStateCollect.AddSP(this, &FFSMGraphEditor::OnCollectState);
 }
 
 void FFSMGraphEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager)
@@ -181,6 +186,19 @@ bool FFSMGraphEditor::IsPropertyEditable() const
 void FFSMGraphEditor::RefreshClassPalette()
 {
 	ClassPalette->RefreshActionsList(true);
+}
+
+void FFSMGraphEditor::OnCollectState(UBlueprint* Blueprint)
+{
+	if (Blueprint)
+	{
+		if (UFSMGraph* MyGraph = GetFSMGraph())
+		{
+			// 对图表中的所有节点进行整体刷新
+			// TODO::后续可以考虑仅刷新指定类型的节点
+			MyGraph->RefreshAllNodes();
+		}
+	}
 }
 
 void FFSMGraphEditor::PostUndo(bool bSuccess)
@@ -282,6 +300,13 @@ bool FFSMGraphEditor::CanAccessCommonDataMode() const
 {
 	// TODO::在更新资产的数据后，同步更新该编辑器的资产
 	return CommonData != nullptr;
+}
+
+void FFSMGraphEditor::OnClose()
+{
+	FFlowStateMachine_EditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateMachine_EditorModule>(TEXT("FlowStateMachine_Editor"));
+	FSMEditorModule.OnUpdateStateCollect.Remove(StateCollectHandle);	
+	IFlowStateMachineEditor::OnClose();
 }
 
 TSharedRef<SWidget> FFSMGraphEditor::CreateFlowStateMachineGraphEditor(const FWorkflowTabSpawnInfo& Info, UFSMGraph* InGraph)
@@ -500,7 +525,7 @@ FReply FFSMGraphEditor::OnNodeRefreshClicked()
 	if (SelectedNode.IsValid() && SelectedNode->RuntimeNode)
 	{
 		TArray<FStatePinInfo> StatePinInfos;
-		SelectedNode->RefreshStatePins();
+		SelectedNode->RefreshStateNode(true);
 		return FReply::Handled();
 	}
 	return FReply::Unhandled();

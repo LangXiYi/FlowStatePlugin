@@ -57,19 +57,19 @@ public:
 
 protected:
 	/** 用于标识对象的唯一名称 */
-	UPROPERTY(EditAnywhere, Category = "Basic")
+	UPROPERTY(EditAnywhere, Category = "CreateActor")
 	FName UniqueName;
 
 	/** 对象的生命周期 */
-	UPROPERTY(EditAnywhere, Category = "Basic")
+	UPROPERTY(EditAnywhere, Category = "CreateActor")
 	EFlowStateLifetime Lifetime;
 
 	/** 位置信息,在创建对象时固定使用一次，否则会依据 */
-	UPROPERTY(EditAnywhere, Category = "Basic")
+	UPROPERTY(EditAnywhere, Category = "CreateActor")
 	FTransform Transform;
 
 	/** 行为模式: None 不做任何处理，Override 覆盖旧Actor的内容，Additive 与之前的值进行叠加 */
-	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "Basic|Advanced")
+	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "CreateActor|Advanced")
 	ECreateActorActionMode TransformMode = ECreateActorActionMode::None;
 };
 
@@ -86,19 +86,19 @@ public:
 	
 protected:
 	/** 模型资产，若找到了同名的Actor会自动将模型替换为新值 */
-	UPROPERTY(EditAnywhere, Category = "SkeletalMeshActor")
+	UPROPERTY(EditAnywhere, Category = "CreateActor")
 	TSoftObjectPtr<USkeletalMesh> Mesh;
 
-	UPROPERTY(EditAnywhere, Category = "SkeletalMeshActor")
+	UPROPERTY(EditAnywhere, Category = "CreateActor|Advanced")
 	TSoftObjectPtr<UAnimSequence> AnimationAsset;
 
-	UPROPERTY(EditAnywhere, Category = "SkeletalMeshActor|Advanced")
+	UPROPERTY(EditAnywhere, Category = "CreateActor|Advanced")
 	bool bIsAutoPlay = true;
 
-	UPROPERTY(EditAnywhere, Category = "SkeletalMeshActor|Advanced")
+	UPROPERTY(EditAnywhere, Category = "CreateActor|Advanced")
 	bool bIsLoop = true;
 
-	UPROPERTY(EditAnywhere, Category = "SkeletalMeshActor|Advanced")
+	UPROPERTY(EditAnywhere, Category = "CreateActor|Advanced")
 	float InitAnimPos = 0.f;
 };
 
@@ -110,16 +110,11 @@ class UCreateStaticActorHelper : public UFSMCreateActorHelper
 public:
 	virtual void InitializeActor(AActor* Target) override;
 	virtual void OverrideProperty(AActor* ResultActor) override;
-	virtual void UpdateActorTransform(AActor* ResultActor) override;
 	
 	virtual TSubclassOf<AActor> GetDefaultCreateClass() const override;
 	
 protected:
 	/** 模型资产，若找到了同名的Actor会自动将模型替换为新值 */
-	UPROPERTY(EditAnywhere, Category = "StaticMeshActor")
+	UPROPERTY(EditAnywhere, Category = "CreateActor")
 	TSoftObjectPtr<UStaticMesh> Mesh;
-
-	/** 静态Actor的移动性 */
-	UPROPERTY(EditAnywhere, Category = "StaticMeshActor")
-	bool bMoveable = false;
 };
