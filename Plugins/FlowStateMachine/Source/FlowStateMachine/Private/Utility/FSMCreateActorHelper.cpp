@@ -31,10 +31,10 @@ void UFSMCreateActorHelper::CreateActor(UFlowStateContext* InStateContext)
 	EFlowStateLifetime OldLifetime = GCManager->FindRefByCache(UniqueName, ResultActor);
 	if (ResultActor == nullptr)
 	{
-		ResultActor = UGameplayStatics::BeginDeferredActorSpawnFromClass(InStateContext, GetCreateClass(), Transform);
+		ResultActor = UGameplayStatics::BeginDeferredActorSpawnFromClass(InStateContext, GetCreateClass(), FTransform(Rotator, Offset, Scale));
 		InitializeActor(ResultActor);
 		OverrideProperty(ResultActor);
-		UGameplayStatics::FinishSpawningActor(ResultActor, Transform);
+		UGameplayStatics::FinishSpawningActor(ResultActor, FTransform(Rotator, Offset, Scale));
 
 		ResultActor->Tags.AddUnique(UniqueName);
 		InStateContext->AddToCache(ResultActor, Lifetime);
@@ -96,19 +96,16 @@ void UFSMCreateActorHelper::UpdateActorTransform(AActor* ResultActor)
 {
 	switch (TransformMode)
 	{
-	case ECreateActorActionMode::None:
+	case ECreateActorActionMode::World:
+		ResultActor->SetActorLocation(Offset);
+		ResultActor->SetActorRotation(Rotator);
+		ResultActor->SetActorScale3D(Scale);
 		break;
-	case ECreateActorActionMode::Override_World:
-		ResultActor->SetActorTransform(Transform);
-		break;
-	case ECreateActorActionMode::Override_Local:
-		ResultActor->SetActorRelativeTransform(Transform);
-		break;
-	case ECreateActorActionMode::Additive_World:
-		ResultActor->AddActorWorldTransform(Transform);
-		break;
-	case ECreateActorActionMode::Additive_Local:
-		ResultActor->AddActorLocalTransform(Transform);
+	case ECreateActorActionMode::Relative:
+		// TODO::这里直接使用 SetActorRelativeXXX 函数可能不太符合预期
+		ResultActor->SetActorRelativeLocation(Offset);
+		ResultActor->SetActorRelativeRotation(Rotator);
+		ResultActor->SetActorRelativeScale3D(Scale);
 		break;
 	}
 }
@@ -120,7 +117,7 @@ void UCreateSkeletalActorHelper::InitializeActor(AActor* Target)
 	if (MeshActor != nullptr)
 	{
 		MeshActor->GetSkeletalMeshComponent()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
-		MeshActor->GetSkeletalMeshComponent()->SetPosition(InitAnimPos, false);
+		MeshActor->GetSkeletalMeshComponent()->SetPosition(InitAnimPos, true);
 	}
 }
 
@@ -140,6 +137,10 @@ void UCreateSkeletalActorHelper::OverrideProperty(AActor* ResultActor)
 		UAnimationAsset* LoadedAnim = AnimationAsset.LoadSynchronous();
 		MeshActor->GetSkeletalMeshComponent()->SetAnimation(LoadedAnim);
 		MeshActor->GetSkeletalMeshComponent()->SetPosition(InitAnimPos);
+		if (CollisionProfileName != NAME_None)
+		{
+			MeshActor->GetSkeletalMeshComponent()->SetCollisionProfileName(CollisionProfileName);
+		}
 		if (bIsAutoPlay && AnimationAsset.IsValid())
 		{
 			MeshActor->GetSkeletalMeshComponent()->Play(bIsLoop);
@@ -172,6 +173,10 @@ void UCreateStaticActorHelper::OverrideProperty(AActor* ResultActor)
 		// 同步资产加载，可以使用LoadAsset行为优化资产加载产生的延迟
 		UStaticMesh* LoadedMesh = Mesh.LoadSynchronous();
 		MeshActor->GetStaticMeshComponent()->SetStaticMesh(LoadedMesh);
+		if (CollisionProfileName != NAME_None)
+		{
+			MeshActor->GetStaticMeshComponent()->SetCollisionProfileName(CollisionProfileName);
+		}
 	}
 	Super::OverrideProperty(ResultActor);
 }

@@ -10,11 +10,8 @@ class UFlowStateContext;
 UENUM(BlueprintType)
 enum class ECreateActorActionMode : uint8
 {
-	None = 0,
-	Override_World, // 覆盖 世界坐标系
-	Override_Local, // 覆盖 本地坐标系
-	Additive_World, // 叠加 世界坐标系
-	Additive_Local, // 叠加 本地坐标系
+	World = 0, // 使用世界原点作为 Actor 生成位置的参考坐标系
+	Relative,  // 相对的作为，需要提供共一个额外的坐标作为参考
 };
 
 /**
@@ -64,13 +61,20 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "CreateActor")
 	EFlowStateLifetime Lifetime;
 
-	/** 位置信息,在创建对象时固定使用一次，否则会依据 */
 	UPROPERTY(EditAnywhere, Category = "CreateActor")
-	FTransform Transform;
+	FVector Offset;
+
+	UPROPERTY(EditAnywhere, Category = "CreateActor")
+	FRotator Rotator;
+
+	UPROPERTY(EditAnywhere, Category = "CreateActor")
+	FVector Scale = FVector(1, 1, 1);
 
 	/** 行为模式: None 不做任何处理，Override 覆盖旧Actor的内容，Additive 与之前的值进行叠加 */
 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = "CreateActor|Advanced")
-	ECreateActorActionMode TransformMode = ECreateActorActionMode::None;
+	ECreateActorActionMode TransformMode = ECreateActorActionMode::World;
+
+	// FCollisionProfile
 };
 
 UCLASS()
@@ -88,6 +92,10 @@ protected:
 	/** 模型资产，若找到了同名的Actor会自动将模型替换为新值 */
 	UPROPERTY(EditAnywhere, Category = "CreateActor")
 	TSoftObjectPtr<USkeletalMesh> Mesh;
+
+	/** 碰撞预设 */
+	UPROPERTY(EditAnywhere, Category = "CreateActor")
+	FName CollisionProfileName;
 
 	UPROPERTY(EditAnywhere, Category = "CreateActor|Advanced")
 	TSoftObjectPtr<UAnimSequence> AnimationAsset;
@@ -117,4 +125,8 @@ protected:
 	/** 模型资产，若找到了同名的Actor会自动将模型替换为新值 */
 	UPROPERTY(EditAnywhere, Category = "CreateActor")
 	TSoftObjectPtr<UStaticMesh> Mesh;
+
+	/** 碰撞预设 */
+	UPROPERTY(EditAnywhere, Category = "CreateActor")
+	FName CollisionProfileName;
 };
