@@ -76,7 +76,7 @@ void UFSMGraphNode_JumpTo::AllocateDefaultPins()
 {
 	Super::AllocateDefaultPins();
 
-	// CreatePin(EGPD_Input, FStateNodePinHelper::Input_PinCategory, FStateNodePinHelper::InPut_DefaultPinName);
+	CreatePin(EGPD_Input, FStateNodePinHelper::Input_PinCategory, FStateNodePinHelper::InPut_DefaultPinName);
 }
 
 void UFSMGraphNode_JumpTo::PostPlacedNewNode()

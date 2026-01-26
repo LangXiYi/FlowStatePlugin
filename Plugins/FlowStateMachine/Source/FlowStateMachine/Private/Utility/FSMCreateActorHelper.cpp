@@ -33,8 +33,8 @@ void UFSMCreateActorHelper::CreateActor(UFlowStateContext* InStateContext)
 	{
 		ResultActor = UGameplayStatics::BeginDeferredActorSpawnFromClass(InStateContext, GetCreateClass(), FTransform(Rotator, Offset, Scale));
 		InitializeActor(ResultActor);
-		OverrideProperty(ResultActor);
 		UGameplayStatics::FinishSpawningActor(ResultActor, FTransform(Rotator, Offset, Scale));
+		OverrideProperty(ResultActor);
 
 		ResultActor->Tags.AddUnique(UniqueName);
 		InStateContext->AddToCache(ResultActor, Lifetime);

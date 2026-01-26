@@ -76,8 +76,6 @@ public:
 #endif
 
 public:
-
-
 	/** 次要节点 */
 	UPROPERTY()
 	TArray<UFSMRuntimeNodeBase*> SubNodes;
