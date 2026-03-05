@@ -4,7 +4,6 @@
 #include "Utility/FSMCreateWidgetHelper.h"
 
 #include "FlowStateCollectInterface.h"
-#include "Actions/Actions_CreateWidgets.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "SM/FlowStateContext.h"
 #include "Widgets/FlowStateLayoutWidget.h"
@@ -67,7 +66,7 @@ void UFSMCreateWidgetHelper::GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) c
 	const UObject* DefaultObject = WidgetClass->GetDefaultObject();
 	if (DefaultObject->Implements<UFlowStateCollectInterface>())
 	{
-		IFlowStateCollectInterface::Execute_GetStatePinInfos(DefaultObject, PinInfos);
+		Execute_GetStatePinInfos(DefaultObject, PinInfos);
 	}
 }
 

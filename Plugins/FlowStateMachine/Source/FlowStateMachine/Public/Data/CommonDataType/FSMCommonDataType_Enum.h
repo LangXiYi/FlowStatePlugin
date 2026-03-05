@@ -15,15 +15,14 @@ class FLOWSTATEMACHINE_API UFSMCommonDataType_Enum : public UFSMCommonDataType
 	GENERATED_BODY()
 
 public:
-	typedef uint8 FDataType;
+	using FDataType =  uint8;
 	static const FDataType InvalidValue;
-public:
 	static FDataType GetValue(const UFSMCommonDataType_Enum* KeyObj)
 	{
 		return KeyObj ? KeyObj->EnumValue : InvalidValue;
 	}
 
-	static bool SetValue(UFSMCommonDataType_Enum* KeyObj, typename FDataType Value)
+	static bool SetValue(UFSMCommonDataType_Enum* KeyObj,  FDataType Value)
 	{
 		if (KeyObj)
 		{

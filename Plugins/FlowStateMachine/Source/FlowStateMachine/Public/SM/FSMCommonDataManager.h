@@ -95,8 +95,7 @@ protected:
 	template<class TDataClass>
 	typename TDataClass::FDataType GetValue(FCommonData::FKey KeyID) const;
 
-protected:
-	UPROPERTY(Transient)
+UPROPERTY(Transient)
 	UFSMCommonData* CommonDataInstance;
 	
 	/** reset to false every time a new BB asset is assigned to this component */
@@ -119,7 +118,7 @@ bool UFSMCommonDataManager::SetValue(FCommonData::FKey KeyID, typename TDataClas
 		return false;
 	}
 	UFSMCommonDataType* KeyOb = EntryInfo->KeyType;
-	return TDataClass::SetValue((TDataClass*)KeyOb, Value);
+	return TDataClass::SetValue(static_cast<TDataClass*>(KeyOb), Value);
 }
 
 template <class TDataClass>
@@ -138,7 +137,7 @@ typename TDataClass::FDataType UFSMCommonDataManager::GetValue(FCommonData::FKey
 		return TDataClass::InvalidValue;
 	}
 	UFSMCommonDataType* KeyOb = EntryInfo->KeyType;
-	return TDataClass::GetValue((TDataClass*)KeyOb);
+	return TDataClass::GetValue(static_cast<TDataClass*>(KeyOb));
 }
 
 

@@ -33,8 +33,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<FCommonDataEntry> Keys;
 
-public:
-	const FCommonDataEntry* GetKey(FCommonData::FKey KeyID) const;
+const FCommonDataEntry* GetKey(FCommonData::FKey KeyID) const;
 
 	FCommonData::FKey GetKeyID(const FName KeyName) const;
 	FName GetKeyName(FCommonData::FKey KeyID) const;

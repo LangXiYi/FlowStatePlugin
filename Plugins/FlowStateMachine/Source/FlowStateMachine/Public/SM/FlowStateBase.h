@@ -3,8 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RuntimeNode/FSMRuntimeNode_State.h"
-#include "UObject/Object.h"
+#include "NodeInstance/FSMNodeInstance.h"
 #include "FlowStateBase.generated.h"
 
 class UWidget;
@@ -26,7 +25,7 @@ class UFlowStateLayoutWidget;
  * 可以由蓝图继承并实现的状态基类
  */
 UCLASS(Blueprintable, BlueprintType)
-class FLOWSTATEMACHINE_API UFlowStateBase : public UFSMRuntimeNode_State
+class FLOWSTATEMACHINE_API UFlowStateBase : public UFSMNodeInstance
 {
 	GENERATED_BODY()
 
@@ -54,7 +53,6 @@ public:
 	////////////////////////////////////////////////////////////////////////
 	/// Get or Set
 	////////////////////////////////////////////////////////////////////////
-public:
 	UFUNCTION(BlueprintPure, Category="Flow State")
 	FORCEINLINE float GetDeltaTime() const { return Private_DeltaTime; }
 

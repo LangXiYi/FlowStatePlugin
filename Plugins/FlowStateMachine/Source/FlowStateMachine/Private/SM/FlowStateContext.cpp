@@ -5,15 +5,14 @@
 
 #include "Blueprint/UserWidget.h"
 #include "Data/FSMCommonData.h"
-#include "Data/CommonDataType/FSMCommonDataType.h"
+#include "SM/Composites/FlowStateComposite.h"
 #include "Widgets/FlowStateLayoutWidget.h"
-#include "RuntimeNode/FSMRuntimeNode_Composites.h"
-#include "RuntimeNode/FSMRuntimeSubNode.h"
-#include "RuntimeNode/Composites/FSMRuntimeNode_Jump.h"
+#include "NodeInstance/FSMSubNodeInstance.h"
 #include "SM/FlowStateBase.h"
 #include "SM/FlowStateMachine.h"
 #include "SM/FSMCommonDataManager.h"
 #include "SM/FSMGC.h"
+#include "SM/Composites/Composite_Jump.h"
 #include "Utility/FSMUtility.h"
 
 
@@ -27,7 +26,7 @@ UFlowStateContext::UFlowStateContext(const FObjectInitializer& ObjectInitializer
 void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMachine)
 {
 	StateMachine = &FlowStateMachine;
-	if (StateMachine && StateMachine->RootRuntimeNode)
+	if (StateMachine && StateMachine->RootNodeInstance)
 	{
 		// TODO::创建用户布局控件，监听图表节点的属性改变事件
 		// LayoutWidget = CreateWidget<UFlowStateLayoutWidget>(GetWorld(), StateMachine->LayoutWidget);
@@ -43,8 +42,8 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMac
 		CacheTemplateObjects.Reset();
 
 		// 使用递归函数处理所有的子级节点
-		TArray<UFSMRuntimeNodeBase*> Stack;
-		RootState = CreateChildrenInstance(FlowStateMachine.RootRuntimeNode, nullptr, Stack);
+		TArray<UFSMNodeInstanceBase*> Stack;
+		RootState = CreateChildrenInstance(FlowStateMachine.RootNodeInstance, nullptr, Stack);
 		check(Stack.Num() <= 0);
 
 		// 创建零碎节点的运行时实例
@@ -76,7 +75,7 @@ void UFlowStateContext::RegisterFlowStateMachine(UFlowStateMachine& FlowStateMac
 	}
 }
 
-bool UFlowStateContext::GotoStateNode(UFSMRuntimeNode* Node)
+bool UFlowStateContext::GotoStateNode(UFSMNodeInstance* Node)
 {
 	if (!Node || !Node->CheckCondition())
 	{
@@ -100,7 +99,7 @@ bool UFlowStateContext::GotoStateNode(UFSMRuntimeNode* Node)
 	}
 
 	// 若目标是一个状态节点，那么直接切换过去即可
-	UFSMRuntimeNode_State* State = Cast<UFSMRuntimeNode_State>(Node);
+	UFlowStateBase* State = Cast<UFlowStateBase>(Node);
 	if (State)
 	{
 		OnExitCurState();
@@ -109,7 +108,7 @@ bool UFlowStateContext::GotoStateNode(UFSMRuntimeNode* Node)
 	}
 
 	// 若目标是一个组合节点，则需要将其添加到执行链中并执行
-	UFSMRuntimeNode_Composites* Composites = Cast<UFSMRuntimeNode_Composites>(Node);
+	UFlowStateComposite* Composites = Cast<UFlowStateComposite>(Node);
 	if (Composites)
 	{
 		OnExitCurState();
@@ -123,7 +122,7 @@ bool UFlowStateContext::GotoStateNode(UFSMRuntimeNode* Node)
 
 bool UFlowStateContext::GotoScatteredNode(FGuid Key)
 {
-	UFSMRuntimeNode* ScatteredNode = ScatteredNodeMapping.FindRef(Key);
+	UFSMNodeInstance* ScatteredNode = ScatteredNodeMapping.FindRef(Key);
 	return GotoStateNode(ScatteredNode);
 }
 
@@ -139,7 +138,7 @@ void UFlowStateContext::Tick(float DeltaTime)
 		CurState->Tick(DeltaTime);
 	}
 
-	for (UFSMRuntimeNode* Instance : InstanceStack)
+	for (UFSMNodeInstance* Instance : InstanceStack)
 	{
 		// TODO::执行执行链的实例对象
 		// 执行链中的实例对象可以影响它以及它之后的所有状态的执行
@@ -183,7 +182,7 @@ void UFlowStateContext::OnExitCurState()
 	GCManager->HiddenCache();
 }
 
-void UFlowStateContext::OnEnterNewState(UFSMRuntimeNode* NewState)
+void UFlowStateContext::OnEnterNewState(UFSMNodeInstance* NewState)
 {
 	if (NewState)
 	{
@@ -195,21 +194,21 @@ void UFlowStateContext::OnEnterNewState(UFSMRuntimeNode* NewState)
 	}
 }
 
-UFSMRuntimeNodeBase* UFlowStateContext::DumpInstance(const UFSMRuntimeNodeBase* Template)
+UFSMNodeInstanceBase* UFlowStateContext::DumpInstance(const UFSMNodeInstanceBase* Template)
 {
 	check(Template);
 	/** 从缓存中查找已经转换过的节点 */
 	if (CacheTemplateObjects.Contains(Template))
 	{
-		UFSMRuntimeNodeBase* CacheObj = CacheTemplateObjects.FindRef(Template);
+		UFSMNodeInstanceBase* CacheObj = CacheTemplateObjects.FindRef(Template);
 		// 返回有效的缓存对象
 		if (CacheObj)
-			return CacheObj;
+			{return CacheObj;}
 		// 移除无效的缓存
 		CacheTemplateObjects.Remove(Template);
 	}
 	// 深度拷贝模板实例
-	UFSMRuntimeNodeBase* NodeObj = Cast<UFSMRuntimeNodeBase>(StaticDuplicateObject(Template, this));
+	UFSMNodeInstanceBase* NodeObj = Cast<UFSMNodeInstanceBase>(StaticDuplicateObject(Template, this));
 	// 标记实例为运行时实例
 	NodeObj->bIsTemplateInstance = false;
 	NodeObj->InitializeFromAsset(StateMachine);
@@ -217,8 +216,8 @@ UFSMRuntimeNodeBase* UFlowStateContext::DumpInstance(const UFSMRuntimeNodeBase* 
 	return NodeObj;
 }
 
-UFSMRuntimeNode* UFlowStateContext::CreateChildrenInstance(const UFSMRuntimeNode* TemplateRootNode,
-	UFSMRuntimeNodeBase* ParentNode, TArray<UFSMRuntimeNodeBase*>& Stack)
+UFSMNodeInstance* UFlowStateContext::CreateChildrenInstance(const UFSMNodeInstance* TemplateRootNode,
+	UFSMNodeInstanceBase* ParentNode, TArray<UFSMNodeInstanceBase*>& Stack)
 {
 	if (TemplateRootNode == nullptr)
 	{
@@ -227,10 +226,10 @@ UFSMRuntimeNode* UFlowStateContext::CreateChildrenInstance(const UFSMRuntimeNode
 
 	if (TemplateRootNode->bIsTemplateInstance == false)
 	{
-		return const_cast<UFSMRuntimeNode*>(TemplateRootNode);		
+		return const_cast<UFSMNodeInstance*>(TemplateRootNode);		
 	}
 	
-	UFSMRuntimeNode* RootNodeInstance = DumpInstance<UFSMRuntimeNode>(TemplateRootNode);
+	UFSMNodeInstance* RootNodeInstance = DumpInstance<UFSMNodeInstance>(TemplateRootNode);
 	if (RootNodeInstance == nullptr)
 	{
 		return nullptr;
@@ -249,18 +248,20 @@ UFSMRuntimeNode* UFlowStateContext::CreateChildrenInstance(const UFSMRuntimeNode
 	const TArray<FStateChildNodeHelper>& StateChildren = RootNodeInstance->GetStateChildren();
 	for (int i = StateChildren.Num() - 1; i >= 0; --i)
 	{
-		UFSMRuntimeNode* ChildNodeInstance = CreateChildrenInstance(StateChildren[i].ChildNodeInstance, RootNodeInstance, Stack);
+		UFSMNodeInstance* ChildNodeInstance = CreateChildrenInstance(StateChildren[i].ChildNodeInstance, RootNodeInstance, Stack);
 		if (ChildNodeInstance)
-			// 替换运行时实例的所有子级节点为运行时实例化的对象
-			RootNodeInstance->ReplaceChildState(ChildNodeInstance, i);
+			{
+// 替换运行时实例的所有子级节点为运行时实例化的对象
+			RootNodeInstance->ReplaceChildState(ChildNodeInstance, i);}
 		else
-			// 移除无效数据
-			RootNodeInstance->RemoveChildState(i);
+			{
+// 移除无效数据
+			RootNodeInstance->RemoveChildState(i);}
 	}
 	// 换运行时实例的所有次要节点为运行时实例化的对象
 	for (int i = 0; i < RootNodeInstance->SubNodes.Num(); ++i)
 	{
-		UFSMRuntimeSubNode* SubNodeInstance= DumpInstance<UFSMRuntimeSubNode>(RootNodeInstance->SubNodes[i]);
+		UFSMSubNodeInstance* SubNodeInstance= DumpInstance<UFSMSubNodeInstance>(RootNodeInstance->SubNodes[i]);
 		if (SubNodeInstance)
 		{
 			SubNodeInstance->InitializeNode(RootNodeInstance, this);
@@ -276,21 +277,21 @@ UFSMRuntimeNode* UFlowStateContext::CreateChildrenInstance(const UFSMRuntimeNode
 	return RootNodeInstance;
 }
 
-void UFlowStateContext::CreateScatteredInstance(TArray<UFSMRuntimeNodeBase*>& Stack)
+void UFlowStateContext::CreateScatteredInstance(TArray<UFSMNodeInstanceBase*>& Stack)
 {
 	check(StateMachine)
 	ScatteredNodes.Empty();
 	ScatteredNodeMapping.Empty();
-	for (UFSMRuntimeNode* TemplateScatteredNode : StateMachine->ScatteredNodes)
+	for (UFSMNodeInstance* TemplateScatteredNode : StateMachine->ScatteredNodes)
 	{
-		if (TemplateScatteredNode == nullptr) continue;
+		if (TemplateScatteredNode == nullptr) {continue;}
 
 		Stack.Empty();
-		UFSMRuntimeNode* ScatteredNodeInstance = CreateChildrenInstance(TemplateScatteredNode, nullptr, Stack);
+		UFSMNodeInstance* ScatteredNodeInstance = CreateChildrenInstance(TemplateScatteredNode, nullptr, Stack);
 		if (ScatteredNodeInstance)
 		{
 			ScatteredNodes.Add(ScatteredNodeInstance);
-			if (UFSMRuntimeNode_JumpStart* JumpStart = Cast<UFSMRuntimeNode_JumpStart>(ScatteredNodeInstance))
+			if (UCNodeIns_JumpStart* JumpStart = Cast<UCNodeIns_JumpStart>(ScatteredNodeInstance))
 			{
 				ScatteredNodeMapping.Add(JumpStart->JumpStartId, JumpStart);
 			}

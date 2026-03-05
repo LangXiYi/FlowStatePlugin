@@ -28,7 +28,7 @@ UFlowStateContext* UFSMFunctionLibrary::GetFlowStateContext(UObject* WorldContex
 UFlowStateBase* UFSMFunctionLibrary::GetCurFlowState(UObject* WorldContextObject)
 {
 	UFlowStateContext* FlowStateContext = GetFlowStateContext(WorldContextObject);
-	return FlowStateContext ? (UFlowStateBase*)FlowStateContext->GetCurrentState() : nullptr;
+	return FlowStateContext ? static_cast<UFlowStateBase*>(FlowStateContext->GetCurrentState()) : nullptr;
 }
 
 UFlowStateBase* UFSMFunctionLibrary::GetCurFlowStateAs(UObject* WorldContextObject, TSubclassOf<UFlowStateBase> Type)
@@ -69,7 +69,7 @@ UUserWidget* UFSMFunctionLibrary::CreateAndBindWidget(UObject* WorldContextObjec
 		// 槽内存在同类控件
 		bCreateNewWidget = false;
 	}
-	UUserWidget* Widget = bCreateNewWidget ? CreateWidget(WidgetLayout, WidgetType) : (UUserWidget*)Slot->GetChildAt(0);
+	UUserWidget* Widget = bCreateNewWidget ? CreateWidget(WidgetLayout, WidgetType) : static_cast<UUserWidget*>(Slot->GetChildAt(0));
 	if (Widget)
 	{
 		if (bCreateNewWidget)

@@ -3,11 +3,11 @@
 
 #include "Library/FSMCommonDataFunctionLibrary.h"
 
-#include "RuntimeNode/FSMRuntimeNodeBase.h"
+#include "NodeInstance/FSMNodeInstanceBase.h"
 #include "SM/FlowStateContext.h"
 
 /*
-UFSMCommonDataManager* UFSMCommonDataFunctionLibrary::GetStateCommonData(UFSMRuntimeNodeBase* NodeOwner)
+UFSMCommonDataManager* UFSMCommonDataFunctionLibrary::GetStateCommonData(UFSMNodeInstanceBase* NodeOwner)
 {
 	UFlowStateContext* StateContext = GetStateContext(NodeOwner);
 	if (StateContext)
@@ -17,7 +17,7 @@ UFSMCommonDataManager* UFSMCommonDataFunctionLibrary::GetStateCommonData(UFSMRun
 	return nullptr;
 }
 
-UFlowStateContext* UFSMCommonDataFunctionLibrary::GetStateContext(const UFSMRuntimeNodeBase* NodeOwner)
+UFlowStateContext* UFSMCommonDataFunctionLibrary::GetStateContext(const UFSMNodeInstanceBase* NodeOwner)
 {
 	return NodeOwner->GetStateContext();
 }

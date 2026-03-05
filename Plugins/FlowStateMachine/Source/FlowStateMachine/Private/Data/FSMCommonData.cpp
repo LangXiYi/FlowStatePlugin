@@ -29,7 +29,7 @@ FName UFSMCommonData::GetKeyName(FCommonData::FKey KeyID) const
 TSubclassOf<UFSMCommonDataType> UFSMCommonData::GetDataType(FCommonData::FKey KeyID) const
 {
 	const FCommonDataEntry* KeyEntry = GetKey(KeyID);
-	return KeyEntry && KeyEntry->KeyType ? KeyEntry->KeyType->GetClass() : NULL;
+	return KeyEntry && KeyEntry->KeyType ? KeyEntry->KeyType->GetClass() : nullptr;
 }
 
 FCommonData::FKey UFSMCommonData::InternalGetKeyID(const FName& KeyName) const

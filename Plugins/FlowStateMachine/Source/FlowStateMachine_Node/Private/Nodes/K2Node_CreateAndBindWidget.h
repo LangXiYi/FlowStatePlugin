@@ -19,8 +19,7 @@ class FLOWSTATEMACHINE_NODE_API UK2Node_CreateAndBindWidget : public UK2Node_Con
 public:
 	UK2Node_CreateAndBindWidget(const FObjectInitializer& ObjectInitializer);
 
-public:
-	//~ Begin UEdGraphNode Interface.
+//~ Begin UEdGraphNode Interface.
 	virtual void AllocateDefaultPins() override;
 	virtual void ExpandNode(class FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph) override;
 	virtual TSharedPtr<SGraphNode> CreateVisualWidget() override;

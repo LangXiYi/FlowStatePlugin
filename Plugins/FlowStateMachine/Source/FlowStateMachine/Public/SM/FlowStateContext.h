@@ -17,10 +17,10 @@ class UFlowStateBase;
 class UFlowStateMachine;
 class UFSMMetaDataAsset;
 
-// DECLARE_MULTICAST_DELEGATE_OneParam(FStateDelegate, UFSMRuntimeNode*);
+// DECLARE_MULTICAST_DELEGATE_OneParam(FStateDelegate, UFSMNodeInstance*);
 
 /**
- * 因为存在两种可执行的节点，State以及Composites，所以使用他们的公用基类 RuntimeNode
+ * 因为存在两种可执行的节点，State以及Composites，所以使用他们的公用基类 NodeInstance
  * TODO::不要直接使用这些实例化了的对象！！！这会导致对象属性被修改
  * 创建一个管理器，管理所有加载的状态机
  *		在加载时，会深度拷贝状态机中的根节点，并将其加入缓存，避免重复复制
@@ -37,39 +37,39 @@ public:
 	virtual void RegisterFlowStateMachine(UFlowStateMachine& FlowStateMachine);
 
 	/** 切换至状态节点 */
-	virtual bool GotoStateNode(UFSMRuntimeNode* Node);
+	virtual bool GotoStateNode(UFSMNodeInstance* Node);
 
 	/** 切换至零散节点 */
 	virtual bool GotoScatteredNode(FGuid Key);
 
 	// Begin FTickableGameObject
 	virtual void Tick(float DeltaTime) override;
-	virtual TStatId GetStatId() const override { return Super::GetStatID(); }
+	virtual TStatId GetStatId() const override { return GetStatID(); }
 	// End of FTickableGameObject
 
 protected:
 	/** 进入新的状态 */
-	virtual void OnEnterNewState(UFSMRuntimeNode* NewState);
+	virtual void OnEnterNewState(UFSMNodeInstance* NewState);
 
 	/** 退出当前的状态 */
 	virtual void OnExitCurState();
 
 private:
 	/** 将对象转换为运行时实例化的对象 */
-	UFSMRuntimeNodeBase* DumpInstance(const UFSMRuntimeNodeBase* Template);
+	UFSMNodeInstanceBase* DumpInstance(const UFSMNodeInstanceBase* Template);
 
 	/** 将对象转换为运行时实例化的对象 */
 	template<class T>
-	T* DumpInstance(const UFSMRuntimeNodeBase* Template)
+	T* DumpInstance(const UFSMNodeInstanceBase* Template)
 	{
 		return static_cast<T*>(DumpInstance(Template));
 	}
 
 	/** 转换模板实例为运行时实例 */
-	UFSMRuntimeNode* CreateChildrenInstance(const UFSMRuntimeNode* TemplateRootNode, UFSMRuntimeNodeBase* ParentNode, TArray<UFSMRuntimeNodeBase*>& Stack);
+	UFSMNodeInstance* CreateChildrenInstance(const UFSMNodeInstance* TemplateRootNode, UFSMNodeInstanceBase* ParentNode, TArray<UFSMNodeInstanceBase*>& Stack);
 
 	/** 转换零散的模板节点为运行时对象 */
-	void CreateScatteredInstance(TArray<UFSMRuntimeNodeBase*>& Stack);
+	void CreateScatteredInstance(TArray<UFSMNodeInstanceBase*>& Stack);
 
 	////////////////////////////////////////////////////////////////////////
 	/// GCManager Helper
@@ -101,7 +101,6 @@ public:
 	////////////////////////////////////////////////////////////////////////
 	/// Get or Set
 	////////////////////////////////////////////////////////////////////////
-public:
 	/** 获取布局控件 */
 	UFlowStateLayoutWidget* GetLayoutWidget(EFlowStateWidgetLayer Layer) const;
 
@@ -110,7 +109,7 @@ public:
 
 	/** 获取当前的状态对象 */
 	UFUNCTION(BlueprintPure, Category="FlowStateContext")
-	FORCEINLINE UFSMRuntimeNode* GetCurrentState() const { return CurState; }
+	FORCEINLINE UFSMNodeInstance* GetCurrentState() const { return CurState; }
 	/** 获取当前的状态对象 */
 	template<class T>
 	FORCEINLINE T* GetCurrentState() const { return static_cast<T*>(CurState); }
@@ -126,22 +125,22 @@ public:
 protected:
 	/** 当前状态 */
 	UPROPERTY(Transient)
-	UFSMRuntimeNode* CurState;
+	UFSMNodeInstance* CurState;
 
 	/** 执行链 */
 	UPROPERTY()
-	TArray<UFSMRuntimeNode*> InstanceStack;
+	TArray<UFSMNodeInstance*> InstanceStack;
 
 	// 表示执行链中最顶部的元素（不是一定），对于出现环形的执行流，该变量表示的就不一定是最顶部的元素
-	TWeakObjectPtr<UFSMRuntimeNodeBase> StackTop;
+	TWeakObjectPtr<UFSMNodeInstanceBase> StackTop;
 
 	/** 运行时根节点 */
 	UPROPERTY(Transient)
-	UFSMRuntimeNode* RootState;
+	UFSMNodeInstance* RootState;
 
 	// 所有的零散节点
 	UPROPERTY(Transient)
-	TArray<UFSMRuntimeNode*> ScatteredNodes;
+	TArray<UFSMNodeInstance*> ScatteredNodes;
 
 	/** 公用数据管理器 */
 	UPROPERTY(Transient)
@@ -161,11 +160,11 @@ private:
 
 	/** 缓存已经加载的对象，加载完成后自动释放 */
 	UPROPERTY(Transient)
-	TMap<const UFSMRuntimeNodeBase* /* Template Node */, UFSMRuntimeNodeBase* /* Dump Instance */> CacheTemplateObjects;
+	TMap<const UFSMNodeInstanceBase* /* Template Node */, UFSMNodeInstanceBase* /* Dump Instance */> CacheTemplateObjects;
 
 	/** 缓存零碎节点与它的唯一ID，加快查询速度 */
 	UPROPERTY(Transient)
-	TMap<FGuid, UFSMRuntimeNode*> ScatteredNodeMapping;
+	TMap<FGuid, UFSMNodeInstance*> ScatteredNodeMapping;
 
 	bool bIsRegisterFlowStateMachine = false;
 };

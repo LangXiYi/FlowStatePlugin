@@ -15,15 +15,14 @@ class FLOWSTATEMACHINE_API UFSMCommonDataType_Vector : public UFSMCommonDataType
 	GENERATED_BODY()
 
 public:
-	typedef FVector FDataType;
+	using FDataType =  FVector;
 	static const FDataType InvalidValue;
-public:
 	static FDataType GetValue(const UFSMCommonDataType_Vector* KeyObj)
 	{
-		return KeyObj ? (FDataType)KeyObj->DataValue : InvalidValue;
+		return KeyObj ? static_cast<FDataType>(KeyObj->DataValue) : InvalidValue;
 	}
 
-	static bool SetValue(UFSMCommonDataType_Vector* KeyObj, typename FDataType Value)
+	static bool SetValue(UFSMCommonDataType_Vector* KeyObj,  FDataType Value)
 	{
 		if (KeyObj)
 		{

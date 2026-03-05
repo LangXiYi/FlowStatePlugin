@@ -61,7 +61,6 @@ public:
 	/////////////////////////////////////////////////////////////////////
 	/// Blueprint Internal Use Only Function
 	/////////////////////////////////////////////////////////////////////
-public:
 	UFUNCTION(BlueprintCallable, BlueprintCosmetic, Category = "FSMFunctionLibrary", meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", DeterminesOutputType = "Class", BlueprintInternalUseOnly = "true"))
 	static UUserWidget* CreateAndBindWidget(UObject* WorldContextObject, UFlowStateLayoutWidget* WidgetLayout, TSubclassOf<UUserWidget> WidgetType, FGameplayTag WidgetSlotTag, EFlowStateLifetime Lifetime);
 

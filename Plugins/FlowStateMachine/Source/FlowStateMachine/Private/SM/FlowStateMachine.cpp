@@ -3,11 +3,13 @@
 
 #include "SM/FlowStateMachine.h"
 
+#include "SM/Composites/Composite_Jump.h"
+
 FString UFlowStateMachine::GetScatteredNodeName(FGuid InScatteredNodeID) const
 {
-	for (UFSMRuntimeNode* ScatteredNode : ScatteredNodes)
+	for (UFSMNodeInstance* ScatteredNode : ScatteredNodes)
 	{
-		if (auto JumpStartNode = Cast<UFSMRuntimeNode_JumpStart>(ScatteredNode))
+		if (auto JumpStartNode = Cast<UCNodeIns_JumpStart>(ScatteredNode))
 		{
 			if (JumpStartNode->JumpStartId == InScatteredNodeID)
 			{

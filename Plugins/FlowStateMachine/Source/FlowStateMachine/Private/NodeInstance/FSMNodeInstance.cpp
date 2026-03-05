@@ -4,9 +4,9 @@
 #include "NodeInstance/FSMNodeInstance.h"
 
 #include "NodeInstance/FSMSubNodeInstance.h"
-#include "NodeInstance/FlowStateAction.h"
-#include "NodeInstance/FlowStateService.h"
-#include "NodeInstance/FlowStateCondition.h"
+#include "SM/Actions/FlowStateAction.h"
+#include "SM/Services/FlowStateService.h"
+#include "SM/Conditions/FlowStateCondition.h"
 #include "SM/FlowStateContext.h"
 
 
@@ -101,17 +101,17 @@ void UFSMNodeInstance::ReplaceSubNode(UFSMNodeInstanceBase* NewSubNode, int Inde
 	if (UFlowStateAction* ActionNode = Cast<UFlowStateAction>(SubNodes[Index]))
 	{
 		const int32 ActionIndex = Actions.Find(ActionNode);
-		Actions[ActionIndex] = (UFlowStateAction*)NewSubNode;
+		Actions[ActionIndex] = static_cast<UFlowStateAction*>(NewSubNode);
 	}
 	else if (UFlowStateService* ServiceNode = Cast<UFlowStateService>(SubNodes[Index]))
 	{
 		const int32 ServiceIndex = Services.Find(ServiceNode);
-		Services[ServiceIndex] = (UFlowStateService*)NewSubNode;
+		Services[ServiceIndex] = static_cast<UFlowStateService*>(NewSubNode);
 	}
 	else if (UFlowStateCondition* ConditionNode = Cast<UFlowStateCondition>(SubNodes[Index]))
 	{
 		const int32 ConditionIndex = Conditions.Find(ConditionNode);
-		Conditions[ConditionIndex] = (UFlowStateCondition*)NewSubNode;
+		Conditions[ConditionIndex] = static_cast<UFlowStateCondition*>(NewSubNode);
 	}
 	SubNodes[Index] = NewSubNode;
 }

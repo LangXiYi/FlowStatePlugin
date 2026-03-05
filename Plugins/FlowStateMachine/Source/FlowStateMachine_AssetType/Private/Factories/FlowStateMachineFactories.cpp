@@ -104,13 +104,9 @@ UObject* UFactory_FlowState::FactoryCreateNew(UClass* Class, UObject* InParent, 
 		Args.Add( TEXT("ClassName"), (ParentClass != nullptr) ? FText::FromString( ParentClass->GetName() ) : LOCTEXT("Null", "(null)") );
 		FMessageDialog::Open( EAppMsgType::Ok, FText::Format( LOCTEXT("CannotCreateBlueprintFromClass", "Cannot create a blueprint based on the class '{0}'."), Args ) );
 		return nullptr;
-	}
-	else
-	{
-		UClass* BlueprintClass = UFlowStateBlueprint::StaticClass();
+	}UClass* BlueprintClass = UFlowStateBlueprint::StaticClass();
 		UClass* BlueprintGeneratedClass = UBlueprintGeneratedClass::StaticClass();
 		return FKismetEditorUtilities::CreateBlueprint(ParentClass, InParent, Name, BPTYPE_Normal, BlueprintClass, BlueprintGeneratedClass, CallingContext);
-	}
 }
 
 UObject* UFactory_FlowState::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags,

@@ -73,14 +73,12 @@ public:
 	/** 是否将实例加入执行链 */
 	virtual bool IsStackInstance() const { return false; }
 
-public:
-	FStateDelegate OnExitDelegate;
+FStateDelegate OnExitDelegate;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Runtime Child State
 	//////////////////////////////////////////////////////////////////////////
 
-public:
 #if WITH_EDITOR
 	/** 【Only Editor】 增加子级状态节点 */
 	void AddChildState(FName FromPinName, UFSMNodeInstance* NodeInstance);
@@ -100,8 +98,7 @@ protected:
 	UPROPERTY()
 	TArray<FStateChildNodeHelper> ChildStateHelpers;
 
-protected:
-	/** 次要节点：行为列表 */
+/** 次要节点：行为列表 */
 	UPROPERTY()
 	TArray<class UFlowStateAction*> Actions;
 

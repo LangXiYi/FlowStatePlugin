@@ -30,7 +30,7 @@ public:
 	template<class T>
 	T FindDataFragment()
 	{
-		return (T*)FindDataFragment(T::StaticClass());
+		return static_cast<T*>(FindDataFragment(T::StaticClass()));
 	}
 
 protected:

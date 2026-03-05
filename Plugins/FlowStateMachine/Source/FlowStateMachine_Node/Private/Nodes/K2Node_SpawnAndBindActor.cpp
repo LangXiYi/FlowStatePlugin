@@ -157,8 +157,8 @@ void UK2Node_SpawnAndBindActor::ExpandNode(class FKismetCompilerContext& Compile
 	// Cache the class to spawn. Note, this is the compile time class that the pin was set to or the variable type it was connected to. Runtime it could be a child.
 	UClass* ClassToSpawn = GetClassToSpawn();
 
-	UClass* SpawnClass = (SpawnClassPin != NULL) ? Cast<UClass>(SpawnClassPin->DefaultObject) : NULL;
-	if ( !SpawnClassPin || ((0 == SpawnClassPin->LinkedTo.Num()) && (NULL == SpawnClass)))
+	UClass* SpawnClass = (SpawnClassPin != nullptr) ? Cast<UClass>(SpawnClassPin->DefaultObject) : nullptr;
+	if ( !SpawnClassPin || ((0 == SpawnClassPin->LinkedTo.Num()) && (nullptr == SpawnClass)))
 	{
 		CompilerContext.MessageLog.Error(*LOCTEXT("SpawnActorNodeMissingClass_Error", "Spawn node @@ must have a @@ specified.").ToString(), SpawnNode, SpawnClassPin);
 		// we break exec links so this is the only error we get, don't want the SpawnActor node being considered and giving 'unexpected node' type warnings
@@ -371,12 +371,12 @@ void UK2Node_SpawnAndBindActor::MaybeUpdateCollisionPin(TArray<UEdGraphPin*>& Ol
 			if (Pin->LinkedTo.Num() == 0)
 			{
 				// no links, use the default value of the pin
-				bool const bOldCollisionPinValue = (Pin->DefaultValue == FString(TEXT("true")));
+				const bool  bOldCollisionPinValue = (Pin->DefaultValue == FString(TEXT("true")));
 
 				UEdGraphPin* const CollisionHandlingOverridePin = GetCollisionHandlingOverridePin();
 				if (CollisionHandlingOverridePin)
 				{
-					UEnum const* const MethodEnum = FindObjectChecked<UEnum>(ANY_PACKAGE, TEXT("ESpawnActorCollisionHandlingMethod"), true);
+					const UEnum * const MethodEnum = FindObjectChecked<UEnum>(ANY_PACKAGE, TEXT("ESpawnActorCollisionHandlingMethod"), true);
 					CollisionHandlingOverridePin->DefaultValue =
 						bOldCollisionPinValue
 						? MethodEnum->GetNameStringByValue(static_cast<int>(ESpawnActorCollisionHandlingMethod::AlwaysSpawn))
@@ -414,7 +414,7 @@ void UK2Node_SpawnAndBindActor::MaybeUpdateCollisionPin(TArray<UEdGraphPin*>& Ol
 				SelectCreator.Finalize();
 
 				// find pins we want to set and link up
-				auto FindEnumInputPin = [](UK2Node_EnumLiteral const* Node)
+				auto FindEnumInputPin = [](const UK2Node_EnumLiteral * Node)
 				{
 					for (UEdGraphPin* NodePin : Node->Pins)
 					{
@@ -423,7 +423,7 @@ void UK2Node_SpawnAndBindActor::MaybeUpdateCollisionPin(TArray<UEdGraphPin*>& Ol
 							return NodePin;
 						}
 					}
-					return (UEdGraphPin*)nullptr;
+					return static_cast<UEdGraphPin*>(nullptr);
 				};
 
 				UEdGraphPin* const AlwaysSpawnLiteralNodeInputPin = FindEnumInputPin(AlwaysSpawnLiteralNode);
@@ -433,16 +433,16 @@ void UK2Node_SpawnAndBindActor::MaybeUpdateCollisionPin(TArray<UEdGraphPin*>& Ol
 				SelectNode->GetOptionPins(SelectOptionPins);
 				UEdGraphPin* const SelectIndexPin = SelectNode->GetIndexPin();
 
-				auto FindResultPin = [](UK2Node const* Node)
+				auto FindResultPin = [](const UK2Node * Node)
 				{
 					for (UEdGraphPin* NodePin : Node->Pins)
 					{
-						if (EEdGraphPinDirection::EGPD_Output == NodePin->Direction)
+						if (EGPD_Output == NodePin->Direction)
 						{
 							return NodePin;
 						}
 					}
-					return (UEdGraphPin*)nullptr;
+					return static_cast<UEdGraphPin*>(nullptr);
 				};
 				UEdGraphPin* const AlwaysSpawnLiteralNodeResultPin = FindResultPin(AlwaysSpawnLiteralNode);
 				check(AlwaysSpawnLiteralNodeResultPin);

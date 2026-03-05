@@ -1,11 +1,10 @@
 ﻿#include "TypeActions/AssetTypeActions_FlowStateMachine.h"
 
-#include "FlowStateMachine_EditorModule.h"
+#include "FlowStateEditorModule.h"
 #include "SM/FlowStateMachine.h"
 
 
 #define LOCTEXT_NAMESPACE "AssetTypeActions_FlowStateMachine"
-
 
 void FAssetTypeActions_FlowStateMachine::OpenAssetEditor(const TArray<UObject*>& InObjects,
 	TSharedPtr<IToolkitHost> EditWithinLevelEditor)
@@ -17,7 +16,7 @@ void FAssetTypeActions_FlowStateMachine::OpenAssetEditor(const TArray<UObject*>&
 		auto FlowStateMachine = Cast<UFlowStateMachine>(Object);
 		if(FlowStateMachine != nullptr)
 		{
-			FFlowStateMachine_EditorModule& FlowStateMachineEditorModule = FModuleManager::GetModuleChecked<FFlowStateMachine_EditorModule>( "FlowStateMachine_Editor" );
+			FFlowStateEditorModule& FlowStateMachineEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>( "FlowStateMachine_Editor" );
 			auto NewEditor = FlowStateMachineEditorModule.CreateFlowStateMachineEditor( Mode, EditWithinLevelEditor, FlowStateMachine );	
 		}
 	}

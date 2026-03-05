@@ -16,13 +16,13 @@
 
 struct FK2Node_CreateAndBIndWidgetHelper
 {
-	static FName const WidgetLayoutPinName;
-	static FName const WidgetSlotTagPinName;
-	static FName const WidgetLifetimePinName;
+	static const FName  WidgetLayoutPinName;
+	static const FName  WidgetSlotTagPinName;
+	static const FName  WidgetLifetimePinName;
 };
-FName const FK2Node_CreateAndBIndWidgetHelper::WidgetLayoutPinName = "Layout";
-FName const FK2Node_CreateAndBIndWidgetHelper::WidgetSlotTagPinName = "SlotTag";
-FName const FK2Node_CreateAndBIndWidgetHelper::WidgetLifetimePinName = "Lifetime";
+const FName  FK2Node_CreateAndBIndWidgetHelper::WidgetLayoutPinName = "Layout";
+const FName  FK2Node_CreateAndBIndWidgetHelper::WidgetSlotTagPinName = "SlotTag";
+const FName  FK2Node_CreateAndBIndWidgetHelper::WidgetLifetimePinName = "Lifetime";
 
 #define LOCTEXT_NAMESPACE "K2Node_CreateAndBindWidget"
 
@@ -67,8 +67,8 @@ void UK2Node_CreateAndBindWidget::ExpandNode(class FKismetCompilerContext& Compi
 	UEdGraphPin* SlotTagPin = CreateWidgetNode->GetSlotTagPin();
 	UEdGraphPin* LifetimeStatePin = CreateWidgetNode->GetLifetimePin();
 
-	UClass* SpawnClass = ( SpawnClassPin != NULL ) ? Cast<UClass>(SpawnClassPin->DefaultObject) : NULL;
-	if ( !SpawnClassPin || ((0 == SpawnClassPin->LinkedTo.Num()) && (NULL == SpawnClass)))
+	UClass* SpawnClass = ( SpawnClassPin != nullptr ) ? Cast<UClass>(SpawnClassPin->DefaultObject) : nullptr;
+	if ( !SpawnClassPin || ((0 == SpawnClassPin->LinkedTo.Num()) && (nullptr == SpawnClass)))
 	{
 		CompilerContext.MessageLog.Error(*LOCTEXT("CreateWidgetNodeMissingClass_Error", "Spawn node @@ must have a class specified.").ToString(), CreateWidgetNode);
 		// we break exec links so this is the only error we get, don't want the CreateWidget node being considered and giving 'unexpected node' type warnings

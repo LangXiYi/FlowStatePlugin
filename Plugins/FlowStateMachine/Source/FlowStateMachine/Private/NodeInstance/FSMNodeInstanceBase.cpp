@@ -79,10 +79,10 @@ TSharedPtr<FSMGC> UFSMNodeInstanceBase::GetGCManager() const
 
 void UFSMNodeInstanceBase::GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const
 {
-	IFlowStateCollectInterface::Execute_GetStatePinInfos(this, PinInfos);
+	Execute_GetStatePinInfos(this, PinInfos);
 	for (UFSMNodeInstanceBase* SubNode : SubNodes)
 	{
-		if (SubNode == nullptr) continue;
+		if (SubNode == nullptr) {continue;}
 		SubNode->GetStatePinInfos(PinInfos);
 	} 
 }

@@ -39,7 +39,7 @@ public:
 	template<class T>
 	static T* FindMetaDataFragment(UObject* WorldContextObject)
 	{
-		return (T*)FindMetaDataFragment(WorldContextObject, T::StaticClass());
+		return static_cast<T*>(FindMetaDataFragment(WorldContextObject, T::StaticClass()));
 	}
 
 	/** 资产的引用计数 */

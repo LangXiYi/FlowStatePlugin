@@ -41,18 +41,17 @@ namespace FCommonData
 {
 	// const FName KeySelf = TEXT("SelfActor");
 
-	typedef uint8 FKey;
+	using FKey =  uint8;
 
-	const FKey InvalidKey = FKey(-1);
+	 constexpr FKey InvalidKey = static_cast<FKey>(-1);
 }
 
-class UFSMRuntimeNode;
+class UFSMNodeInstance;
 
 USTRUCT(BlueprintType)
 struct FStatePinInfo
 {
 	GENERATED_BODY()
-public:
 	FStatePinInfo() {}
 
 	FStatePinInfo(FName InPinCategory,FName InPinName) :
@@ -81,7 +80,7 @@ struct FStateChildNodeHelper
 
 	FStateChildNodeHelper() {}
 
-	FStateChildNodeHelper(FName InPinName, UFSMRuntimeNode* InChildNodeInstance):
+	FStateChildNodeHelper(FName InPinName, UFSMNodeInstance* InChildNodeInstance):
 		PinName(InPinName), ChildNodeInstance(InChildNodeInstance)
 	{
 		
@@ -91,5 +90,5 @@ struct FStateChildNodeHelper
 	FName PinName;
 
 	UPROPERTY()
-	UFSMRuntimeNode* ChildNodeInstance;
+	UFSMNodeInstance* ChildNodeInstance;
 };

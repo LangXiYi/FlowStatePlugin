@@ -20,7 +20,7 @@ public:
 	template<class T>
 	T* FindAsset(const FName Name) const
 	{
-		return (T*)FindAsset(Name, T::StaticClass());
+		return static_cast<T*>(FindAsset(Name, T::StaticClass()));
 	}
 
 protected:

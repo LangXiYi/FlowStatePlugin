@@ -14,8 +14,7 @@ class FLOWSTATEMACHINE_ASSETTYPE_API UFactory_FlowState : public UFactory
 {
 	GENERATED_UCLASS_BODY()
 
-public:
-	// UFactory interface
+// UFactory interface
 	virtual bool ShouldShowInNewMenu() const override { return true; }
 	virtual bool ConfigureProperties() override;
 	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext) override;

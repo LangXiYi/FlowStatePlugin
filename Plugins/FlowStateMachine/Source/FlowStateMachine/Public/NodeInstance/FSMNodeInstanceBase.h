@@ -56,8 +56,7 @@ public:
 
 #if WITH_EDITOR
 
-public:
-	// virtual void OnNode
+// virtual void OnNode
 	
 	/** 【Only Editor】 在创建新的图表节点后调用 */
 	virtual void OnNodeCreated(UFSMNodeInstanceBase* InParentNode)
@@ -75,8 +74,7 @@ public:
 
 #endif
 
-public:
-	/** 次要节点 */
+/** 次要节点 */
 	UPROPERTY()
 	TArray<UFSMNodeInstanceBase*> SubNodes;
 

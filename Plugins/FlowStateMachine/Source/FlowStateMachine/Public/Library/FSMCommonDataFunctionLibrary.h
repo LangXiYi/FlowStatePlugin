@@ -8,7 +8,7 @@
 
 class UFlowStateContext;
 class UFSMCommonDataManager;
-class UFSMRuntimeNodeBase;
+class UFSMNodeInstanceBase;
 /**
  * 
  */
@@ -17,73 +17,72 @@ class FLOWSTATEMACHINE_API UFSMCommonDataFunctionLibrary : public UBlueprintFunc
 {
 	GENERATED_BODY()
 
-public:
-	/*UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static UFSMCommonDataManager* GetStateCommonData(UFSMRuntimeNodeBase* NodeOwner);
+/*UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
+	static UFSMCommonDataManager* GetStateCommonData(UFSMNodeInstanceBase* NodeOwner);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static UFlowStateContext* GetStateContext(const UFSMRuntimeNodeBase* NodeOwner);*/
+	static UFlowStateContext* GetStateContext(const UFSMNodeInstanceBase* NodeOwner);*/
 	
 	/*
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static UObject* GetStateValueAsObject(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static UObject* GetStateValueAsObject(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static AActor* GetStateValueAsActor(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static AActor* GetStateValueAsActor(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static UClass* GetStateValueAsClass(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static UClass* GetStateValueAsClass(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static uint8 GetStateValueAsEnum(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static uint8 GetStateValueAsEnum(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static int32 GetStateValueAsInt(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static int32 GetStateValueAsInt(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static float GetStateValueAsFloat(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static float GetStateValueAsFloat(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static bool GetStateValueAsBool(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static bool GetStateValueAsBool(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static FString GetStateValueAsString(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static FString GetStateValueAsString(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static FName GetStateValueAsName(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static FName GetStateValueAsName(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintPure, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static FVector GetStateValueAsVector(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static FVector GetStateValueAsVector(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintPure, Category ="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static FRotator GetStateValueAsRotator(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key);
+	static FRotator GetStateValueAsRotator(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key);
 
 	UFUNCTION(BlueprintCallable, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static void SetStateValueAsObject(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key, UObject* Value);
+	static void SetStateValueAsObject(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key, UObject* Value);
 
 	UFUNCTION(BlueprintCallable, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static void SetStateValueAsClass(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key, UClass* Value);
+	static void SetStateValueAsClass(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key, UClass* Value);
 
 	UFUNCTION(BlueprintCallable, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static void SetStateValueAsEnum(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key, uint8 Value);
+	static void SetStateValueAsEnum(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key, uint8 Value);
 
 	UFUNCTION(BlueprintCallable, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static void SetStateValueAsInt(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key, int32 Value);
+	static void SetStateValueAsInt(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key, int32 Value);
 
 	UFUNCTION(BlueprintCallable, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static void SetStateValueAsFloat(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key, float Value);
+	static void SetStateValueAsFloat(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key, float Value);
 
 	UFUNCTION(BlueprintCallable, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static void SetStateValueAsBool(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key, bool Value);
+	static void SetStateValueAsBool(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key, bool Value);
 
 	UFUNCTION(BlueprintCallable, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static void SetStateValueAsString(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key, FString Value);
+	static void SetStateValueAsString(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key, FString Value);
 
 	UFUNCTION(BlueprintCallable, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static void SetStateValueAsName(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key, FName Value);
+	static void SetStateValueAsName(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key, FName Value);
 
 	UFUNCTION(BlueprintCallable, Category="FlowStateMachine", Meta=(HidePin="NodeOwner", DefaultToSelf="NodeOwner"))
-	static void SetStateValueAsVector(UFSMRuntimeNodeBase* NodeOwner, const FBlackboardKeySelector& Key, FVector Value);
+	static void SetStateValueAsVector(UFSMNodeInstanceBase* NodeOwner, const FBlackboardKeySelector& Key, FVector Value);
 	*/
 
 };

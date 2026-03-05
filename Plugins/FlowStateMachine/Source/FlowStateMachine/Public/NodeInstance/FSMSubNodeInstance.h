@@ -32,8 +32,7 @@ public:
 		return static_cast<T*>(ParentNode);
 	}
 	
-public:
-	/** 调用的父级节点 */
+/** 调用的父级节点 */
 	UPROPERTY()
 	UFSMNodeInstanceBase* ParentNode;
 };

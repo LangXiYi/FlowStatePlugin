@@ -15,15 +15,14 @@ class FLOWSTATEMACHINE_API UFSMCommonDataType_Int : public UFSMCommonDataType
 	GENERATED_BODY()
 
 public:
-	typedef int FDataType;
+	using FDataType =  int;
 	static const FDataType InvalidValue;
-public:
 	static FDataType GetValue(const UFSMCommonDataType_Int* KeyObj)
 	{
-		return KeyObj ? (FDataType)KeyObj->DataValue : InvalidValue;
+		return KeyObj ? static_cast<FDataType>(KeyObj->DataValue) : InvalidValue;
 	}
 
-	static bool SetValue(UFSMCommonDataType_Int* KeyObj, typename FDataType Value)
+	static bool SetValue(UFSMCommonDataType_Int* KeyObj,  FDataType Value)
 	{
 		if (KeyObj)
 		{

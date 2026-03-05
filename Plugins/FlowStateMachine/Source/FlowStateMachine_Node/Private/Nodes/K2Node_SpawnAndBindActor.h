@@ -32,7 +32,7 @@ public:
 	//~ End UK2Node Interface
 
 	//~ Begin UK2Node_ConstructObjectFromClass Interface
-	virtual UClass* GetClassPinBaseClass() const;
+	virtual UClass* GetClassPinBaseClass() const override;
 	virtual bool IsSpawnVarPin(UEdGraphPin* Pin) const override;
 	virtual FText GetBaseNodeTitle() const override;
 	virtual FText GetDefaultNodeTitle() const override;

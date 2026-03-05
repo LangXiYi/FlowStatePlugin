@@ -70,33 +70,33 @@ protected:
 private:
 #define CREATE_CACHE_OBJECT_HELPER(ClassType, Name) \
 	private:\
-		TArray<ClassType> Static_##Name;\
-		TArray<ClassType> Hidden_##Name;\
-		TArray<ClassType> Kill_##Name;\
+		TArray<ClassType> Static_## Name;\
+		TArray<ClassType> Hidden_## Name;\
+		TArray<ClassType> Kill_## Name;\
 	protected:\
 		void _AddToStaticBy(ClassType Target)\
 		{\
-			Static_##Name.AddUnique(Target);\
+			Static_## Name.AddUnique(Target);\
 		}\
 		void _AddToHiddenBy(ClassType Target)\
 		{\
-			Hidden_##Name.AddUnique(Target);\
+			Hidden_## Name.AddUnique(Target);\
 		}\
 		void _AddToKillBy(ClassType Target)\
 		{\
-			Kill_##Name.AddUnique(Target);\
+			Kill_## Name.AddUnique(Target);\
 		}\
 		void _RemoveFromStatic(ClassType Target)\
 		{\
-			Static_##Name.Remove(Target);\
+			Static_## Name.Remove(Target);\
 		}\
 		void _RemoveFromHidden(ClassType Target)\
 		{\
-			Hidden_##Name.Remove(Target);\
+			Hidden_## Name.Remove(Target);\
 		}\
 		void _RemoveFromKill(ClassType Target)\
 		{\
-			Kill_##Name.Remove(Target);\
+			Kill_## Name.Remove(Target);\
 		}\
 
 	CREATE_CACHE_OBJECT_HELPER(TWeakObjectPtr<AActor>, Actors);

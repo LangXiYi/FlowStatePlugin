@@ -62,7 +62,7 @@ void UFSMCreateActorHelper::GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) co
 	const UObject* DefaultObject = CreateClass->GetDefaultObject();
 	if (DefaultObject->Implements<UFlowStateCollectInterface>())
 	{
-		IFlowStateCollectInterface::Execute_GetStatePinInfos(DefaultObject, PinInfos);
+		Execute_GetStatePinInfos(DefaultObject, PinInfos);
 	}
 }
 

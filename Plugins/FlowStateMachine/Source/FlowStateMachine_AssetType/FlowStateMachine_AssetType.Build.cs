@@ -2,29 +2,29 @@
 
 public class FlowStateMachine_AssetType : ModuleRules
 {
-    public FlowStateMachine_AssetType(ReadOnlyTargetRules Target) : base(Target)
-    {
-        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+	public FlowStateMachine_AssetType(ReadOnlyTargetRules Target) : base(Target)
+	{
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(
-            new string[]
-            {
-                "Core",
-                "FlowStateMachine",
-                "FlowStateMachine_Editor"
-            }
-        );
+		PublicDependencyModuleNames.AddRange(
+			new[]
+			{
+				"Core",
+				"FlowStateMachine",
+				"FlowStateEditor"
+			}
+		);
 
-        PrivateDependencyModuleNames.AddRange(
-            new string[]
-            {
-                "CoreUObject",
-                "Engine",
-                "Slate",
-                "SlateCore",
-                "AssetTools", 
-                "UnrealEd"
-            }
-        );
-    }
+		PrivateDependencyModuleNames.AddRange(
+			new[]
+			{
+				"CoreUObject",
+				"Engine",
+				"Slate",
+				"SlateCore",
+				"AssetTools",
+				"UnrealEd"
+			}
+		);
+	}
 }
