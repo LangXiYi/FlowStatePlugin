@@ -1,0 +1,106 @@
+# https://dev.epicgames.com/documentation/zh-cn/unreal-engine/coding-standard?application_version=4.27
+# https://llvm.gnu.ac.cn/docs/CodingStandards.html
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+StatementMacros: 
+[
+  'UPROPERTY', 'UFUNCTION', 'UCLASS', 'USTRUCT', 'UENUM', 'UINTERFACE', 'GENERATED_BODY'
+]
+
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++17
+LineEnding: LF
+UseTab: Never
+
+ColumnLimit: 0
+TabWidth: 4
+AccessModifierOffset: -4
+
+AlignAfterOpenBracket: false
+AlignArrayOfStructures: Left
+
+# 对齐 连续赋值
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+  AlignCompound: true
+
+# 对齐 连续位字段
+AlignConsecutiveBitFields:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+
+# 对齐 连续声明
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+
+# 对齐 连续宏定义
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+
+# 对齐 宏定义新行反斜线
+AlignEscapedNewlines: Left
+
+# 对齐 二进制和三元表达式的操作数
+AlignOperands: AlignAfterOperator
+
+# 对齐 尾随注释
+AlignTrailingComments: true
+
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortLambdasOnASingleLine: All
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterObjCDeclaration: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeComma
+BreakInheritanceList: AfterColon
+BreakStringLiterals: false
+
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+Cpp11BracedListStyle: false
+EmptyLineBeforeAccessModifier: Always
+
+IndentWidth: 4
+IndentCaseBlocks: false
+IndentCaseLabels: true
+IndentPPDirectives: BeforeHash
+
+KeepEmptyLines:
+  AtEndOfFile: true
+  AtStartOfFile: false
+  AtStartOfBlock: false
+
+LambdaBodyIndentation: OuterScope
+NamespaceIndentation: None
+PointerAlignment: Left
+SortIncludes: false
+
+SpaceBeforeCaseColon: false
