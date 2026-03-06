@@ -8,7 +8,7 @@
 #include "FSGraphNode.generated.h"
 
 class UFSMCommonData;
-class UFSMGraph;
+class UFlowStateGraph;
 
 class UFSMNodeInstance;
 class UFSGraphSubNode;

@@ -30,7 +30,7 @@ public class FlowStateEditor : ModuleRules
 				"ToolMenus",
 				"GraphEditor",
 				"KismetWidgets",
-				"ApplicationCore"
+				"ApplicationCore",
 			}
 		);
 	}

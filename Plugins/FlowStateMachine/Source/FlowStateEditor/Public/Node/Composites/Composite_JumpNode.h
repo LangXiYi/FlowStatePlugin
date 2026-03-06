@@ -16,6 +16,7 @@ class FLOWSTATEEDITOR_API UGraphCNode_JumpStart : public UFSGraph_CompositeNode
 
 public:
     UGraphCNode_JumpStart(const FObjectInitializer& ObjectInitializer);
+    virtual TSharedPtr<SGraphNode> CreateVisualWidget() override;
     virtual void                   PostPasteNode() override;
     virtual void                   PostPlacedNewNode() override;
     virtual void                   DestroyNode() override;
@@ -36,9 +37,10 @@ class FLOWSTATEEDITOR_API UGraphCNode_JumpTo : public UFSGraph_CompositeNode
     GENERATED_BODY()
 
 public:
-    virtual void    AllocateDefaultPins() override;
-    virtual void    PostPlacedNewNode() override;
-    virtual FString GetNodeTitleFormatString() const override;
+    virtual TSharedPtr<SGraphNode> CreateVisualWidget() override;
+    virtual void                   AllocateDefaultPins() override;
+    virtual void                   PostPlacedNewNode() override;
+    virtual FString                GetNodeTitleFormatString() const override;
 
     virtual bool IsDeprecated() const override;
     virtual bool HasDeprecatedReference() const override;

@@ -8,7 +8,7 @@
 #include "FSGraphSubNode.generated.h"
 
 class UFSMCommonData;
-class UFSMGraph;
+class UFlowStateGraph;
 
 class UFSMNodeInstance;
 
@@ -26,6 +26,7 @@ class FLOWSTATEEDITOR_API UFSGraphSubNode : public UFSGraphNodeBase
 
 public:
     virtual void DestroyNode() override;
+    virtual TSharedPtr<SGraphNode> CreateVisualWidget() override;
 
     virtual FLinearColor GetNodeTitleColor() const override;
 

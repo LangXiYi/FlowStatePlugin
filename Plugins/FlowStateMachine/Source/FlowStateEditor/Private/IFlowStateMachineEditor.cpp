@@ -4,7 +4,7 @@
 #include "GraphEditAction.h"
 #include "GraphEditorActions.h"
 #include "Framework/Commands/GenericCommands.h"
-#include "Graph/FSMGraph.h"
+#include "Graph/FlowStateGraph.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "Node/FSGraphNode.h"
 #include "Node/FSGraphNodeBase.h"
@@ -289,7 +289,7 @@ void IFlowStateMachineEditor::PasteNodesHere(const FVector2D& Location)
     // BUG::撤销操作会导致程序崩溃
     const FScopedTransaction Transaction(FGenericCommands::Get().Paste->GetDescription());
     UEdGraph*                EdGraph = CurrentGraphEditor->GetCurrentGraph();
-    UFSMGraph*               AIGraph = Cast<UFSMGraph>(EdGraph);
+    UFlowStateGraph*               AIGraph = Cast<UFlowStateGraph>(EdGraph);
 
     EdGraph->Modify();
     if (AIGraph)

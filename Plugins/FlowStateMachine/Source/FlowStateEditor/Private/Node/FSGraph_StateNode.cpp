@@ -7,15 +7,16 @@
 #include "ToolMenu.h"
 #include "ToolMenuDelegates.h"
 #include "Node/FSGraphSubNode.h"
-#include "Slate/SFSMGraphNode_State.h"
-#include "Utility/FSMEditorCore.h"
-
+#include "Node/Slates/SFSGraph_StateNode.h"
+#include "Utility/FlowStateEditorHelper.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphStateNode"
 
+USING_FLOWSTATE_EDITORHELPER
+
 void UFSGraph_StateNode::AllocateDefaultPins()
 {
-	CreatePin(EGPD_Input, FStateNodePinHelper::Input_PinCategory, FStateNodePinHelper::InPut_DefaultPinName);
+	CreatePin(EGPD_Input, FPinHelper::Input_PinCategory, FPinHelper::InPut_DefaultPinName);
 	// CreatePin(EGPD_Output, FStateNodePinHelper::Output_PinCategory, FStateNodePinHelper::Output_DefaultPinName);
 }
 
@@ -118,7 +119,7 @@ FEdGraphNodeDeprecationResponse UFSGraph_StateNode::GetDeprecationResponse(
 
 TSharedPtr<SGraphNode> UFSGraph_StateNode::CreateVisualWidget()
 {
-	return SNew(SFSMGraphNode_State, this);
+	return SNew(SFSGraph_StateNode, this);
 }
 
 #undef LOCTEXT_NAMESPACE

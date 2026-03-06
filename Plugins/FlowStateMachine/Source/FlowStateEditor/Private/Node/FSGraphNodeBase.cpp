@@ -3,12 +3,14 @@
 #include "Node/FSGraphNodeBase.h"
 
 #include "DiffResults.h"
-#include "Graph/FSMGraph.h"
+#include "Graph/FlowStateGraph.h"
 #include "NodeInstance/FSMNodeInstance.h"
 #include "SM/FlowStateMachine.h"
-#include "Utility/FSMEditorCore.h"
+#include "Utility/FlowStateEditorHelper.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphNodeBase"
+
+USING_FLOWSTATE_EDITORHELPER
 
 void UFSGraphNodeBase::PostPasteNode()
 {
@@ -161,7 +163,7 @@ void UFSGraphNodeBase::RefreshStateNode(bool bIsAutoRemoveOrphanedNode)
     for (int i = Pins.Num() - 1; i >= 0; --i)
     {
         UEdGraphPin* NodePin = Pins[i];
-        if (NodePin->Direction == EGPD_Output && NodePin->PinName != FStateNodePinHelper::Output_DefaultPinName && !ValidPinNames.Contains(NodePin->PinName))
+        if (NodePin->Direction == EGPD_Output && NodePin->PinName != FPinHelper::Output_DefaultPinName && !ValidPinNames.Contains(NodePin->PinName))
         {
             if (NodePin->bOrphanedPin && bIsAutoRemoveOrphanedNode)
             {
@@ -346,9 +348,9 @@ void UFSGraphNodeBase::UpdateNodeClassDataFrom(UClass* InstanceClass, FGraphNode
     }
 }
 
-UFSMGraph* UFSGraphNodeBase::GetFSMGraph() const
+UFlowStateGraph* UFSGraphNodeBase::GetFSMGraph() const
 {
-    return CastChecked<UFSMGraph>(GetGraph());
+    return CastChecked<UFlowStateGraph>(GetGraph());
 }
 
 bool UFSGraphNodeBase::UserBlueprint() const

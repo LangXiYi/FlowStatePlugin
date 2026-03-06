@@ -90,7 +90,7 @@ public:
     void UpdateNodeClassDataFrom(UClass* InstanceClass, FGraphNodeClassData& UpdatedData);
 
     /** 获取状态机图表 */
-    class UFSMGraph* GetFSMGraph() const;
+    class UFlowStateGraph* GetFSMGraph() const;
 
     bool UserBlueprint() const;
 

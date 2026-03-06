@@ -54,6 +54,16 @@ AlignOperands: AlignAfterOperator
 # 对齐 尾随注释
 AlignTrailingComments: true
 
+IncludeBlocks: Regroup
+IncludeCategories:
+    - Regex: '^.*\.generated\.h'
+      Priority: 99999
+    - Regex: '<[[:alnum:].]+>'
+      Priority: 2
+    - Regex: '.*'
+      Priority: 1
+      SortPriority: 0
+
 AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortEnumsOnASingleLine: false
@@ -93,10 +103,10 @@ IndentCaseBlocks: false
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
 
-KeepEmptyLines:
-  AtEndOfFile: true
-  AtStartOfFile: false
-  AtStartOfBlock: false
+#KeepEmptyLines:
+#   AtEndOfFile: true
+#   AtStartOfFile: false
+#   AtStartOfBlock: false
 
 LambdaBodyIndentation: OuterScope
 NamespaceIndentation: None

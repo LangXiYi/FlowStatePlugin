@@ -2,18 +2,21 @@
 
 #include "Node/FSGraph_RootNode.h"
 
-#include "Graph/FSMGraph.h"
+#include "Graph/FlowStateGraph.h"
 #include "SM/FlowStateMachine.h"
-#include "Utility/FSMEditorCore.h"
+#include "Node/Slates/SFSGraph_RootNode.h"
+#include "Utility/FlowStateEditorHelper.h"
 #include "Widgets/FlowStateLayoutWidget.h"
 #include "Widgets/FlowStateWidgetLayerManager.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphRootNode"
 
+USING_FLOWSTATE_EDITORHELPER
+
 void UFSGraph_RootNode::AllocateDefaultPins()
 {
     Super::AllocateDefaultPins();
-    CreatePin(EGPD_Output, FStateNodePinHelper::Output_PinCategory, FStateNodePinHelper::Output_DefaultPinName);
+    CreatePin(EGPD_Output, FPinHelper::Output_PinCategory, FPinHelper::Output_DefaultPinName);
 }
 
 bool UFSGraph_RootNode::IsDeprecated() const
@@ -24,6 +27,10 @@ bool UFSGraph_RootNode::IsDeprecated() const
 FText UFSGraph_RootNode::GetTooltipText() const
 {
     return LOCTEXT("RootNodeTooltip", "RootNode");
+}
+TSharedPtr<SGraphNode> UFSGraph_RootNode::CreateVisualWidget()
+{
+    return SNew(SFSGraph_RootNode, this);;
 }
 
 FPinConnectionResponse UFSGraph_RootNode::CheckPinConnection(const UFSGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const
@@ -36,7 +43,7 @@ void UFSGraph_RootNode::PostEditChangeProperty(struct FPropertyChangedEvent& Pro
     Super::PostEditChangeProperty(PropertyChangedEvent);
     if (PropertyChangedEvent.MemberProperty && PropertyChangedEvent.MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UFSGraph_RootNode, CommonData))
     {
-        UFSMGraph* MyGraph = GetFSMGraph();
+        UFlowStateGraph* MyGraph = GetFSMGraph();
         if (MyGraph)
         {
             UFlowStateMachine* Asset = MyGraph->GetFSMAsset();
@@ -48,7 +55,7 @@ void UFSGraph_RootNode::PostEditChangeProperty(struct FPropertyChangedEvent& Pro
     }
     if (PropertyChangedEvent.MemberProperty && PropertyChangedEvent.MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UFSGraph_RootNode, WidgetLayerManagerClass))
     {
-        UFSMGraph* MyGraph = GetFSMGraph();
+        UFlowStateGraph* MyGraph = GetFSMGraph();
         if (MyGraph)
         {
             UFlowStateMachine* Asset = MyGraph->GetFSMAsset();

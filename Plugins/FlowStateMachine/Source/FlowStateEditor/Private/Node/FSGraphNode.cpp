@@ -2,14 +2,14 @@
 
 #include "Node/FSGraphNode.h"
 
-#include "FSMEditorTypes.h"
+#include "Utility/FlowStateEditorType.h"
 #include "ToolMenu.h"
-#include "Graph/FSMGraph.h"
+#include "Graph/FlowStateGraph.h"
 #include "Node/FSGraphSubNode.h"
-#include "Slate/SGraphEditorActionMenu_FSM.h"
 #include "NodeInstance/FSMNodeInstance.h"
 #include "SM/FlowStateMachine.h"
-#include "Utility/FSMEditorCore.h"
+#include "Slate/SFSGraphNodeActionMenu.H"
+#include "Utility/FlowStateEditorHelper.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphNode"
 
@@ -159,11 +159,11 @@ void UFSGraphNode::AddServiceSubMenu(UToolMenu* Menu, UGraphNodeContextMenuConte
 
 void UFSGraphNode::CreateAddConditionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const
 {
-    TSharedRef<SGraphEditorActionMenu_FSM> Widget =
-        SNew(SGraphEditorActionMenu_FSM)
+    TSharedRef<SFSGraphNodeActionMenu> Widget =
+        SNew(SFSGraphNodeActionMenu)
             .GraphObj(Graph)
             .GraphNode(const_cast<UFSGraphNode*>(this))
-            .SubNodeFlags(EFSMSubNodeType::Condition)
+            .SubNodeFlags(ESubNodeType::Condition)
             .AutoExpandActionMenu(true);
 
     FToolMenuSection& Section = Menu->FindOrAddSection("Section");
@@ -172,11 +172,11 @@ void UFSGraphNode::CreateAddConditionSubMenu(class UToolMenu* Menu, UEdGraph* Gr
 
 void UFSGraphNode::CreateAddActionSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const
 {
-    TSharedRef<SGraphEditorActionMenu_FSM> Widget =
-        SNew(SGraphEditorActionMenu_FSM)
+    TSharedRef<SFSGraphNodeActionMenu> Widget =
+        SNew(SFSGraphNodeActionMenu)
             .GraphObj(Graph)
             .GraphNode(const_cast<UFSGraphNode*>(this))
-            .SubNodeFlags(EFSMSubNodeType::Action)
+            .SubNodeFlags(ESubNodeType::Action)
             .AutoExpandActionMenu(true);
 
     FToolMenuSection& Section = Menu->FindOrAddSection("Section");
@@ -185,11 +185,11 @@ void UFSGraphNode::CreateAddActionSubMenu(class UToolMenu* Menu, UEdGraph* Graph
 
 void UFSGraphNode::CreateAddServiceSubMenu(class UToolMenu* Menu, UEdGraph* Graph) const
 {
-    TSharedRef<SGraphEditorActionMenu_FSM> Widget =
-        SNew(SGraphEditorActionMenu_FSM)
+    TSharedRef<SFSGraphNodeActionMenu> Widget =
+        SNew(SFSGraphNodeActionMenu)
             .GraphObj(Graph)
             .GraphNode(const_cast<UFSGraphNode*>(this))
-            .SubNodeFlags(EFSMSubNodeType::Service)
+            .SubNodeFlags(ESubNodeType::Service)
             .AutoExpandActionMenu(true);
 
     FToolMenuSection& Section = Menu->FindOrAddSection("Section");

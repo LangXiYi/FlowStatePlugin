@@ -2,11 +2,14 @@
 
 #include "Node/Composites/Composite_JumpNode.h"
 
-#include "Graph/FSMGraph.h"
+#include "Graph/FlowStateGraph.h"
 #include "SM/Composites/Composite_Jump.h"
-#include "Utility/FSMEditorCore.h"
+#include "Node/Slates/SFSGraph_JumpNode.h"
+#include "Utility/FlowStateEditorHelper.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphNodeJump"
+
+USING_FLOWSTATE_EDITORHELPER
 
 UGraphCNode_JumpStart::UGraphCNode_JumpStart(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer)
@@ -15,6 +18,10 @@ UGraphCNode_JumpStart::UGraphCNode_JumpStart(const FObjectInitializer& ObjectIni
     // {
     // 	JumpStartId = FGuid::NewGuid();
     // }
+}
+TSharedPtr<SGraphNode> UGraphCNode_JumpStart::CreateVisualWidget()
+{
+    return SNew(SFSGraph_JumpStartNode, this);
 }
 
 void UGraphCNode_JumpStart::PostPasteNode()
@@ -47,7 +54,7 @@ void UGraphCNode_JumpStart::DestroyNode()
 void UGraphCNode_JumpStart::AllocateDefaultPins()
 {
     Super::AllocateDefaultPins();
-    CreatePin(EGPD_Output, FStateNodePinHelper::Output_PinCategory, FStateNodePinHelper::Output_DefaultPinName);
+    CreatePin(EGPD_Output, FPinHelper::Output_PinCategory, FPinHelper::Output_DefaultPinName);
 }
 
 FString UGraphCNode_JumpStart::GetNodeTitleFormatString() const
@@ -71,11 +78,15 @@ FPinConnectionResponse UGraphCNode_JumpStart::CheckPinConnection(const UFSGraphN
     return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_A, TEXT("connect node and break a"));
 }
 
+TSharedPtr<SGraphNode> UGraphCNode_JumpTo::CreateVisualWidget()
+{
+    return SNew(SFSGraph_JumpToNode, this);
+}
 void UGraphCNode_JumpTo::AllocateDefaultPins()
 {
     Super::AllocateDefaultPins();
 
-    CreatePin(EGPD_Input, FStateNodePinHelper::Input_PinCategory, FStateNodePinHelper::InPut_DefaultPinName);
+    CreatePin(EGPD_Input, FPinHelper::Input_PinCategory, FPinHelper::InPut_DefaultPinName);
 }
 
 void UGraphCNode_JumpTo::PostPlacedNewNode()
@@ -115,7 +126,7 @@ FEdGraphNodeDeprecationResponse UGraphCNode_JumpTo::GetDeprecationResponse(
 
 bool UGraphCNode_JumpTo::IsValidJumpNode() const
 {
-    UFSMGraph* MyGraph = GetFSMGraph();
+    UFlowStateGraph* MyGraph = GetFSMGraph();
     if (MyGraph == nullptr)
     {
         return false;

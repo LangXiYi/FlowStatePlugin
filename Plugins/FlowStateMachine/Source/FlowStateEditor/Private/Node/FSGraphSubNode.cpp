@@ -2,8 +2,9 @@
 
 #include "Node/FSGraphSubNode.h"
 
-#include "Graph/FSMGraph.h"
+#include "Graph/FlowStateGraph.h"
 #include "Node/FSGraphNode.h"
+#include "Node/Slates/SFSGraphSubNode.h"
 
 #define LOCTEXT_NAMESPACE "FSMGraphSubNode"
 
@@ -14,6 +15,10 @@ void UFSGraphSubNode::DestroyNode()
     {
         FSMParentNode->RemoveSubNode(this);
     }
+}
+TSharedPtr<SGraphNode> UFSGraphSubNode::CreateVisualWidget()
+{
+    return SNew(SFSGraphSubNode, this);
 }
 
 FLinearColor UFSGraphSubNode::GetNodeTitleColor() const
