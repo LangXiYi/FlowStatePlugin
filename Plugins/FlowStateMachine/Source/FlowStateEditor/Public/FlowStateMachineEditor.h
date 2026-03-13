@@ -15,7 +15,7 @@ public:
 
     /** 初始化状态机编辑器 */
     void InitFlowStateMachineEditor(EToolkitMode::Type Mode,
-        const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject);
+                                    const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject);
 
     // Begin IToolkit interface
     virtual void RegisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager) override;
@@ -25,11 +25,11 @@ public:
     // Begin IAssetEditorInstance
     /** 获取全局状态图表编辑器的引脚颜色 */
     virtual FLinearColor GetWorldCentricTabColorScale() const override { return FLinearColor::Blue; }
-    virtual FText        GetToolkitName() const override;
-    virtual FName        GetToolkitFName() const override { return FName("FlowStateMachineEditor"); }
-    virtual FText        GetToolkitToolTipText() const override;
-    virtual FText        GetBaseToolkitName() const override { return FText::FromString("FlowStateMachineEditor"); }
-    virtual FString      GetWorldCentricTabPrefix() const override { return "FlowStateMachineEditor"; }
+    virtual FText GetToolkitName() const override;
+    virtual FName GetToolkitFName() const override { return FName("FlowStateMachineEditor"); }
+    virtual FText GetToolkitToolTipText() const override;
+    virtual FText GetBaseToolkitName() const override { return FText::FromString("FlowStateMachineEditor"); }
+    virtual FString GetWorldCentricTabPrefix() const override { return "FlowStateMachineEditor"; }
     // End of IAssetEditorInstance
 
     // Begin FEditorUndoClient Interface
@@ -38,7 +38,8 @@ public:
     // End of FEditorUndoClient
 
     // Begin FNotifyHook
-    virtual void NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent, FProperty* PropertyThatChanged) override;
+    virtual void NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent,
+                                  FProperty* PropertyThatChanged) override;
     // End of FNotifyHook
 
     // @todo This is a hack for now until we reconcile the default toolbar with application modes [duplicated from counterpart in Blueprint Editor]
@@ -77,9 +78,9 @@ public:
 
     /** Get editing asset */
     UFlowStateMachine* GetFlowStateMachine() const { return FlowStateMachine; }
-    UFSMCommonData*    GetCommonData() const { return CommonData; }
+    UFSMCommonData* GetCommonData() const { return CommonData; }
     /** 获得状态机编辑图表 */
-    UFlowStateGraph*   GetFlowStateGraph() const;
+    UFlowStateGraph* GetFlowStateGraph() const;
 
     /** Access the toolbar builder for this editor */
     TSharedPtr<FFlowStateEditorToolbar> GetToolbarBuilder() const { return ToolbarBuilder; }
@@ -91,8 +92,8 @@ public:
      */
     static FText GetLocalizedMode(FName InMode);
 
-    bool                 InEditingMode(bool bGraphIsEditable) const { return bGraphIsEditable; }
-    
+    bool InEditingMode(bool bGraphIsEditable) const { return bGraphIsEditable; }
+
     FGraphAppearanceInfo GetGraphAppearance() const;
 
     //////////////////////////////////////////////////////////////
@@ -133,7 +134,7 @@ protected:
 
 private:
     // 管理不同编辑器图表
-    TSharedPtr<FDocumentTracker>  DocumentManager;
+    TSharedPtr<FDocumentTracker> DocumentManager;
     TWeakPtr<FDocumentTabFactory> GraphEditorTabFactoryPtr;
 
     // 工具栏扩展器 FFSMEditorToolbar

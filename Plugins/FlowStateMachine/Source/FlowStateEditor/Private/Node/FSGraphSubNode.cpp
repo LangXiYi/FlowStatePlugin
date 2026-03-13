@@ -16,6 +16,7 @@ void UFSGraphSubNode::DestroyNode()
         FSMParentNode->RemoveSubNode(this);
     }
 }
+
 TSharedPtr<SGraphNode> UFSGraphSubNode::CreateVisualWidget()
 {
     return SNew(SFSGraphSubNode, this);
@@ -41,15 +42,19 @@ FEdGraphNodeDeprecationResponse UFSGraphSubNode::GetDeprecationResponse(
     FEdGraphNodeDeprecationResponse Response = Super::GetDeprecationResponse(DeprecationType);
     if (DeprecationType == EEdGraphNodeDeprecationType::NodeTypeIsDeprecated)
     {
-        FText NodeTitle      = ParentNode->GetNodeTitle(ENodeTitleType::FullTitle);
+        FText NodeTitle = ParentNode->GetNodeTitle(ENodeTitleType::FullTitle);
         Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
-        Response.MessageText = FText::Format(FTextFormat::FromString("Warning: The subnode '@@' is deprecated from {0}; please replace or remove it."), NodeTitle);
+        Response.MessageText = FText::Format(
+            FTextFormat::FromString("Warning: The subnode '@@' is deprecated from {0}; please replace or remove it."),
+            NodeTitle);
     }
     else if (DeprecationType == EEdGraphNodeDeprecationType::NodeHasDeprecatedReference)
     {
-        FText NodeTitle      = GetNodeTitle(ENodeTitleType::FullTitle);
+        FText NodeTitle = GetNodeTitle(ENodeTitleType::FullTitle);
         Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
-        Response.MessageText = FText::Format(FTextFormat::FromString("Warning: The subnode '{0}' has a deprecated parent; please replace or remove it."), NodeTitle);
+        Response.MessageText = FText::Format(
+            FTextFormat::FromString("Warning: The subnode '{0}' has a deprecated parent; please replace or remove it."),
+            NodeTitle);
     }
     return Response;
 }

@@ -12,7 +12,7 @@
 UCLASS(Abstract, Blueprintable)
 class FLOWSTATEMACHINE_API UFlowStateService : public UFSMSubNodeInstance
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-	// 按设定的间隔时间执行
+    // 按设定的间隔时间执行
 };

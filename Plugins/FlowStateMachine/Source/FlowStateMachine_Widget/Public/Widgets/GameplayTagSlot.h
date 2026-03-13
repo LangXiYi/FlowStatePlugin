@@ -13,19 +13,18 @@
 UCLASS()
 class FLOWSTATEMACHINE_WIDGET_API UGameplayTagSlot : public UNamedSlot
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-	friend class UOverlay_Slots;
+    friend class UOverlay_Slots;
 
 public:
-	virtual TSharedRef<SWidget> RebuildWidget() override;
-	
-	FGameplayTag GetGameplayTag() const
-	{
-		return Tag;
-	}
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = NameSlot)
-	FGameplayTag Tag;
-};
+    virtual TSharedRef<SWidget> RebuildWidget() override;
 
+    FGameplayTag GetGameplayTag() const
+    {
+        return Tag;
+    }
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = NameSlot)
+    FGameplayTag Tag;
+};

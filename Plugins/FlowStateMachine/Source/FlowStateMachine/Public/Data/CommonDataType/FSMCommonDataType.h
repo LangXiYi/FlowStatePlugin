@@ -12,5 +12,5 @@
 UCLASS(EditInlineNew, Abstract, CollapseCategories)
 class FLOWSTATEMACHINE_API UFSMCommonDataType : public UObject
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 };

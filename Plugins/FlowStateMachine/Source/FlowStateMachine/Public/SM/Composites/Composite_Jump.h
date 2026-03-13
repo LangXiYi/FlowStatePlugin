@@ -12,14 +12,14 @@
 UCLASS()
 class FLOWSTATEMACHINE_API UCNodeIns_JumpStart : public UFlowStateComposite
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	virtual void OnEnter() override;
-	virtual FString GetNodeName() const override;
+    virtual void OnEnter() override;
+    virtual FString GetNodeName() const override;
 
-	UPROPERTY()
-	FGuid JumpStartId;
+    UPROPERTY()
+    FGuid JumpStartId;
 };
 
 /**
@@ -28,12 +28,12 @@ public:
 UCLASS()
 class FLOWSTATEMACHINE_API UCNodeIns_JumpTo : public UFlowStateComposite
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	virtual void OnEnter() override;
-	virtual FString GetNodeName() const override;
+    virtual void OnEnter() override;
+    virtual FString GetNodeName() const override;
 
-	UPROPERTY()
-	FGuid JumpStartId;
+    UPROPERTY()
+    FGuid JumpStartId;
 };

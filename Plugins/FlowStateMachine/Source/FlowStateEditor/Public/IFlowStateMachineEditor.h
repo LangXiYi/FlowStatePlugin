@@ -39,7 +39,8 @@ protected:
     bool CanCreateComment() const;
     void OnCreateComment();
 
-    virtual void FixupPastedNodes(const TSet<UEdGraphNode*>& NewPastedGraphNodes, const TMap<FGuid /*New*/, FGuid /*Old*/>& NewToOldNodeMapping);
+    virtual void FixupPastedNodes(const TSet<UEdGraphNode*>& NewPastedGraphNodes,
+                                  const TMap<FGuid /*New*/, FGuid /*Old*/>& NewToOldNodeMapping);
 
     /** Currently focused graph */
     TWeakPtr<SGraphEditor> UpdateGraphEdPtr;

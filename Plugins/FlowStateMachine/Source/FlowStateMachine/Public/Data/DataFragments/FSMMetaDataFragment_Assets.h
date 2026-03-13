@@ -12,33 +12,32 @@
 UCLASS(NotBlueprintable)
 class UFSMMetaDataFragment_Assets : public UFSMMetaDataFragment
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	virtual UObject* FindAsset(const FName Name, TSubclassOf<UObject> AssetType) const;
+    virtual UObject* FindAsset(const FName Name, TSubclassOf<UObject> AssetType) const;
 
-	template<class T>
-	T* FindAsset(const FName Name) const
-	{
-		return static_cast<T*>(FindAsset(Name, T::StaticClass()));
-	}
+    template <class T>
+    T* FindAsset(const FName Name) const
+    {
+        return static_cast<T*>(FindAsset(Name, T::StaticClass()));
+    }
 
 protected:
-	UObject* FindAssetByStaticMesh(const FName Name) const;
-	UObject* FindAssetBySkeletalMesh(const FName Name) const;
-	UObject* FindAssetByAnimSequence(const FName Name) const;
+    UObject* FindAssetByStaticMesh(const FName Name) const;
+    UObject* FindAssetBySkeletalMesh(const FName Name) const;
+    UObject* FindAssetByAnimSequence(const FName Name) const;
 
 private:
-	/** 需要使用到的模型资产 */
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "MetaDataFragment", meta = (AllowPrivateAccess = true))
-	TMap<FName, UStaticMesh*> SM_Meshes;
+    /** 需要使用到的模型资产 */
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "MetaDataFragment", meta = (AllowPrivateAccess = true))
+    TMap<FName, UStaticMesh*> SM_Meshes;
 
-	/** 需要使用到的骨骼资产 */
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "MetaDataFragment", meta = (AllowPrivateAccess = true))
-	TMap<FName, USkeletalMesh*> SK_Meshes;
+    /** 需要使用到的骨骼资产 */
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "MetaDataFragment", meta = (AllowPrivateAccess = true))
+    TMap<FName, USkeletalMesh*> SK_Meshes;
 
-	/** 需要使用到的动画资产 */
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "MetaDataFragment", meta = (AllowPrivateAccess = true))
-	TMap<FName, UAnimSequence*> Animations;
+    /** 需要使用到的动画资产 */
+    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "MetaDataFragment", meta = (AllowPrivateAccess = true))
+    TMap<FName, UAnimSequence*> Animations;
 };
-

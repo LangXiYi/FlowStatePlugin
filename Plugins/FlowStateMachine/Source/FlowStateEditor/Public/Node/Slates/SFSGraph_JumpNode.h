@@ -9,8 +9,8 @@ class FLOWSTATEEDITOR_API SFSGraph_JumpStartNode : public SFSGraphNodeBase
 {
 public:
     SLATE_BEGIN_ARGS(SFSGraph_JumpStartNode)
-    {
-    }
+        {
+        }
 
     SLATE_END_ARGS()
 
@@ -28,12 +28,12 @@ class FLOWSTATEEDITOR_API SFSGraph_JumpToNode : public SFSGraphNodeBase
 {
 public:
     SLATE_BEGIN_ARGS(SFSGraph_JumpToNode)
-    {
-    }
+        {
+        }
 
     SLATE_END_ARGS()
 
-    void                        Construct(const FArguments& InArgs, UFSGraphNode* InGraphNode);
+    void Construct(const FArguments& InArgs, UFSGraphNode* InGraphNode);
     virtual TSharedRef<SWidget> CreateTitleWidget(TSharedPtr<SNodeTitle> NodeTitle) override;
 
     virtual FString GetNodeComment() const override;

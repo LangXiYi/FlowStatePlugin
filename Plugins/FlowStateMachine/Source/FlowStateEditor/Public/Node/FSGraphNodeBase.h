@@ -63,7 +63,8 @@ public:
     virtual bool HasDeprecatedReference() const override;
 
     /** 子类重写该函数，并返回自定义的错误日志 */
-    virtual FEdGraphNodeDeprecationResponse GetDeprecationResponse(EEdGraphNodeDeprecationType DeprecationType) const override;
+    virtual FEdGraphNodeDeprecationResponse
+    GetDeprecationResponse(EEdGraphNodeDeprecationType DeprecationType) const override;
 
     virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 
@@ -106,12 +107,13 @@ public:
 #endif
 
     /** 检查引脚的连接性 */
-    virtual FPinConnectionResponse CheckPinConnection(const UFSGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const;
+    virtual FPinConnectionResponse CheckPinConnection(const UFSGraphNodeBase* OtherNode,
+                                                      EEdGraphPinDirection FromDirection) const;
 
 protected:
-    UEdGraphPin*         GetInputPin() const;
+    UEdGraphPin* GetInputPin() const;
     TArray<UEdGraphPin*> GetOutputPins() const;
-    FText                GetNodeTitleSuffix() const;
+    FText GetNodeTitleSuffix() const;
 
 public:
     /** 所有次要节点 */

@@ -13,11 +13,11 @@ class UFlowStateBase;
 UCLASS(Abstract, Blueprintable)
 class FLOWSTATEMACHINE_API UFlowStateAction : public UFSMSubNodeInstance
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	virtual void ExecuteAction(UFSMNodeInstance* Instance);
+    virtual void ExecuteAction(UFSMNodeInstance* Instance);
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnExecuteAction(UFSMNodeInstance* Instance);
+    UFUNCTION(BlueprintImplementableEvent)
+    void OnExecuteAction(UFSMNodeInstance* Instance);
 };

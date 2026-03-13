@@ -2,27 +2,27 @@
 
 public class FlowStateMachine_Widget : ModuleRules
 {
-	public FlowStateMachine_Widget(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+    public FlowStateMachine_Widget(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(
-			new[]
-			{
-				"Core"
-			}
-		);
+        PublicDependencyModuleNames.AddRange(
+            new[]
+            {
+                "Core"
+            }
+        );
 
-		PrivateDependencyModuleNames.AddRange(
-			new[]
-			{
-				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore",
-				"UMG",
-				"GameplayTags"
-			}
-		);
-	}
+        PrivateDependencyModuleNames.AddRange(
+            new[]
+            {
+                "CoreUObject",
+                "Engine",
+                "Slate",
+                "SlateCore",
+                "UMG",
+                "GameplayTags"
+            }
+        );
+    }
 }

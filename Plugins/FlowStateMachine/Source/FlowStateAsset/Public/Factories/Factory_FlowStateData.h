@@ -12,10 +12,10 @@
 UCLASS()
 class UFactory_FlowStateData : public UFactory
 {
-	GENERATED_UCLASS_BODY()
-
-// UFactory interface
-	virtual bool ShouldShowInNewMenu() const override { return true; }
-	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn) override;
-	// End of UFactory interface
+    GENERATED_UCLASS_BODY()
+    // UFactory interface
+    virtual bool ShouldShowInNewMenu() const override { return true; }
+    virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags,
+                                      UObject* Context, FFeedbackContext* Warn) override;
+    // End of UFactory interface
 };

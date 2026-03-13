@@ -73,7 +73,8 @@ void UFSGraphNode::AddSubNode(UFSGraphNodeBase* SubNode, class UEdGraph* ParentG
 {
     if (SubNode == nullptr)
     {
-        checkNoEntry() return;
+        checkNoEntry()
+        return;
     }
 
     // const FScopedTransaction Transaction(LOCTEXT("AddNode", "Add Node"));
@@ -161,10 +162,10 @@ void UFSGraphNode::CreateAddConditionSubMenu(class UToolMenu* Menu, UEdGraph* Gr
 {
     TSharedRef<SFSGraphNodeActionMenu> Widget =
         SNew(SFSGraphNodeActionMenu)
-            .GraphObj(Graph)
-            .GraphNode(const_cast<UFSGraphNode*>(this))
-            .SubNodeFlags(ESubNodeType::Condition)
-            .AutoExpandActionMenu(true);
+        .GraphObj(Graph)
+        .GraphNode(const_cast<UFSGraphNode*>(this))
+        .SubNodeFlags(ESubNodeType::Condition)
+        .AutoExpandActionMenu(true);
 
     FToolMenuSection& Section = Menu->FindOrAddSection("Section");
     Section.AddEntry(FToolMenuEntry::InitWidget("ConditionWidget", Widget, FText(), true));
@@ -174,10 +175,10 @@ void UFSGraphNode::CreateAddActionSubMenu(class UToolMenu* Menu, UEdGraph* Graph
 {
     TSharedRef<SFSGraphNodeActionMenu> Widget =
         SNew(SFSGraphNodeActionMenu)
-            .GraphObj(Graph)
-            .GraphNode(const_cast<UFSGraphNode*>(this))
-            .SubNodeFlags(ESubNodeType::Action)
-            .AutoExpandActionMenu(true);
+        .GraphObj(Graph)
+        .GraphNode(const_cast<UFSGraphNode*>(this))
+        .SubNodeFlags(ESubNodeType::Action)
+        .AutoExpandActionMenu(true);
 
     FToolMenuSection& Section = Menu->FindOrAddSection("Section");
     Section.AddEntry(FToolMenuEntry::InitWidget("ActionWidget", Widget, FText(), true));
@@ -187,14 +188,13 @@ void UFSGraphNode::CreateAddServiceSubMenu(class UToolMenu* Menu, UEdGraph* Grap
 {
     TSharedRef<SFSGraphNodeActionMenu> Widget =
         SNew(SFSGraphNodeActionMenu)
-            .GraphObj(Graph)
-            .GraphNode(const_cast<UFSGraphNode*>(this))
-            .SubNodeFlags(ESubNodeType::Service)
-            .AutoExpandActionMenu(true);
+        .GraphObj(Graph)
+        .GraphNode(const_cast<UFSGraphNode*>(this))
+        .SubNodeFlags(ESubNodeType::Service)
+        .AutoExpandActionMenu(true);
 
     FToolMenuSection& Section = Menu->FindOrAddSection("Section");
     Section.AddEntry(FToolMenuEntry::InitWidget("ServiceWidget", Widget, FText(), true));
 }
 
 #undef LOCTEXT_NAMESPACE
-

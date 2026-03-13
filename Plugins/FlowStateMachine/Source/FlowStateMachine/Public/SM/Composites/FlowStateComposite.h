@@ -9,6 +9,5 @@
 UCLASS(Abstract)
 class FLOWSTATEMACHINE_API UFlowStateComposite : public UFSMNodeInstance
 {
-	GENERATED_BODY()
-
+    GENERATED_BODY()
 };

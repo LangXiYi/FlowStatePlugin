@@ -18,7 +18,9 @@ public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;
 
-    TSharedRef<FFlowStateMachineEditor> CreateFlowStateMachineEditor(const EToolkitMode::Type Mode, const TSharedPtr<class IToolkitHost>& InitToolkitHost, class UObject* Object);
+    TSharedRef<FFlowStateMachineEditor> CreateFlowStateMachineEditor(const EToolkitMode::Type Mode,
+                                                                     const TSharedPtr<class IToolkitHost>&
+                                                                     InitToolkitHost, class UObject* Object);
 
     TSharedPtr<struct FGraphNodeClassHelper> GetClassCache() { return ClassCache; }
 

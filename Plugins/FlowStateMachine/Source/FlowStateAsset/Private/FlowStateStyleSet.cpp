@@ -1,11 +1,14 @@
 ﻿#include "FlowStateStyleSet.h"
 
 #include "Interfaces/IPluginManager.h"
+
 FFlowStateStyleSet::FFlowStateStyleSet(const FString& InPluginName)
     : FSlateStyleSet("FlowStateMachine"), PluginName(InPluginName)
 {
 }
-void FFlowStateStyleSet::RegisterAssetThumbnail(const FString& AssetName, const FString& ImageName, const FVector2D& ImageSize)
+
+void FFlowStateStyleSet::RegisterAssetThumbnail(const FString& AssetName, const FString& ImageName,
+                                                const FVector2D& ImageSize)
 {
     FString ResourceDir = GetPluginResourceDir();
     if (!ResourceDir.IsEmpty())

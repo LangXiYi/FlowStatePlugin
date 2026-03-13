@@ -23,7 +23,7 @@
 USING_FLOWSTATE_EDITORTYPE
 
 UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
-    const FVector2D Location, bool bSelectNewNode)
+                                                      const FVector2D Location, bool bSelectNewNode)
 {
     UFSGraphNodeBase* ResultNode = nullptr;
     // 创建图表节点
@@ -53,7 +53,7 @@ UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, UEd
 }
 
 UEdGraphNode* FFSMSchemaAction_NewNode::PerformAction(UEdGraph* ParentGraph, TArray<UEdGraphPin*>& FromPins,
-    const FVector2D Location, bool bSelectNewNode)
+                                                      const FVector2D Location, bool bSelectNewNode)
 {
     return FEdGraphSchemaAction::PerformAction(ParentGraph, FromPins, Location, bSelectNewNode);
 }
@@ -73,19 +73,21 @@ void FFSMSchemaAction_NewJumpNode::InitializeGraphNode(UFSGraphNodeBase* GraphNo
     }
 }
 
-UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode)
+UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin,
+                                                         const FVector2D Location, bool bSelectNewNode)
 {
     // TODO::子节点需要放置在父节点上才能正确添加，获取当前鼠标悬浮的节点设置为 ParentGraphNode
     if (ParentGraphNode != nullptr)
     {
         UFSGraphSubNode* ResultNode = NewObject<UFSGraphSubNode>(ParentGraph, NodeTemplateClass);
-        ResultNode->ClassData       = ClassData;
+        ResultNode->ClassData = ClassData;
         ParentGraphNode->AddSubNode(ResultNode, ParentGraph);
     }
     return nullptr;
 }
 
-UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentGraph, TArray<UEdGraphPin*>& FromPins, const FVector2D Location, bool bSelectNewNode)
+UEdGraphNode* FFSMSchemaAction_NewSubNode::PerformAction(class UEdGraph* ParentGraph, TArray<UEdGraphPin*>& FromPins,
+                                                         const FVector2D Location, bool bSelectNewNode)
 {
     return PerformAction(ParentGraph, nullptr, Location, bSelectNewNode);
 }
@@ -102,7 +104,7 @@ void UFlowStateGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 {
     Super::CreateDefaultNodesForGraph(Graph);
     FGraphNodeCreator<UFSGraph_RootNode> NodeCreator(Graph);
-    UFSGraph_RootNode*                   RootNode = NodeCreator.CreateNode();
+    UFSGraph_RootNode* RootNode = NodeCreator.CreateNode();
     NodeCreator.Finalize();
     SetNodeMetaData(RootNode, FNodeMetadata::DefaultGraphNode);
 }
@@ -111,10 +113,11 @@ void UFlowStateGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Con
 {
     // 搜集所有的 FlowState 类型并添加该节点行为
 
-    FFlowStateEditorModule&           FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>("FlowStateEditor");
-    TSharedPtr<FGraphNodeClassHelper> ClassCache      = FSMEditorModule.GetClassCache();
+    FFlowStateEditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>(
+        "FlowStateEditor");
+    TSharedPtr<FGraphNodeClassHelper> ClassCache = FSMEditorModule.GetClassCache();
 
-    bool bIsAllowCreateState      = true;
+    bool bIsAllowCreateState = true;
     bool bIsAllowCreateComposites = true;
 
     // 收集所有状态节点
@@ -134,7 +137,7 @@ void UFlowStateGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Con
     {
         // Composites Nodes
         FCategorizedGraphActionListBuilder TasksBuilder(TEXT("Composites"));
-        TArray<FGraphNodeClassData>        CompositesNodeClasses;
+        TArray<FGraphNodeClassData> CompositesNodeClasses;
         ClassCache->GatherClasses(UFlowStateComposite::StaticClass(), CompositesNodeClasses);
         for (FGraphNodeClassData& NodeClass : CompositesNodeClasses)
         {
@@ -165,12 +168,13 @@ FLinearColor UFlowStateGraphSchema::GetPinTypeColor(const FEdGraphPinType& PinTy
     // return Super::GetPinTypeColor(PinType);
 }
 
-FConnectionDrawingPolicy* UFlowStateGraphSchema::CreateConnectionDrawingPolicy(int32 InBackLayerID, int32 InFrontLayerID,
+FConnectionDrawingPolicy* UFlowStateGraphSchema::CreateConnectionDrawingPolicy(
+    int32 InBackLayerID, int32 InFrontLayerID,
     float InZoomFactor, const FSlateRect& InClippingRect, FSlateWindowElementList& InDrawElements,
     UEdGraph* InGraphObj) const
 {
     return Super::CreateConnectionDrawingPolicy(InBackLayerID, InFrontLayerID, InZoomFactor, InClippingRect,
-        InDrawElements, InGraphObj);
+                                                InDrawElements, InGraphObj);
 }
 
 bool UFlowStateGraphSchema::IsCacheVisualizationOutOfDate(int32 InVisualizationCacheID) const
@@ -189,12 +193,12 @@ void UFlowStateGraphSchema::ForceVisualizationCacheClear() const
 }
 
 void UFlowStateGraphSchema::GetGraphNodeContextActions(FGraphContextMenuBuilder& ContextMenuBuilder,
-    ESubNodeType                                                           SubNodeFlags) const
+                                                       ESubNodeType SubNodeFlags) const
 {
     /*
      * 收集所有的子节点加入到节点右键菜单中
      */
-    UClass*                     GraphNodeClass = nullptr;
+    UClass* GraphNodeClass = nullptr;
     TArray<FGraphNodeClassData> NodeClasses;
     GetSubNodeClasses(SubNodeFlags, NodeClasses, GraphNodeClass);
 
@@ -204,48 +208,53 @@ void UFlowStateGraphSchema::GetGraphNodeContextActions(FGraphContextMenuBuilder&
         {
             const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClassData.ToString(), false));
 
-            TSharedPtr<FFSMSchemaAction_NewSubNode> AddOpAction = AddNewSubNodeAction(ContextMenuBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
+            TSharedPtr<FFSMSchemaAction_NewSubNode> AddOpAction = AddNewSubNodeAction(
+                ContextMenuBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
             // 记录操作的父级节点为当前图表选中的首个节点
-            AddOpAction->ParentGraphNode   = Cast<UFSGraphNode>(ContextMenuBuilder.SelectedObjects[0]);
+            AddOpAction->ParentGraphNode = Cast<UFSGraphNode>(ContextMenuBuilder.SelectedObjects[0]);
             AddOpAction->NodeTemplateClass = GraphNodeClass;
-            AddOpAction->ClassData         = NodeClassData;
+            AddOpAction->ClassData = NodeClassData;
         }
     }
 }
 
 void UFlowStateGraphSchema::GetSubNodeClasses(ESubNodeType SubNodeFlags, TArray<FGraphNodeClassData>& ClassData,
-    UClass*& GraphNodeClass) const
+                                              UClass*& GraphNodeClass) const
 {
-    FFlowStateEditorModule& EditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>(TEXT("FlowStateEditor"));
-    FGraphNodeClassHelper*  ClassCache   = EditorModule.GetClassCache().Get();
+    FFlowStateEditorModule& EditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>(
+        TEXT("FlowStateEditor"));
+    FGraphNodeClassHelper* ClassCache = EditorModule.GetClassCache().Get();
     switch (SubNodeFlags)
     {
-        case ESubNodeType::None:
-            checkNoEntry() break;
-        case ESubNodeType::Condition:
-            ClassCache->GatherClasses(UFlowStateCondition::StaticClass(), ClassData);
-            GraphNodeClass = UFSMGraphSubNode_Condition::StaticClass();
-            break;
-        case ESubNodeType::Action:
-            ClassCache->GatherClasses(UFlowStateAction::StaticClass(), ClassData);
-            GraphNodeClass = UFSMGraphSubNode_Action::StaticClass();
-            break;
-        case ESubNodeType::Service:
-            ClassCache->GatherClasses(UFlowStateService::StaticClass(), ClassData);
-            GraphNodeClass = UFSMGraphSubNode_Service::StaticClass();
-            break;
+    case ESubNodeType::None:
+        checkNoEntry()
+        break;
+    case ESubNodeType::Condition:
+        ClassCache->GatherClasses(UFlowStateCondition::StaticClass(), ClassData);
+        GraphNodeClass = UFSMGraphSubNode_Condition::StaticClass();
+        break;
+    case ESubNodeType::Action:
+        ClassCache->GatherClasses(UFlowStateAction::StaticClass(), ClassData);
+        GraphNodeClass = UFSMGraphSubNode_Action::StaticClass();
+        break;
+    case ESubNodeType::Service:
+        ClassCache->GatherClasses(UFlowStateService::StaticClass(), ClassData);
+        GraphNodeClass = UFSMGraphSubNode_Service::StaticClass();
+        break;
     }
 }
 
 void UFlowStateGraphSchema::CollectNewNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder,
-    UClass* NodeInstanceClass, UClass* GraphNodeClass, const UEdGraph* InGraph)
+                                                 UClass* NodeInstanceClass, UClass* GraphNodeClass,
+                                                 const UEdGraph* InGraph)
 {
     if (InGraph == nullptr)
     {
         return;
     }
-    FFlowStateEditorModule&           FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>("FlowStateEditor");
-    TSharedPtr<FGraphNodeClassHelper> ClassCache      = FSMEditorModule.GetClassCache();
+    FFlowStateEditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>(
+        "FlowStateEditor");
+    TSharedPtr<FGraphNodeClassHelper> ClassCache = FSMEditorModule.GetClassCache();
 
     TArray<FGraphNodeClassData> NodeClasses;
     ClassCache->GatherClasses(NodeInstanceClass, NodeClasses);
@@ -269,24 +278,27 @@ void UFlowStateGraphSchema::CollectNewNodeAction(FCategorizedGraphActionListBuil
 
             const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClassData.ToString(), false));
             // 添加创建状态节点到图表右键菜单
-            TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
+            TSharedPtr<FFSMSchemaAction_NewNode> AddOpAction = AddNewNodeAction(
+                TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
 
             // 创建一个图表节点的模板给操作类
             AddOpAction->NodeTemplateClass = GraphNodeClass;
-            AddOpAction->ClassData         = NodeClassData;
+            AddOpAction->ClassData = NodeClassData;
         }
     }
 }
 
 void UFlowStateGraphSchema::CollectNewSubNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder,
-    UClass* NodeInstanceClass, UClass* GraphNodeClass, const UEdGraph* Owner)
+                                                    UClass* NodeInstanceClass, UClass* GraphNodeClass,
+                                                    const UEdGraph* Owner)
 {
     if (Owner == nullptr)
     {
         return;
     }
-    FFlowStateEditorModule&           FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>("FlowStateEditor");
-    TSharedPtr<FGraphNodeClassHelper> ClassCache      = FSMEditorModule.GetClassCache();
+    FFlowStateEditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>(
+        "FlowStateEditor");
+    TSharedPtr<FGraphNodeClassHelper> ClassCache = FSMEditorModule.GetClassCache();
 
     TArray<FGraphNodeClassData> NodeClasses;
     ClassCache->GatherClasses(NodeInstanceClass, NodeClasses);
@@ -299,17 +311,20 @@ void UFlowStateGraphSchema::CollectNewSubNodeAction(FCategorizedGraphActionListB
         }
         const FText NodeTypeName = FText::FromString(FName::NameToDisplayString(NodeClassData.ToString(), false));
 
-        TSharedPtr<FFSMSchemaAction_NewSubNode> AddOpAction = AddNewSubNodeAction(TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
+        TSharedPtr<FFSMSchemaAction_NewSubNode> AddOpAction = AddNewSubNodeAction(
+            TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
         // 记录操作的父级节点为当前图表选中的首个节点
         AddOpAction->NodeTemplateClass = GraphNodeClass;
-        AddOpAction->ClassData         = NodeClassData;
+        AddOpAction->ClassData = NodeClassData;
     }
 }
 
 void UFlowStateGraphSchema::CollectJumpNodeAction(FCategorizedGraphActionListBuilder& TasksBuilder,
-    const FGraphNodeClassData& NodeClassData, UClass* GraphNodeClass, const UEdGraph* InGraph)
+                                                  const FGraphNodeClassData& NodeClassData, UClass* GraphNodeClass,
+                                                  const UEdGraph* InGraph)
 {
-    const auto& GetJumpToActionName = [](const UFSGraphNodeBase* InGraphNode) -> FText {
+    const auto& GetJumpToActionName = [](const UFSGraphNodeBase* InGraphNode) -> FText
+    {
         if (InGraphNode && InGraphNode->NodeInstance)
         {
             return FText::FromString(TEXT("Jump To ---> ") + InGraphNode->NodeInstance->GetNodeName());
@@ -326,10 +341,11 @@ void UFlowStateGraphSchema::CollectJumpNodeAction(FCategorizedGraphActionListBui
             {
                 const FText NodeTypeName = GetJumpToActionName(JumpStartNode);
                 // 添加创建状态节点到图表右键菜单
-                TSharedPtr<FFSMSchemaAction_NewJumpNode> AddOpAction = AddNewJumpNodeAction(TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
-                AddOpAction->NodeTemplateClass                       = GraphNodeClass;
-                AddOpAction->ClassData                               = NodeClassData;
-                AddOpAction->JumpStartID                             = JumpStartNode->JumpStartId;
+                TSharedPtr<FFSMSchemaAction_NewJumpNode> AddOpAction = AddNewJumpNodeAction(
+                    TasksBuilder, NodeClassData.GetCategory(), NodeTypeName, FText::GetEmpty());
+                AddOpAction->NodeTemplateClass = GraphNodeClass;
+                AddOpAction->ClassData = NodeClassData;
+                AddOpAction->JumpStartID = JumpStartNode->JumpStartId;
             }
         }
     }
@@ -338,7 +354,8 @@ void UFlowStateGraphSchema::CollectJumpNodeAction(FCategorizedGraphActionListBui
 TSharedPtr<FFSMSchemaAction_NewNode> UFlowStateGraphSchema::AddNewNodeAction(
     FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip)
 {
-    TSharedPtr<FFSMSchemaAction_NewNode> NewAction = MakeShareable(new FFSMSchemaAction_NewNode(Category, MenuDesc, Tooltip, 0));
+    TSharedPtr<FFSMSchemaAction_NewNode> NewAction = MakeShareable(
+        new FFSMSchemaAction_NewNode(Category, MenuDesc, Tooltip, 0));
     ContextMenuBuilder.AddAction(NewAction);
     return NewAction;
 }
@@ -346,7 +363,8 @@ TSharedPtr<FFSMSchemaAction_NewNode> UFlowStateGraphSchema::AddNewNodeAction(
 TSharedPtr<FFSMSchemaAction_NewJumpNode> UFlowStateGraphSchema::AddNewJumpNodeAction(
     FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip)
 {
-    TSharedPtr<FFSMSchemaAction_NewJumpNode> NewAction = MakeShareable(new FFSMSchemaAction_NewJumpNode(Category, MenuDesc, Tooltip, 0));
+    TSharedPtr<FFSMSchemaAction_NewJumpNode> NewAction = MakeShareable(
+        new FFSMSchemaAction_NewJumpNode(Category, MenuDesc, Tooltip, 0));
     ContextMenuBuilder.AddAction(NewAction);
     return NewAction;
 }
@@ -354,7 +372,8 @@ TSharedPtr<FFSMSchemaAction_NewJumpNode> UFlowStateGraphSchema::AddNewJumpNodeAc
 TSharedPtr<FFSMSchemaAction_NewSubNode> UFlowStateGraphSchema::AddNewSubNodeAction(
     FGraphActionListBuilderBase& ContextMenuBuilder, const FText& Category, const FText& MenuDesc, const FText& Tooltip)
 {
-    TSharedPtr<FFSMSchemaAction_NewSubNode> NewAction = MakeShareable(new FFSMSchemaAction_NewSubNode(Category, MenuDesc, Tooltip, 0));
+    TSharedPtr<FFSMSchemaAction_NewSubNode> NewAction = MakeShareable(
+        new FFSMSchemaAction_NewSubNode(Category, MenuDesc, Tooltip, 0));
     ContextMenuBuilder.AddAction(NewAction);
     return NewAction;
 }
@@ -373,7 +392,8 @@ UClass* UFlowStateGraphSchema::GetCompositesGraphNodeClass(const UClass* NodeIns
     return UFSGraph_CompositeNode::StaticClass();
 }
 
-const FPinConnectionResponse UFlowStateGraphSchema::CanCreateConnection(const UEdGraphPin* PinA, const UEdGraphPin* PinB) const
+const FPinConnectionResponse UFlowStateGraphSchema::CanCreateConnection(
+    const UEdGraphPin* PinA, const UEdGraphPin* PinB) const
 {
     if (PinA == nullptr || PinB == nullptr)
     {
@@ -430,4 +450,3 @@ const FPinConnectionResponse UFlowStateGraphSchema::CanMergeNodes(const UEdGraph
 
     return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT(""));
 }
-

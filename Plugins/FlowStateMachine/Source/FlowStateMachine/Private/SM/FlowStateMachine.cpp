@@ -7,15 +7,15 @@
 
 FString UFlowStateMachine::GetScatteredNodeName(FGuid InScatteredNodeID) const
 {
-	for (UFSMNodeInstance* ScatteredNode : ScatteredNodes)
-	{
-		if (auto JumpStartNode = Cast<UCNodeIns_JumpStart>(ScatteredNode))
-		{
-			if (JumpStartNode->JumpStartId == InScatteredNodeID)
-			{
-				return JumpStartNode->GetNodeName();
-			}
-		}
-	}
-	return "Default";
+    for (UFSMNodeInstance* ScatteredNode : ScatteredNodes)
+    {
+        if (auto JumpStartNode = Cast<UCNodeIns_JumpStart>(ScatteredNode))
+        {
+            if (JumpStartNode->JumpStartId == InScatteredNodeID)
+            {
+                return JumpStartNode->GetNodeName();
+            }
+        }
+    }
+    return "Default";
 }

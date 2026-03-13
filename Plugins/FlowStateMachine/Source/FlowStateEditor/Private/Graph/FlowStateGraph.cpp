@@ -126,7 +126,7 @@ void UFlowStateGraph::NotifyGraphChanged()
 void UFlowStateGraph::CreateFSMFromGraph(UFSGraphNode* RootEdNode)
 {
     UFlowStateMachine* FSMAsset = Cast<UFlowStateMachine>(GetOuter());
-    FSMAsset->RootNodeInstance  = nullptr; // 解除旧资产保存的数据引用
+    FSMAsset->RootNodeInstance = nullptr; // 解除旧资产保存的数据引用
 
     UFSMNodeInstance* RootStateNode = Cast<UFSMNodeInstance>(RootEdNode->NodeInstance);
     if (RootStateNode == nullptr)
@@ -150,7 +150,7 @@ void UFlowStateGraph::CreateFSMFromGraph(UFSGraphNode* RootEdNode)
 
     // 对根节点进行标记
     ClearRootNodeFlags();
-    RootEdNode->bIsRootNode    = true;
+    RootEdNode->bIsRootNode = true;
     RootStateNode->bIsRootNode = true;
 }
 
@@ -220,7 +220,8 @@ void UFlowStateGraph::UpdateNodeErrorMessage(UFSGraphNodeBase& FSMNode)
     FSMNode.ErrorMessage.Empty();
     if (FSMNode.IsDeprecated())
     {
-        FEdGraphNodeDeprecationResponse DeprecationMessage = FSMNode.GetDeprecationResponse(EEdGraphNodeDeprecationType::NodeTypeIsDeprecated);
+        FEdGraphNodeDeprecationResponse DeprecationMessage = FSMNode.GetDeprecationResponse(
+            EEdGraphNodeDeprecationType::NodeTypeIsDeprecated);
         if (DeprecationMessage.MessageType != EEdGraphNodeDeprecationMessageType::None)
         {
             FSMNode.ErrorMessage = DeprecationMessage.MessageText.ToString();
@@ -229,7 +230,8 @@ void UFlowStateGraph::UpdateNodeErrorMessage(UFSGraphNodeBase& FSMNode)
 
     if (FSMNode.HasDeprecatedReference())
     {
-        FEdGraphNodeDeprecationResponse DeprecatedReferenceMessage = FSMNode.GetDeprecationResponse(EEdGraphNodeDeprecationType::NodeHasDeprecatedReference);
+        FEdGraphNodeDeprecationResponse DeprecatedReferenceMessage = FSMNode.GetDeprecationResponse(
+            EEdGraphNodeDeprecationType::NodeHasDeprecatedReference);
         if (DeprecatedReferenceMessage.MessageType != EEdGraphNodeDeprecationMessageType::None)
         {
             FSMNode.ErrorMessage = DeprecatedReferenceMessage.MessageText.ToString();
@@ -333,7 +335,7 @@ void UFlowStateGraph::RemoveOrphanedNodes()
 
     // Obtain a list of all nodes actually in the asset and discard unused nodes
     TArray<UObject*> AllInners;
-    constexpr bool   bIncludeNestedObjects = false;
+    constexpr bool bIncludeNestedObjects = false;
     GetObjectsWithOuter(GetOuter(), AllInners, bIncludeNestedObjects);
     for (auto InnerIt = AllInners.CreateConstIterator(); InnerIt; ++InnerIt)
     {
@@ -343,7 +345,8 @@ void UFlowStateGraph::RemoveOrphanedNodes()
             OnNodeInstanceRemoved(TestObject);
 
             TestObject->SetFlags(RF_Transient);
-            TestObject->Rename(nullptr, GetTransientPackage(), REN_DontCreateRedirectors | REN_NonTransactional | REN_ForceNoResetLoaders);
+            TestObject->Rename(nullptr, GetTransientPackage(),
+                               REN_DontCreateRedirectors | REN_NonTransactional | REN_ForceNoResetLoaders);
         }
     }
 }
@@ -370,11 +373,12 @@ void UFlowStateGraph::CollectAllNodeInstances(TSet<UObject*>& NodeInstances)
 
 bool UFlowStateGraph::CanRemoveNestedObject(UObject* TestObject) const
 {
-    return !TestObject->IsA(UEdGraphNode::StaticClass()) && !TestObject->IsA(UEdGraph::StaticClass()) && !TestObject->IsA(UEdGraphSchema::StaticClass());
+    return !TestObject->IsA(UEdGraphNode::StaticClass()) && !TestObject->IsA(UEdGraph::StaticClass()) && !TestObject->
+        IsA(UEdGraphSchema::StaticClass());
 }
 
 void UFlowStateGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFSMNodeInstance* RuntimeRootNode,
-    const UFSGraphNode* GraphRootNode, TArray<UObject*>& Stack)
+                                          const UFSGraphNode* GraphRootNode, TArray<UObject*>& Stack)
 {
     // 递归结束条件1：确保传入的运行时节点以及图表节点为空
     // 递归结束条件2：GraphRootNode 的输出引脚数量为 0 或 引脚未连接其他节点
@@ -445,7 +449,8 @@ void UFlowStateGraph::CreateChildrenNodes(class UFlowStateMachine* FSMAsset, UFS
     Stack.Pop();
 }
 
-void UFlowStateGraph::CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TArray<const UFSGraphNode*>& ScatteredNodes)
+void UFlowStateGraph::CreateScatteredNodes(UFlowStateMachine* FSMAsset,
+                                           const TArray<const UFSGraphNode*>& ScatteredNodes)
 {
     TArray<UObject*> Stack;
     FSMAsset->ScatteredNodes.Empty();
@@ -464,7 +469,7 @@ void UFlowStateGraph::CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TA
 
 namespace FSMGraphHelper
 {
-// TODO::收集装饰及以及行为子节点
-// void CollectDecorators();
-// void CollectActions();
+    // TODO::收集装饰及以及行为子节点
+    // void CollectDecorators();
+    // void CollectActions();
 }

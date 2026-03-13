@@ -21,20 +21,21 @@ class UFSMMetaDataFragment;
 UCLASS()
 class FLOWSTATEMACHINE_API UFSMMetaDataAsset : public UPrimaryDataAsset
 {
-	GENERATED_BODY()
-public:
-	virtual void PostLoad() override;
+    GENERATED_BODY()
 
-	UFSMMetaDataFragment* FindDataFragment(TSubclassOf<UFSMMetaDataFragment> DataType);
-	
-	template<class T>
-	T FindDataFragment()
-	{
-		return static_cast<T*>(FindDataFragment(T::StaticClass()));
-	}
+public:
+    virtual void PostLoad() override;
+
+    UFSMMetaDataFragment* FindDataFragment(TSubclassOf<UFSMMetaDataFragment> DataType);
+
+    template <class T>
+    T FindDataFragment()
+    {
+        return static_cast<T*>(FindDataFragment(T::StaticClass()));
+    }
 
 protected:
-	// 通过添加编辑器实例
-	UPROPERTY(EditDefaultsOnly, Instanced, Category = "MetaData")
-	TArray<UFSMMetaDataFragment*> DataFragments;
+    // 通过添加编辑器实例
+    UPROPERTY(EditDefaultsOnly, Instanced, Category = "MetaData")
+    TArray<UFSMMetaDataFragment*> DataFragments;
 };

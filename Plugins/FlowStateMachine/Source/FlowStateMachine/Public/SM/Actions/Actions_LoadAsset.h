@@ -21,48 +21,48 @@ struct FStreamableHandle;
 UCLASS(NotBlueprintable)
 class FLOWSTATEMACHINE_API UActions_LoadAsset : public UFlowStateAction
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UActions_LoadAsset(const FObjectInitializer& ObjectInitializer);
-	
-	virtual void ExecuteAction(UFSMNodeInstance* Instance) override;
+    UActions_LoadAsset(const FObjectInitializer& ObjectInitializer);
 
-	virtual void OnPreprocessing() override;
+    virtual void ExecuteAction(UFSMNodeInstance* Instance) override;
 
-	bool HasLoadCompleted() const;
+    virtual void OnPreprocessing() override;
+
+    bool HasLoadCompleted() const;
 
 protected:
-	void LoadAsset(bool IsSyncLoad, bool IsPreload = false);
+    void LoadAsset(bool IsSyncLoad, bool IsPreload = false);
 
-	void UnloadAsset();
+    void UnloadAsset();
 
-	void OnExitState();
+    void OnExitState();
 
 private:
-	void PrintLoadBoundMessage(const TArray<FName>& LoadBounds) const;
-	
+    void PrintLoadBoundMessage(const TArray<FName>& LoadBounds) const;
+
 protected:
-	/** 需要加载的资产ID, 类型主要为 FSMMetaDataAsset */
-	UPROPERTY(EditAnywhere)
-	FPrimaryAssetId AssetId;
+    /** 需要加载的资产ID, 类型主要为 FSMMetaDataAsset */
+    UPROPERTY(EditAnywhere)
+    FPrimaryAssetId AssetId;
 
-	/** 是否允许预加载，加载会在运行状态机时发生 */
-	UPROPERTY(EditAnywhere)
-	bool bAllowPreLoading = true;
+    /** 是否允许预加载，加载会在运行状态机时发生 */
+    UPROPERTY(EditAnywhere)
+    bool bAllowPreLoading = true;
 
-	/** 在当前状态结束后，是否自动释放已加载的资产 */
-	UPROPERTY(EditAnywhere)
-	bool bAutoReleaseAsset = false;
+    /** 在当前状态结束后，是否自动释放已加载的资产 */
+    UPROPERTY(EditAnywhere)
+    bool bAutoReleaseAsset = false;
 
-	/** 同步加载数据（阻塞游戏进程） */
-	UPROPERTY(EditAnywhere, Category = "Advanced")
-	bool bSyncLoad = false;
+    /** 同步加载数据（阻塞游戏进程） */
+    UPROPERTY(EditAnywhere, Category = "Advanced")
+    bool bSyncLoad = false;
 
 private:
-	// 使用弱指针引用该资产，确保回收机制正常运行
-	UPROPERTY(Transient)
-	TWeakObjectPtr<UFSMMetaDataAsset> MetaData;
+    // 使用弱指针引用该资产，确保回收机制正常运行
+    UPROPERTY(Transient)
+    TWeakObjectPtr<UFSMMetaDataAsset> MetaData;
 
-	TSharedPtr<FStreamableHandle> LoadingHandle;
+    TSharedPtr<FStreamableHandle> LoadingHandle;
 };

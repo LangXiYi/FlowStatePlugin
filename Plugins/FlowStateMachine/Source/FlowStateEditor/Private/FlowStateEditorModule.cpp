@@ -30,12 +30,15 @@ void FFlowStateEditorModule::StartupModule()
     StyleSet->Set("FlowStateMachineEditor.NodeDeletePinIcon", NodeDeletePinIcon);
     StyleSet->Set("FlowStateMachineEditor.NodeDeleteNodeIcon", NodeDeleteNodeIcon);*/
 
-    FAssetRegistryModule& AssetRegistryModule = FModuleManager::GetModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+    FAssetRegistryModule& AssetRegistryModule = FModuleManager::GetModuleChecked<FAssetRegistryModule>(
+        TEXT("AssetRegistry"));
     // 监听 AssetRegister 的资产加载事件，
     // AssetAddedHandle = AssetRegistryModule.Get().OnAssetAdded().AddRaw(this, &FFlowStateEditorModule::OnAssetAdded);
     // 监听资产改变事件，当改变的目标类型为蓝图时触发收集事件，会自动收集状态的执行引脚
-    AssetRegistryModule.Get().OnAssetUpdated().AddLambda([this](const FAssetData& AssetData) {
-        if (UBlueprint* BlueprintAsset = Cast<UBlueprint>(AssetData.GetAsset());) {
+    AssetRegistryModule.Get().OnAssetUpdated().AddLambda([this](const FAssetData& AssetData)
+    {
+        if (UBlueprint* BlueprintAsset = Cast<UBlueprint>(AssetData.GetAsset());)
+        {
             OnBlueprintCompiled(BlueprintAsset);
         }
     });
@@ -44,7 +47,8 @@ void FFlowStateEditorModule::StartupModule()
 void FFlowStateEditorModule::ShutdownModule()
 {
     ClassCache.Reset();
-    FAssetRegistryModule& AssetRegistryModule = FModuleManager::GetModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+    FAssetRegistryModule& AssetRegistryModule = FModuleManager::GetModuleChecked<FAssetRegistryModule>(
+        TEXT("AssetRegistry"));
     AssetRegistryModule.Get().OnAssetAdded().Remove(AssetAddedHandle);
 
     // 正常来说这里应该需要解除绑定的蓝图编译事件的，但是编辑器的生命周期在引擎阶段，所以影响也不大，可以不做处理，当然如果出现了bug还是需要额外处理的，

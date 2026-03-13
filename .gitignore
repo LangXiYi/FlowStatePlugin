@@ -3,6 +3,7 @@
 .idea/
 
 *.sln.DotSettings.user
+*.uproject.DotSettings.user
 
 # Compiled Object files
 *.slo

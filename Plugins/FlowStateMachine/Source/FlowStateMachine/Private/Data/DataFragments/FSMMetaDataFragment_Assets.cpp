@@ -7,45 +7,45 @@
 
 UObject* UFSMMetaDataFragment_Assets::FindAsset(const FName Name, TSubclassOf<UObject> AssetType) const
 {
-	if (AssetType == UStaticMesh::StaticClass())
-	{
-		return FindAssetByStaticMesh(Name);
-	}
-	if (AssetType == USkeletalMesh::StaticClass())
-	{
-		return FindAssetBySkeletalMesh(Name);
-	}
-	if (AssetType == UAnimSequence::StaticClass())
-	{
-		return FindAssetByAnimSequence(Name);
-	}
-	UE_LOG(LogFlowStateMachine, Warning, TEXT("%hs Not found asset by %s"), __FUNCTION__, *Name.ToString())
-	return nullptr;
+    if (AssetType == UStaticMesh::StaticClass())
+    {
+        return FindAssetByStaticMesh(Name);
+    }
+    if (AssetType == USkeletalMesh::StaticClass())
+    {
+        return FindAssetBySkeletalMesh(Name);
+    }
+    if (AssetType == UAnimSequence::StaticClass())
+    {
+        return FindAssetByAnimSequence(Name);
+    }
+    UE_LOG(LogFlowStateMachine, Warning, TEXT("%hs Not found asset by %s"), __FUNCTION__, *Name.ToString())
+    return nullptr;
 }
 
 UObject* UFSMMetaDataFragment_Assets::FindAssetByStaticMesh(const FName Name) const
 {
-	if (SM_Meshes.Contains(Name))
-	{
-		return SM_Meshes.FindRef(Name);
-	}
-	return nullptr;
+    if (SM_Meshes.Contains(Name))
+    {
+        return SM_Meshes.FindRef(Name);
+    }
+    return nullptr;
 }
 
 UObject* UFSMMetaDataFragment_Assets::FindAssetBySkeletalMesh(const FName Name) const
 {
-	if (SK_Meshes.Contains(Name))
-	{
-		return SK_Meshes.FindRef(Name);
-	}
-	return nullptr;
+    if (SK_Meshes.Contains(Name))
+    {
+        return SK_Meshes.FindRef(Name);
+    }
+    return nullptr;
 }
 
 UObject* UFSMMetaDataFragment_Assets::FindAssetByAnimSequence(const FName Name) const
 {
-	if (Animations.Contains(Name))
-	{
-		return Animations.FindRef(Name);
-	}
-	return nullptr;
+    if (Animations.Contains(Name))
+    {
+        return Animations.FindRef(Name);
+    }
+    return nullptr;
 }

@@ -34,10 +34,11 @@ FFlowStateMachineEditor::FFlowStateMachineEditor()
 }
 
 void FFlowStateMachineEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode,
-    const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* InObject)
+                                                         const TSharedPtr<class IToolkitHost>& InitToolkitHost,
+                                                         UObject* InObject)
 {
     UFlowStateMachine* FlowStateMachineInEditor = Cast<UFlowStateMachine>(InObject);
-    UFSMCommonData*    CommonDataInEditor       = Cast<UFSMCommonData>(InObject);
+    UFSMCommonData* CommonDataInEditor = Cast<UFSMCommonData>(InObject);
 
     if (FlowStateMachineInEditor != nullptr)
     {
@@ -77,7 +78,8 @@ void FFlowStateMachineEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode
 
         // Register the document factories
         {
-            TSharedRef<FDocumentTabFactory> GraphEditorFactory = MakeShareable(new FFSMGraphEditorSummoner(SharedThis(this)));
+            TSharedRef<FDocumentTabFactory> GraphEditorFactory = MakeShareable(
+                new FFSMGraphEditorSummoner(SharedThis(this)));
 
             // Also store off a reference to the grapheditor factory so we can find all the tabs spawned by it later.
             GraphEditorTabFactoryPtr = GraphEditorFactory;
@@ -100,7 +102,8 @@ void FFlowStateMachineEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode
             true,
             ObjectsToEdit);
         // Add Application Mode
-        AddApplicationMode(FEditorHelper::FlowStateMachineMode, MakeShareable(new FAppMode_StateGraph(SharedThis(this))));
+        AddApplicationMode(FEditorHelper::FlowStateMachineMode,
+                           MakeShareable(new FAppMode_StateGraph(SharedThis(this))));
         AddApplicationMode(FEditorHelper::CommonDataMode, MakeShareable(new FAppMode_CommonData(SharedThis(this))));
     }
     else
@@ -127,8 +130,9 @@ void FFlowStateMachineEditor::InitFlowStateMachineEditor(EToolkitMode::Type Mode
     RegenerateMenusAndToolbars();
 
     // 在打开编辑器后监听资产改变事件
-    FFlowStateEditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>(TEXT("FlowStateEditor"));
-    StateCollectHandle                      = FSMEditorModule.OnUpdateStateCollect.AddSP(this, &FFlowStateMachineEditor::OnCollectState);
+    FFlowStateEditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>(
+        TEXT("FlowStateEditor"));
+    StateCollectHandle = FSMEditorModule.OnUpdateStateCollect.AddSP(this, &FFlowStateMachineEditor::OnCollectState);
 }
 
 void FFlowStateMachineEditor::RegisterTabSpawners(const TSharedRef<class FTabManager>& InTabManager)
@@ -144,7 +148,9 @@ void FFlowStateMachineEditor::UnregisterTabSpawners(const TSharedRef<class FTabM
 
 FText FFlowStateMachineEditor::GetToolkitName() const
 {
-    const UObject* EditingObject = GetCurrentMode() == FEditorHelper::FlowStateMachineMode ? static_cast<UObject*>(FlowStateMachine) : static_cast<UObject*>(CommonData);
+    const UObject* EditingObject = GetCurrentMode() == FEditorHelper::FlowStateMachineMode
+                                       ? static_cast<UObject*>(FlowStateMachine)
+                                       : static_cast<UObject*>(CommonData);
     if (EditingObject != nullptr)
     {
         return GetLabelForObject(EditingObject);
@@ -155,7 +161,9 @@ FText FFlowStateMachineEditor::GetToolkitName() const
 
 FText FFlowStateMachineEditor::GetToolkitToolTipText() const
 {
-    const UObject* EditingObject = GetCurrentMode() == FEditorHelper::FlowStateMachineMode ? static_cast<UObject*>(FlowStateMachine) : static_cast<UObject*>(CommonData);
+    const UObject* EditingObject = GetCurrentMode() == FEditorHelper::FlowStateMachineMode
+                                       ? static_cast<UObject*>(FlowStateMachine)
+                                       : static_cast<UObject*>(CommonData);
 
     check(EditingObject != NULL);
 
@@ -179,7 +187,8 @@ bool FFlowStateMachineEditor::IsPropertyEditable() const
     }*/
 
     TSharedPtr<SGraphEditor> FocusedGraphEd = UpdateGraphEdPtr.Pin();
-    return FocusedGraphEd.IsValid() && FocusedGraphEd->GetCurrentGraph() && FocusedGraphEd->GetCurrentGraph()->bEditable;
+    return FocusedGraphEd.IsValid() && FocusedGraphEd->GetCurrentGraph() && FocusedGraphEd->GetCurrentGraph()->
+        bEditable;
 }
 
 void FFlowStateMachineEditor::RefreshClassPalette()
@@ -211,7 +220,7 @@ void FFlowStateMachineEditor::PostRedo(bool bSuccess)
 }
 
 void FFlowStateMachineEditor::NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent,
-    FProperty*                                                      PropertyThatChanged)
+                                               FProperty* PropertyThatChanged)
 {
     if (PropertyChangedEvent.ChangeType != EPropertyChangeType::Interactive)
     {
@@ -237,7 +246,7 @@ void FFlowStateMachineEditor::SaveEditedObjectState()
 void FFlowStateMachineEditor::RestoreFlowStateMachine()
 {
     // 根据保存的图形更新 FSM 资产数据，使编辑器中有正确的数据
-    UFlowStateGraph* MyGraph   = Cast<UFlowStateGraph>(FlowStateMachine->FSMGraph);
+    UFlowStateGraph* MyGraph = Cast<UFlowStateGraph>(FlowStateMachine->FSMGraph);
     const bool bNewGraph = (MyGraph == nullptr);
     if (bNewGraph)
     {
@@ -259,8 +268,8 @@ void FFlowStateMachineEditor::RestoreFlowStateMachine()
         MyGraph->OnLoadedGraph();
     }
     MyGraph->Initialize();
-    TSharedPtr<FTabPayload_UObject> Payload     = FTabPayload_UObject::Make(MyGraph);
-    TSharedPtr<SDockTab>            DocumentTab = DocumentManager->OpenDocument(
+    TSharedPtr<FTabPayload_UObject> Payload = FTabPayload_UObject::Make(MyGraph);
+    TSharedPtr<SDockTab> DocumentTab = DocumentManager->OpenDocument(
         Payload,
         bNewGraph ? FDocumentTracker::OpenNewDocument : FDocumentTracker::RestorePreviousDocument);
 
@@ -303,12 +312,14 @@ bool FFlowStateMachineEditor::CanAccessCommonDataMode() const
 
 void FFlowStateMachineEditor::OnClose()
 {
-    FFlowStateEditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>(TEXT("FlowStateEditor"));
+    FFlowStateEditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>(
+        TEXT("FlowStateEditor"));
     FSMEditorModule.OnUpdateStateCollect.Remove(StateCollectHandle);
     IFlowStateMachineEditor::OnClose();
 }
 
-TSharedRef<SWidget> FFlowStateMachineEditor::CreateFlowStateMachineGraphEditor(const FWorkflowTabSpawnInfo& Info, UFlowStateGraph* InGraph)
+TSharedRef<SWidget> FFlowStateMachineEditor::CreateFlowStateMachineGraphEditor(
+    const FWorkflowTabSpawnInfo& Info, UFlowStateGraph* InGraph)
 {
     if (!GraphEditorCommands.IsValid())
     {
@@ -364,7 +375,8 @@ TSharedRef<SWidget> FFlowStateMachineEditor::CreateFlowStateMachineGraphEditor(c
 
     SGraphEditor::FGraphEditorEvents InEvents;
     // TODO::绑定Graph图表的事件
-    InEvents.OnSelectionChanged  = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FFlowStateMachineEditor::OnSelectedNodesChanged);
+    InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(
+        this, &FFlowStateMachineEditor::OnSelectedNodesChanged);
     InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FFlowStateMachineEditor::OnNodeDoubleClicked);
     // InEvents.OnTextCommitted = FOnNodeTextCommitted::CreateSP(this, &FBehaviorTreeEditor::OnNodeTitleCommitted);
 
@@ -383,43 +395,53 @@ TSharedRef<SWidget> FFlowStateMachineEditor::CreateFlowStateMachineGraphEditor(c
 TSharedRef<SWidget> FFlowStateMachineEditor::CreateFlowStateMachineDetailView(const FWorkflowTabSpawnInfo& Info)
 {
     FPropertyEditorModule& PropertyEditor = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
-    FDetailsViewArgs       PropertyViewArgs(false, false, true, FDetailsViewArgs::HideNameArea);
+    FDetailsViewArgs PropertyViewArgs(false, false, true, FDetailsViewArgs::HideNameArea);
     PropertyViewArgs.NotifyHook = this;
     // 始终隐藏具有“编辑默认值仅”（即 CPF_DisableEditOnInstance）标志的节点。
     PropertyViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Hide;
 
     DetailsView = PropertyEditor.CreateDetailView(PropertyViewArgs);
-    DetailsView->SetIsPropertyEditingEnabledDelegate(FIsPropertyEditingEnabled::CreateSP(this, &FFlowStateMachineEditor::IsPropertyEditable));
+    DetailsView->SetIsPropertyEditingEnabledDelegate(
+        FIsPropertyEditingEnabled::CreateSP(this, &FFlowStateMachineEditor::IsPropertyEditable));
 
     DetailsView->SetObject(nullptr);
 
     return SNew(SVerticalBox)
-         + SVerticalBox::Slot()
-               .FillHeight(1.f)
-                   [DetailsView.ToSharedRef()]
-         + SVerticalBox::Slot()
-               .VAlign(VAlign_Fill)
-               .AutoHeight()
-                   [SNew(SHorizontalBox)
-                       + SHorizontalBox::Slot()
-                           .VAlign(VAlign_Fill)
-                           .HAlign(HAlign_Fill)
-                           .Padding(FMargin(5.f, 2.f))
-                               [
-                                   // Refresh Node Button
-                                   SNew(SOverlay)
-                                   + SOverlay::Slot()
-                                       .HAlign(HAlign_Fill)
-                                       .VAlign(VAlign_Fill)
-                                           [SNew(SButton)
-                                                   .OnClicked(this, &FFlowStateMachineEditor::OnNodeRefreshClicked)]
-                                   + SOverlay::Slot()
-                                       .HAlign(HAlign_Center)
-                                       .VAlign(VAlign_Center)
-                                           [SNew(STextBlock)
-                                                   .Text(LOCTEXT("FSMGraphEditor", "Refresh Node"))
-                                                   .ColorAndOpacity(FSlateColor(FLinearColor::Black))
-                                                   .Visibility(EVisibility::SelfHitTestInvisible)]]];
+        + SVerticalBox::Slot()
+        .FillHeight(1.f)
+        [
+            DetailsView.ToSharedRef()
+        ]
+        + SVerticalBox::Slot()
+        .VAlign(VAlign_Fill)
+        .AutoHeight()
+        [
+            SNew(SHorizontalBox)
+            + SHorizontalBox::Slot()
+            .VAlign(VAlign_Fill)
+            .HAlign(HAlign_Fill)
+            .Padding(FMargin(5.f, 2.f))
+            [
+                // Refresh Node Button
+                SNew(SOverlay)
+                + SOverlay::Slot()
+                .HAlign(HAlign_Fill)
+                .VAlign(VAlign_Fill)
+                [
+                    SNew(SButton)
+                    .OnClicked(this, &FFlowStateMachineEditor::OnNodeRefreshClicked)
+                ]
+                + SOverlay::Slot()
+                .HAlign(HAlign_Center)
+                .VAlign(VAlign_Center)
+                [
+                    SNew(STextBlock)
+                    .Text(LOCTEXT("FSMGraphEditor", "Refresh Node"))
+                    .ColorAndOpacity(FSlateColor(FLinearColor::Black))
+                    .Visibility(EVisibility::SelfHitTestInvisible)
+                ]
+            ]
+        ];
 }
 
 TSharedRef<SWidget> FFlowStateMachineEditor::CreateFlowStateMachineListView(const FWorkflowTabSpawnInfo& Info)
@@ -431,6 +453,7 @@ UFlowStateGraph* FFlowStateMachineEditor::GetFlowStateGraph() const
 {
     return FlowStateMachine ? Cast<UFlowStateGraph>(FlowStateMachine->FSMGraph) : nullptr;
 }
+
 FText FFlowStateMachineEditor::GetLocalizedMode(FName InMode)
 {
     static TMap<FName, FText> LocModes;
@@ -458,7 +481,7 @@ FGraphAppearanceInfo FFlowStateMachineEditor::GetGraphAppearance() const
 void FFlowStateMachineEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSelection)
 {
     UFlowStateGraph* MyGraph = Cast<UFlowStateGraph>(FlowStateMachine->FSMGraph);
-    SelectedNode       = nullptr;
+    SelectedNode = nullptr;
 
     TArray<UObject*> SelectionNodes;
     SelectionNodes.Reserve(NewSelection.Num());
@@ -499,11 +522,12 @@ void FFlowStateMachineEditor::OnSelectedNodesChanged(const TSet<UObject*>& NewSe
 void FFlowStateMachineEditor::OnNodeDoubleClicked(UEdGraphNode* EdGraphNode)
 {
     UFSGraphNodeBase* MyGraphNode = Cast<UFSGraphNodeBase>(EdGraphNode);
-    if (MyGraphNode && MyGraphNode->NodeInstance && MyGraphNode->NodeInstance->GetClass()->HasAnyClassFlags(CLASS_CompiledFromBlueprint))
+    if (MyGraphNode && MyGraphNode->NodeInstance && MyGraphNode->NodeInstance->GetClass()->HasAnyClassFlags(
+        CLASS_CompiledFromBlueprint))
     {
-        UClass*     NodeClass   = MyGraphNode->NodeInstance->GetClass();
-        UPackage*   Pkg         = NodeClass->GetOuterUPackage();
-        FString     ClassName   = NodeClass->GetName().LeftChop(2);
+        UClass* NodeClass = MyGraphNode->NodeInstance->GetClass();
+        UPackage* Pkg = NodeClass->GetOuterUPackage();
+        FString ClassName = NodeClass->GetName().LeftChop(2);
         UBlueprint* BlueprintOb = FindObject<UBlueprint>(Pkg, *ClassName);
         if (BlueprintOb)
         {

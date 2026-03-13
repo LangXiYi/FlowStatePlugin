@@ -24,7 +24,8 @@ public:
 
     virtual void GetNodeContextMenuActions(UToolMenu* Menu, UGraphNodeContextMenuContext* Context) const override;
 
-    virtual FEdGraphNodeDeprecationResponse GetDeprecationResponse(EEdGraphNodeDeprecationType DeprecationType) const override;
+    virtual FEdGraphNodeDeprecationResponse
+    GetDeprecationResponse(EEdGraphNodeDeprecationType DeprecationType) const override;
 
     virtual TSharedPtr<SGraphNode> CreateVisualWidget() override;
 };

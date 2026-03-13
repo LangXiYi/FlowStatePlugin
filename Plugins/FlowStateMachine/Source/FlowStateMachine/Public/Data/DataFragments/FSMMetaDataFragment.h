@@ -9,5 +9,5 @@
 UCLASS(Abstract, Blueprintable, EditInlineNew)
 class FLOWSTATEMACHINE_API UFSMMetaDataFragment : public UObject
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 };

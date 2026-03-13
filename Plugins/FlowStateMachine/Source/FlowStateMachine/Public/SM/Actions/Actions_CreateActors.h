@@ -14,14 +14,14 @@ class UFSMCreateActorHelper;
 UCLASS()
 class FLOWSTATEMACHINE_API UActions_CreateActors : public UFlowStateAction
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Instanced, Category = "CreateActors")
-	TArray<UFSMCreateActorHelper*> CreateActors;
+    UPROPERTY(EditAnywhere, Instanced, Category = "CreateActors")
+    TArray<UFSMCreateActorHelper*> CreateActors;
 
-	virtual void ExecuteAction(UFSMNodeInstance* Instance) override;
+    virtual void ExecuteAction(UFSMNodeInstance* Instance) override;
 
-	/** 返回该子节点需要创建的引脚信息 */
-	virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const override;
+    /** 返回该子节点需要创建的引脚信息 */
+    virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const override;
 };

@@ -5,39 +5,43 @@
 class FFlowStateClassParentFilter : public IClassViewerFilter
 {
 public:
-	/** All children of these classes will be included unless filtered out by another setting. */
-	TSet< const UClass* > AllowedChildrenOfClasses;
+    /** All children of these classes will be included unless filtered out by another setting. */
+    TSet<const UClass*> AllowedChildrenOfClasses;
 
-	/** Disallowed class flags. */
-	EClassFlags DisallowedClassFlags = CLASS_None;
+    /** Disallowed class flags. */
+    EClassFlags DisallowedClassFlags = CLASS_None;
 
-	/** Disallow blueprint base classes. */
-	bool bDisallowBlueprintBase = false;
+    /** Disallow blueprint base classes. */
+    bool bDisallowBlueprintBase = false;
 
-	virtual bool IsClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const UClass* InClass, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
-	{
-		bool bAllowed= !InClass->HasAnyClassFlags(DisallowedClassFlags)
-			&& InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InClass) != EFilterReturn::Failed;
-		// todo::目前不能识别蓝图类型
-		if (bAllowed && bDisallowBlueprintBase)
-		{
-			if (FKismetEditorUtilities::CanCreateBlueprintOfClass(InClass))
-			{
-				return false;
-			}
-		}
+    virtual bool IsClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const UClass* InClass,
+                                TSharedRef<FClassViewerFilterFuncs> InFilterFuncs) override
+    {
+        bool bAllowed = !InClass->HasAnyClassFlags(DisallowedClassFlags)
+            && InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InClass) != EFilterReturn::Failed;
+        // todo::目前不能识别蓝图类型
+        if (bAllowed && bDisallowBlueprintBase)
+        {
+            if (FKismetEditorUtilities::CanCreateBlueprintOfClass(InClass))
+            {
+                return false;
+            }
+        }
 
-		return bAllowed;
-	}
+        return bAllowed;
+    }
 
-	virtual bool IsUnloadedClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const TSharedRef< const IUnloadedBlueprintData > InUnloadedClassData, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
-	{
-		if (bDisallowBlueprintBase)
-		{
-			return false;
-		}
+    virtual bool IsUnloadedClassAllowed(const FClassViewerInitializationOptions& InInitOptions,
+                                        const TSharedRef<const IUnloadedBlueprintData> InUnloadedClassData,
+                                        TSharedRef<FClassViewerFilterFuncs> InFilterFuncs) override
+    {
+        if (bDisallowBlueprintBase)
+        {
+            return false;
+        }
 
-		return !InUnloadedClassData->HasAnyClassFlags(DisallowedClassFlags)
-			&& InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InUnloadedClassData) != EFilterReturn::Failed;
-	}
+        return !InUnloadedClassData->HasAnyClassFlags(DisallowedClassFlags)
+            && InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InUnloadedClassData) !=
+            EFilterReturn::Failed;
+    }
 };

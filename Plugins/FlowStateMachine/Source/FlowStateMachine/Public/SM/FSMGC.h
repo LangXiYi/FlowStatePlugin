@@ -10,62 +10,62 @@ class UWidget;
 class FSMGC
 {
 public:
-	void Initialize(UWorld* InWorld);
+    void Initialize(UWorld* InWorld);
 
 private:
-	TWeakObjectPtr<UWorld> World;
+    TWeakObjectPtr<UWorld> World;
 
 public:
-	////////////////////////////////////////////////////////////////
-	//  Camera Cache
-	////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////
+    //  Camera Cache
+    ////////////////////////////////////////////////////////////////
 
-	AActor* FindCamera(const FString& CameraName);
+    AActor* FindCamera(const FString& CameraName);
 
 protected:
-	TArray<AActor*> CameraActors;
+    TArray<AActor*> CameraActors;
 
-	////////////////////////////////////////////////////////////////
-	//  Add to Cache
-	////////////////////////////////////////////////////////////////
-	
+    ////////////////////////////////////////////////////////////////
+    //  Add to Cache
+    ////////////////////////////////////////////////////////////////
+
 public:
-	template<class T>
-	void AddToCache(T Target, EFlowStateLifetime Lifetime);
+    template <class T>
+    void AddToCache(T Target, EFlowStateLifetime Lifetime);
 
-	template<class T>
-	void SwitchCache(T Target, EFlowStateLifetime FromLifetime, EFlowStateLifetime ToLifetime);
+    template <class T>
+    void SwitchCache(T Target, EFlowStateLifetime FromLifetime, EFlowStateLifetime ToLifetime);
 
-	template<class T>
-	void RemoveFromCache(T Target, EFlowStateLifetime Lifetime);
+    template <class T>
+    void RemoveFromCache(T Target, EFlowStateLifetime Lifetime);
 
-	template<class KeyType, class ValeType>
-	bool FindRefByCache(const KeyType& Tag, EFlowStateLifetime Lifetime, ValeType& OutTarget);
+    template <class KeyType, class ValeType>
+    bool FindRefByCache(const KeyType& Tag, EFlowStateLifetime Lifetime, ValeType& OutTarget);
 
-	template<class KeyType, class ValeType>
-	EFlowStateLifetime FindRefByCache(const KeyType& Tag, ValeType& OutTarget);
+    template <class KeyType, class ValeType>
+    EFlowStateLifetime FindRefByCache(const KeyType& Tag, ValeType& OutTarget);
 
-	void HiddenCache();
-	void KillCache();
+    void HiddenCache();
+    void KillCache();
 
-	void ClearAllCache();
+    void ClearAllCache();
 
-	void ClearCacheBy(EFlowStateLifetime Lifetime);
+    void ClearCacheBy(EFlowStateLifetime Lifetime);
 
 protected:
-	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& OutTarget);
-	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ASkeletalMeshActor*& OutTarget);
-	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AStaticMeshActor*& OutTarget);
-	bool _FindRefByCache(FGameplayTag Tag, EFlowStateLifetime Lifetime, UWidget*& OutTarget);
-	bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ULevel*& OutTarget);
+    bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AActor*& OutTarget);
+    bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ASkeletalMeshActor*& OutTarget);
+    bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, AStaticMeshActor*& OutTarget);
+    bool _FindRefByCache(FGameplayTag Tag, EFlowStateLifetime Lifetime, UWidget*& OutTarget);
+    bool _FindRefByCache(FName Tag, EFlowStateLifetime Lifetime, ULevel*& OutTarget);
 
-	void _KillCacheFrom(AActor* Actor);
-	void _KillCacheFrom(UWidget* Widget);
-	void _KillCacheFrom(FName SubLevel);
+    void _KillCacheFrom(AActor* Actor);
+    void _KillCacheFrom(UWidget* Widget);
+    void _KillCacheFrom(FName SubLevel);
 
-	void _HiddenCacheFrom(AActor* Actor);
-	void _HiddenCacheFrom(UWidget* Widget);
-	void _HiddenCacheFrom(FName SubLevel);
+    void _HiddenCacheFrom(AActor* Actor);
+    void _HiddenCacheFrom(UWidget* Widget);
+    void _HiddenCacheFrom(FName SubLevel);
 
 private:
 #define CREATE_CACHE_OBJECT_HELPER(ClassType, Name) \
@@ -97,80 +97,79 @@ private:
 		void _RemoveFromKill(ClassType Target)\
 		{\
 			Kill_## Name.Remove(Target);\
-		}\
-
-	CREATE_CACHE_OBJECT_HELPER(TWeakObjectPtr<AActor>, Actors);
-	CREATE_CACHE_OBJECT_HELPER(TWeakObjectPtr<UWidget>, Widgets);
-	CREATE_CACHE_OBJECT_HELPER(FName, SubLevels);
+		}
+    CREATE_CACHE_OBJECT_HELPER(TWeakObjectPtr<AActor>, Actors);
+    CREATE_CACHE_OBJECT_HELPER(TWeakObjectPtr<UWidget>, Widgets);
+    CREATE_CACHE_OBJECT_HELPER(FName, SubLevels);
 
 public:
-	FText Debug_GetCacheInfo() const;
+    FText Debug_GetCacheInfo() const;
 };
 
 template <class T>
 void FSMGC::AddToCache(T Target, EFlowStateLifetime Lifetime)
 {
-	switch (Lifetime)
-	{
-	case EFlowStateLifetime::Static:
-		_AddToStaticBy(Target);
-		break;
-	case EFlowStateLifetime::Kill:
-		_AddToKillBy(Target);
-		break;
-	case EFlowStateLifetime::Hidden:
-		_AddToHiddenBy(Target);
-		break;
-	}
+    switch (Lifetime)
+    {
+    case EFlowStateLifetime::Static:
+        _AddToStaticBy(Target);
+        break;
+    case EFlowStateLifetime::Kill:
+        _AddToKillBy(Target);
+        break;
+    case EFlowStateLifetime::Hidden:
+        _AddToHiddenBy(Target);
+        break;
+    }
 }
 
 template <class T>
 void FSMGC::SwitchCache(T Target, EFlowStateLifetime FromLifetime, EFlowStateLifetime ToLifetime)
 {
-	RemoveFromCache(Target, FromLifetime);
-	AddToCache(Target, ToLifetime);
+    RemoveFromCache(Target, FromLifetime);
+    AddToCache(Target, ToLifetime);
 }
 
 template <class T>
 void FSMGC::RemoveFromCache(T Target, EFlowStateLifetime Lifetime)
 {
-	switch (Lifetime)
-	{
-	case EFlowStateLifetime::Static:
-		_RemoveFromStatic(Target);
-		break;
-	case EFlowStateLifetime::Kill:
-		_RemoveFromKill(Target);
-		break;
-	case EFlowStateLifetime::Hidden:
-		_RemoveFromHidden(Target);
-		break;
-	}
+    switch (Lifetime)
+    {
+    case EFlowStateLifetime::Static:
+        _RemoveFromStatic(Target);
+        break;
+    case EFlowStateLifetime::Kill:
+        _RemoveFromKill(Target);
+        break;
+    case EFlowStateLifetime::Hidden:
+        _RemoveFromHidden(Target);
+        break;
+    }
 }
 
 template <class KeyType, class ValeType>
 bool FSMGC::FindRefByCache(const KeyType& Tag, EFlowStateLifetime Lifetime, ValeType& OutTarget)
 {
-	return _FindRefByCache(Tag, Lifetime, OutTarget);
+    return _FindRefByCache(Tag, Lifetime, OutTarget);
 }
 
 template <class KeyType, class ValeType>
 EFlowStateLifetime FSMGC::FindRefByCache(const KeyType& Tag, ValeType& OutTarget)
 {
-	_FindRefByCache(Tag, EFlowStateLifetime::Static, OutTarget);
-	if (OutTarget != nullptr)
-	{
-		return EFlowStateLifetime::Static;
-	}
-	_FindRefByCache(Tag, EFlowStateLifetime::Kill, OutTarget);
-	if (OutTarget != nullptr)
-	{
-		return EFlowStateLifetime::Kill;
-	}
-	_FindRefByCache(Tag, EFlowStateLifetime::Hidden, OutTarget);
-	if (OutTarget != nullptr)
-	{
-		return EFlowStateLifetime::Hidden;
-	}
-	return EFlowStateLifetime::None;
+    _FindRefByCache(Tag, EFlowStateLifetime::Static, OutTarget);
+    if (OutTarget != nullptr)
+    {
+        return EFlowStateLifetime::Static;
+    }
+    _FindRefByCache(Tag, EFlowStateLifetime::Kill, OutTarget);
+    if (OutTarget != nullptr)
+    {
+        return EFlowStateLifetime::Kill;
+    }
+    _FindRefByCache(Tag, EFlowStateLifetime::Hidden, OutTarget);
+    if (OutTarget != nullptr)
+    {
+        return EFlowStateLifetime::Hidden;
+    }
+    return EFlowStateLifetime::None;
 }

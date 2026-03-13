@@ -40,28 +40,28 @@ void IFlowStateMachineEditor::CreateCommandList()
     // if it ever crashes, this function will have to go away and be reimplemented in each derived class
 
     GraphEditorCommands->MapAction(FGenericCommands::Get().SelectAll,
-        FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::SelectAllNodes),
-        FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanSelectAllNodes));
+                                   FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::SelectAllNodes),
+                                   FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanSelectAllNodes));
 
     GraphEditorCommands->MapAction(FGenericCommands::Get().Delete,
-        FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::DeleteSelectedNodes),
-        FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanDeleteNodes));
+                                   FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::DeleteSelectedNodes),
+                                   FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanDeleteNodes));
 
     GraphEditorCommands->MapAction(FGenericCommands::Get().Copy,
-        FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CopySelectedNodes),
-        FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanCopyNodes));
+                                   FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CopySelectedNodes),
+                                   FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanCopyNodes));
 
     GraphEditorCommands->MapAction(FGenericCommands::Get().Cut,
-        FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CutSelectedNodes),
-        FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanCutNodes));
+                                   FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CutSelectedNodes),
+                                   FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanCutNodes));
 
     GraphEditorCommands->MapAction(FGenericCommands::Get().Paste,
-        FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::PasteNodes),
-        FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanPasteNodes));
+                                   FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::PasteNodes),
+                                   FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanPasteNodes));
 
     GraphEditorCommands->MapAction(FGenericCommands::Get().Duplicate,
-        FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::DuplicateNodes),
-        FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanDuplicateNodes));
+                                   FExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::DuplicateNodes),
+                                   FCanExecuteAction::CreateRaw(this, &IFlowStateMachineEditor::CanDuplicateNodes));
 
     GraphEditorCommands->MapAction(
         FGraphEditorCommands::Get().CreateComment,
@@ -201,7 +201,7 @@ bool IFlowStateMachineEditor::CanCutNodes() const
 void IFlowStateMachineEditor::CopySelectedNodes()
 {
     // Export the selected nodes and place the text on the clipboard
-    FGraphPanelSelectionSet   SelectedNodes = UpdateGraphEdPtr.Pin()->GetSelectedNodes();
+    FGraphPanelSelectionSet SelectedNodes = UpdateGraphEdPtr.Pin()->GetSelectedNodes();
     TArray<UFSGraphNodeBase*> SubNodes;
 
     FString ExportedText;
@@ -209,7 +209,7 @@ void IFlowStateMachineEditor::CopySelectedNodes()
     int32 CopySubNodeIndex = 0;
     for (FGraphPanelSelectionSet::TIterator SelectedIter(SelectedNodes); SelectedIter; ++SelectedIter)
     {
-        UEdGraphNode* Node   = Cast<UEdGraphNode>(*SelectedIter);
+        UEdGraphNode* Node = Cast<UEdGraphNode>(*SelectedIter);
         UFSGraphNode* AINode = Cast<UFSGraphNode>(Node);
         if (Node == nullptr)
         {
@@ -288,8 +288,8 @@ void IFlowStateMachineEditor::PasteNodesHere(const FVector2D& Location)
     // Undo/Redo support
     // BUG::撤销操作会导致程序崩溃
     const FScopedTransaction Transaction(FGenericCommands::Get().Paste->GetDescription());
-    UEdGraph*                EdGraph = CurrentGraphEditor->GetCurrentGraph();
-    UFlowStateGraph*               AIGraph = Cast<UFlowStateGraph>(EdGraph);
+    UEdGraph* EdGraph = CurrentGraphEditor->GetCurrentGraph();
+    UFlowStateGraph* AIGraph = Cast<UFlowStateGraph>(EdGraph);
 
     EdGraph->Modify();
     if (AIGraph)
@@ -297,8 +297,8 @@ void IFlowStateMachineEditor::PasteNodesHere(const FVector2D& Location)
         AIGraph->LockUpdates();
     }
 
-    UFSGraphNode* SelectedParent            = nullptr;
-    bool          bHasMultipleNodesSelected = false;
+    UFSGraphNode* SelectedParent = nullptr;
+    bool bHasMultipleNodesSelected = false;
 
     const FGraphPanelSelectionSet SelectedNodes = CurrentGraphEditor->GetSelectedNodes();
     for (FGraphPanelSelectionSet::TConstIterator SelectedIter(SelectedNodes); SelectedIter; ++SelectedIter)
@@ -358,7 +358,7 @@ void IFlowStateMachineEditor::PasteNodesHere(const FVector2D& Location)
 
     if (AvgCount > 0)
     {
-        float InvNumNodes  = 1.0f / static_cast<float>(AvgCount);
+        float InvNumNodes = 1.0f / static_cast<float>(AvgCount);
         AvgNodePosition.X *= InvNumNodes;
         AvgNodePosition.Y *= InvNumNodes;
     }
@@ -370,7 +370,7 @@ void IFlowStateMachineEditor::PasteNodesHere(const FVector2D& Location)
     TMap<int32, UFSGraphNodeBase*> ParentMap;
     for (TSet<UEdGraphNode*>::TIterator It(PastedNodes); It; ++It)
     {
-        UEdGraphNode* PasteNode   = *It;
+        UEdGraphNode* PasteNode = *It;
         UFSGraphNode* PasteAINode = Cast<UFSGraphNode>(PasteNode);
 
         if (PasteNode && PasteAINode)
@@ -492,6 +492,6 @@ void IFlowStateMachineEditor::OnCreateComment()
 }
 
 void IFlowStateMachineEditor::FixupPastedNodes(const TSet<UEdGraphNode*>& NewPastedGraphNodes,
-    const TMap<FGuid, FGuid>&                                             NewToOldNodeMapping)
+                                               const TMap<FGuid, FGuid>& NewToOldNodeMapping)
 {
 }

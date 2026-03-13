@@ -13,14 +13,14 @@
 UCLASS()
 class FLOWSTATEMACHINE_API UActions_Camera : public UFlowStateAction
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	virtual void ExecuteAction(UFSMNodeInstance* Instance) override;
-	
-	virtual FString GetNodeName() const override { return "SwitchCamera"; }
+    virtual void ExecuteAction(UFSMNodeInstance* Instance) override;
+
+    virtual FString GetNodeName() const override { return "SwitchCamera"; }
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Camera")
-	FString CameraName;
+    UPROPERTY(EditAnywhere, Category = "Camera")
+    FString CameraName;
 };

@@ -12,11 +12,11 @@
 UCLASS()
 class FLOWSTATEMACHINE_API UFlowStateBlueprint : public UBlueprint
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	virtual bool SupportedByDefaultBlueprintFactory() const override
-	{
-		return false;
-	}	
+    virtual bool SupportedByDefaultBlueprintFactory() const override
+    {
+        return false;
+    }
 };

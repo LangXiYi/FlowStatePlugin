@@ -12,11 +12,11 @@
 UCLASS(Abstract, Blueprintable)
 class FLOWSTATEMACHINE_API UFlowStateCondition : public UFSMSubNodeInstance
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	virtual bool Condition(UFlowStateContext* Context) const;
+    virtual bool Condition(UFlowStateContext* Context) const;
 
-	UFUNCTION(BlueprintImplementableEvent, DisplayName = "Condition")
-	bool BP_Condition(UFlowStateContext* Context) const;
+    UFUNCTION(BlueprintImplementableEvent, DisplayName = "Condition")
+    bool BP_Condition(UFlowStateContext* Context) const;
 };

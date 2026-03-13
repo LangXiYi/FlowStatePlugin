@@ -12,28 +12,28 @@
 UCLASS()
 class FLOWSTATEMACHINE_API UFSMCommonDataType_Bool : public UFSMCommonDataType
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	using FDataType =  bool;
-	static const FDataType InvalidValue;
+    using FDataType = bool;
+    static const FDataType InvalidValue;
 
-static FDataType GetValue(const UFSMCommonDataType_Bool* KeyObj)
-	{
-		return KeyObj ? static_cast<FDataType>(KeyObj->DataValue) : InvalidValue;
-	}
+    static FDataType GetValue(const UFSMCommonDataType_Bool* KeyObj)
+    {
+        return KeyObj ? static_cast<FDataType>(KeyObj->DataValue) : InvalidValue;
+    }
 
-	static bool SetValue(UFSMCommonDataType_Bool* KeyObj,  FDataType Value)
-	{
-		if (KeyObj)
-		{
-			KeyObj->DataValue = Value;
-			return true;
-		}
-		return false;
-	}
+    static bool SetValue(UFSMCommonDataType_Bool* KeyObj, FDataType Value)
+    {
+        if (KeyObj)
+        {
+            KeyObj->DataValue = Value;
+            return true;
+        }
+        return false;
+    }
 
 protected:
-	UPROPERTY(EditAnywhere)
-	bool DataValue;
+    UPROPERTY(EditAnywhere)
+    bool DataValue;
 };

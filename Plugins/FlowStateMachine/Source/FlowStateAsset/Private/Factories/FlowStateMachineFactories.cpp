@@ -25,18 +25,18 @@
 ////////////////////////////////////////////////////////////////////
 
 UFactory_FlowStateData::UFactory_FlowStateData(const FObjectInitializer& ObjectInitializer)
-	:Super(ObjectInitializer)
+    : Super(ObjectInitializer)
 {
-	SupportedClass = UFSMMetaDataAsset::StaticClass();
-	bCreateNew = true;
-	bEditAfterNew = true;
+    SupportedClass = UFSMMetaDataAsset::StaticClass();
+    bCreateNew = true;
+    bEditAfterNew = true;
 }
 
 UObject* UFactory_FlowStateData::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags,
-	UObject* Context, FFeedbackContext* Warn)
+                                                  UObject* Context, FFeedbackContext* Warn)
 {
-	check(Class->IsChildOf(UFSMMetaDataAsset::StaticClass()));
-	return NewObject<UFSMMetaDataAsset>(InParent, Class, Name, Flags);
+    check(Class->IsChildOf(UFSMMetaDataAsset::StaticClass()));
+    return NewObject<UFSMMetaDataAsset>(InParent, Class, Name, Flags);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,76 +44,83 @@ UObject* UFactory_FlowStateData::FactoryCreateNew(UClass* Class, UObject* InPare
 ////////////////////////////////////////////////////////////////////
 
 UFactory_FlowState::UFactory_FlowState(const FObjectInitializer& ObjectInitializer)
-	:Super(ObjectInitializer)
+    : Super(ObjectInitializer)
 {
-	SupportedClass = UFlowStateBlueprint::StaticClass();
-	ParentClass = UFlowStateBase::StaticClass();
-	bCreateNew = true;
-	bEditAfterNew = true;
+    SupportedClass = UFlowStateBlueprint::StaticClass();
+    ParentClass = UFlowStateBase::StaticClass();
+    bCreateNew = true;
+    bEditAfterNew = true;
 }
 
 bool UFactory_FlowState::ConfigureProperties()
 {
-	// nullptr the FlowStateClass so we can check for selection
-	ParentClass = nullptr;
+    // nullptr the FlowStateClass so we can check for selection
+    ParentClass = nullptr;
 
-	// Fill in options
-	FClassViewerInitializationOptions Options;
-	Options.Mode = EClassViewerMode::ClassPicker;
-	Options.DisplayMode = EClassViewerDisplayMode::ListView;
-	Options.bShowObjectRootClass = false;
-	Options.bExpandRootNodes = false;
+    // Fill in options
+    FClassViewerInitializationOptions Options;
+    Options.Mode = EClassViewerMode::ClassPicker;
+    Options.DisplayMode = EClassViewerDisplayMode::ListView;
+    Options.bShowObjectRootClass = false;
+    Options.bExpandRootNodes = false;
 
-	// Only want blueprint actor base classes.
-	Options.bIsBlueprintBaseOnly = false;
+    // Only want blueprint actor base classes.
+    Options.bIsBlueprintBaseOnly = false;
 
-	// This will allow unloaded blueprints to be shown.
-	Options.bShowUnloadedBlueprints = true;
+    // This will allow unloaded blueprints to be shown.
+    Options.bShowUnloadedBlueprints = true;
 
-	// Enable Class Dynamic Loading
-	Options.bEnableClassDynamicLoading = true;
+    // Enable Class Dynamic Loading
+    Options.bEnableClassDynamicLoading = true;
 
-	Options.NameTypeToDisplay = EClassViewerNameTypeToDisplay::Dynamic;
-	
-	TSharedPtr<FFlowStateClassParentFilter> Filter = MakeShareable(new FFlowStateClassParentFilter);
-	Options.ClassFilter = Filter;
+    Options.NameTypeToDisplay = EClassViewerNameTypeToDisplay::Dynamic;
 
-	Filter->DisallowedClassFlags = CLASS_Deprecated | CLASS_NewerVersionExists;
-	Filter->AllowedChildrenOfClasses.Add(UFlowStateBase::StaticClass());
+    TSharedPtr<FFlowStateClassParentFilter> Filter = MakeShareable(new FFlowStateClassParentFilter);
+    Options.ClassFilter = Filter;
 
-	const FText TitleText = LOCTEXT("CreateFlowStateOptions", "Pick Flow State Class");
-	UClass* ChosenClass = nullptr;
-	const bool bPressedOk = SClassPickerDialog::PickClass(TitleText, Options, ChosenClass, UFlowStateBlueprint::StaticClass());
+    Filter->DisallowedClassFlags = CLASS_Deprecated | CLASS_NewerVersionExists;
+    Filter->AllowedChildrenOfClasses.Add(UFlowStateBase::StaticClass());
 
-	if ( bPressedOk )
-	{
-		ParentClass = ChosenClass;
-		FEditorDelegates::OnFinishPickingBlueprintClass.Broadcast(ParentClass);
-	}
-	return bPressedOk;
+    const FText TitleText = LOCTEXT("CreateFlowStateOptions", "Pick Flow State Class");
+    UClass* ChosenClass = nullptr;
+    const bool bPressedOk = SClassPickerDialog::PickClass(TitleText, Options, ChosenClass,
+                                                          UFlowStateBlueprint::StaticClass());
+
+    if (bPressedOk)
+    {
+        ParentClass = ChosenClass;
+        FEditorDelegates::OnFinishPickingBlueprintClass.Broadcast(ParentClass);
+    }
+    return bPressedOk;
 }
 
 UObject* UFactory_FlowState::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags,
-	UObject* Context, FFeedbackContext* Warn, FName CallingContext)
+                                              UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
-	// Make sure we are trying to factory a blueprint, then create and init one
-	check(Class->IsChildOf(UFlowStateBlueprint::StaticClass()));
+    // Make sure we are trying to factory a blueprint, then create and init one
+    check(Class->IsChildOf(UFlowStateBlueprint::StaticClass()));
 
-	if ((ParentClass == nullptr) || !FKismetEditorUtilities::CanCreateBlueprintOfClass(ParentClass))
-	{
-		FFormatNamedArguments Args;
-		Args.Add( TEXT("ClassName"), (ParentClass != nullptr) ? FText::FromString( ParentClass->GetName() ) : LOCTEXT("Null", "(null)") );
-		FMessageDialog::Open( EAppMsgType::Ok, FText::Format( LOCTEXT("CannotCreateBlueprintFromClass", "Cannot create a blueprint based on the class '{0}'."), Args ) );
-		return nullptr;
-	}UClass* BlueprintClass = UFlowStateBlueprint::StaticClass();
-		UClass* BlueprintGeneratedClass = UBlueprintGeneratedClass::StaticClass();
-		return FKismetEditorUtilities::CreateBlueprint(ParentClass, InParent, Name, BPTYPE_Normal, BlueprintClass, BlueprintGeneratedClass, CallingContext);
+    if ((ParentClass == nullptr) || !FKismetEditorUtilities::CanCreateBlueprintOfClass(ParentClass))
+    {
+        FFormatNamedArguments Args;
+        Args.Add(TEXT("ClassName"), (ParentClass != nullptr)
+                                        ? FText::FromString(ParentClass->GetName())
+                                        : LOCTEXT("Null", "(null)"));
+        FMessageDialog::Open(EAppMsgType::Ok,
+                             FText::Format(LOCTEXT("CannotCreateBlueprintFromClass",
+                                                   "Cannot create a blueprint based on the class '{0}'."), Args));
+        return nullptr;
+    }
+    UClass* BlueprintClass = UFlowStateBlueprint::StaticClass();
+    UClass* BlueprintGeneratedClass = UBlueprintGeneratedClass::StaticClass();
+    return FKismetEditorUtilities::CreateBlueprint(ParentClass, InParent, Name, BPTYPE_Normal, BlueprintClass,
+                                                   BlueprintGeneratedClass, CallingContext);
 }
 
 UObject* UFactory_FlowState::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags,
                                               UObject* Context, FFeedbackContext* Warn)
 {
-	return FactoryCreateNew(Class, InParent, Name, Flags, Context, Warn, NAME_None);
+    return FactoryCreateNew(Class, InParent, Name, Flags, Context, Warn, NAME_None);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,24 +128,24 @@ UObject* UFactory_FlowState::FactoryCreateNew(UClass* Class, UObject* InParent, 
 ////////////////////////////////////////////////////////////////////
 
 UFactory_FlowStateMachine::UFactory_FlowStateMachine(const FObjectInitializer& ObjectInitializer)
-	:Super(ObjectInitializer)
+    : Super(ObjectInitializer)
 {
-	SupportedClass = UFlowStateMachine::StaticClass();
-	bCreateNew = true;
-	bEditAfterNew = true;
+    SupportedClass = UFlowStateMachine::StaticClass();
+    bCreateNew = true;
+    bEditAfterNew = true;
 }
 
 UObject* UFactory_FlowStateMachine::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags,
-	UObject* Context, FFeedbackContext* Warn, FName CallingContext)
+                                                     UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
-	check(Class->IsChildOf(UFlowStateMachine::StaticClass()));
-	return NewObject<UFlowStateMachine>(InParent, Class, Name, Flags);
+    check(Class->IsChildOf(UFlowStateMachine::StaticClass()));
+    return NewObject<UFlowStateMachine>(InParent, Class, Name, Flags);
 }
 
 UObject* UFactory_FlowStateMachine::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name,
                                                      EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
 {
-	return FactoryCreateNew(Class, InParent, Name, Flags, Context, Warn, NAME_None);
+    return FactoryCreateNew(Class, InParent, Name, Flags, Context, Warn, NAME_None);
 }
 
 #undef LOCTEXT_NAMESPACE

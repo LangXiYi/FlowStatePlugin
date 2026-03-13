@@ -8,20 +8,20 @@
 
 void UActions_CreateWidgets::ExecuteAction(UFSMNodeInstance* Instance)
 {
-	Super::ExecuteAction(Instance);
-	for (UFSMCreateWidgetHelper* Helper : CreateWidgets)
-	{
-		if (Helper == nullptr || !Helper->IsValid()) {continue;}
-		Helper->CreateWidget(StateContext);
-	}
+    Super::ExecuteAction(Instance);
+    for (UFSMCreateWidgetHelper* Helper : CreateWidgets)
+    {
+        if (Helper == nullptr || !Helper->IsValid()) { continue; }
+        Helper->CreateWidget(StateContext);
+    }
 }
 
 void UActions_CreateWidgets::GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const
 {
-	for (const UFSMCreateWidgetHelper* Helper : CreateWidgets)
-	{
-		if (Helper == nullptr || !Helper->IsValid() || !Helper->Implements<UFlowStateCollectInterface>()) {continue;}
-		Helper->GetStatePinInfos(PinInfos);
-	}
-	Super::GetStatePinInfos(PinInfos);
+    for (const UFSMCreateWidgetHelper* Helper : CreateWidgets)
+    {
+        if (Helper == nullptr || !Helper->IsValid() || !Helper->Implements<UFlowStateCollectInterface>()) { continue; }
+        Helper->GetStatePinInfos(PinInfos);
+    }
+    Super::GetStatePinInfos(PinInfos);
 }

@@ -12,16 +12,17 @@
 UCLASS()
 class UFactory_FlowState : public UFactory
 {
-	GENERATED_UCLASS_BODY()
-
-// UFactory interface
-	virtual bool ShouldShowInNewMenu() const override { return true; }
-	virtual bool ConfigureProperties() override;
-	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext) override;
-	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn) override;
-	// End of UFactory interface
+    GENERATED_UCLASS_BODY()
+    // UFactory interface
+    virtual bool ShouldShowInNewMenu() const override { return true; }
+    virtual bool ConfigureProperties() override;
+    virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags,
+                                      UObject* Context, FFeedbackContext* Warn, FName CallingContext) override;
+    virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags,
+                                      UObject* Context, FFeedbackContext* Warn) override;
+    // End of UFactory interface
 
 protected:
-	UPROPERTY(EditAnywhere, Category=DataAsset)
-	TSubclassOf<UObject> ParentClass;
+    UPROPERTY(EditAnywhere, Category=DataAsset)
+    TSubclassOf<UObject> ParentClass;
 };

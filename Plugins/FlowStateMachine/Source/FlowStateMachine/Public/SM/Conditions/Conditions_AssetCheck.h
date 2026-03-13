@@ -12,7 +12,7 @@
 UCLASS()
 class FLOWSTATEMACHINE_API UConditions_AssetCheck : public UFlowStateCondition
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-	virtual bool Condition(UFlowStateContext* Context) const override;
+    virtual bool Condition(UFlowStateContext* Context) const override;
 };

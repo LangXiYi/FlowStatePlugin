@@ -8,11 +8,11 @@
 
 bool UConditions_AssetCheck::Condition(UFlowStateContext* Context) const
 {
-	UFSMNodeInstance* FSMParentNode = Cast<UFSMNodeInstance>(ParentNode);
-	if (FSMParentNode)
-	{
-		UActions_LoadAsset* LoadAsset = FSMParentNode->FindSubNode<UActions_LoadAsset>();
-		return LoadAsset && LoadAsset->HasLoadCompleted();
-	}
-	return false;
+    UFSMNodeInstance* FSMParentNode = Cast<UFSMNodeInstance>(ParentNode);
+    if (FSMParentNode)
+    {
+        UActions_LoadAsset* LoadAsset = FSMParentNode->FindSubNode<UActions_LoadAsset>();
+        return LoadAsset && LoadAsset->HasLoadCompleted();
+    }
+    return false;
 }

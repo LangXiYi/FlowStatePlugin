@@ -8,8 +8,8 @@ class FLOWSTATEEDITOR_API SFSGraphNodeBase : public SGraphNode
 {
 public:
     SLATE_BEGIN_ARGS(SFSGraphNodeBase)
-    {
-    }
+        {
+        }
 
     SLATE_END_ARGS()
 

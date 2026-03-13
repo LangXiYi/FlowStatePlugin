@@ -72,11 +72,15 @@ protected:
     /** 收集所有的节点实例 */
     virtual void CollectAllNodeInstances(TSet<UObject*>& NodeInstances);
     virtual bool CanRemoveNestedObject(UObject* TestObject) const;
-    virtual void OnNodeInstanceRemoved(UObject* NodeInstance) {}
+
+    virtual void OnNodeInstanceRemoved(UObject* NodeInstance)
+    {
+    }
 
 public:
     /** 创建所有的子级节点 */
-    static void CreateChildrenNodes(UFlowStateMachine* FSMAsset, UFSMNodeInstance* RuntimeRootNode, const UFSGraphNode* GraphRootNode, TArray<UObject*>& Stack);
+    static void CreateChildrenNodes(UFlowStateMachine* FSMAsset, UFSMNodeInstance* RuntimeRootNode,
+                                    const UFSGraphNode* GraphRootNode, TArray<UObject*>& Stack);
 
     /** 创建所有的零散节点 */
     static void CreateScatteredNodes(UFlowStateMachine* FSMAsset, const TArray<const UFSGraphNode*>& ScatteredNodes);
@@ -89,11 +93,13 @@ public:
         ScatteredNodes.Add(Node);
         OnScatteredNodesChanged.Broadcast();
     }
+
     void RemoveScatteredNode(const UFSGraphNode* Node)
     {
         ScatteredNodes.Remove(Node);
         OnScatteredNodesChanged.Broadcast();
     }
+
     const TArray<const UFSGraphNode*>& GetScatteredNodes() const { return ScatteredNodes; }
 
     FOnScatteredNodesChanged OnScatteredNodesChanged;
@@ -105,4 +111,3 @@ protected:
 private:
     bool bLockUpdates;
 };
-

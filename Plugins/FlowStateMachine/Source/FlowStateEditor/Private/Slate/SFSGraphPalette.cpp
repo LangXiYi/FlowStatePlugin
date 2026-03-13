@@ -21,10 +21,14 @@ void SFSGraphPalette::Construct(const FArguments& InArgs, UFlowStateMachine* InA
     // Auto expand the palette as there's so few nodes
     SGraphPalette::Construct(SGraphPalette::FArguments().AutoExpandActionMenu(true));
 
-    FAssetRegistryModule& AssetRegistryModule = FModuleManager::GetModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-    DelegateHandles.Add(AssetRegistryModule.Get().OnAssetAdded().AddSP(this, &SFSGraphPalette::AddAssetFromAssetRegistry));
-    DelegateHandles.Add(AssetRegistryModule.Get().OnAssetRemoved().AddSP(this, &SFSGraphPalette::RemoveAssetFromRegistry));
-    DelegateHandles.Add(AssetRegistryModule.Get().OnAssetRenamed().AddSP(this, &SFSGraphPalette::RenameAssetFromRegistry));
+    FAssetRegistryModule& AssetRegistryModule = FModuleManager::GetModuleChecked<FAssetRegistryModule>(
+        TEXT("AssetRegistry"));
+    DelegateHandles.Add(
+        AssetRegistryModule.Get().OnAssetAdded().AddSP(this, &SFSGraphPalette::AddAssetFromAssetRegistry));
+    DelegateHandles.Add(
+        AssetRegistryModule.Get().OnAssetRemoved().AddSP(this, &SFSGraphPalette::RemoveAssetFromRegistry));
+    DelegateHandles.Add(
+        AssetRegistryModule.Get().OnAssetRenamed().AddSP(this, &SFSGraphPalette::RenameAssetFromRegistry));
 }
 
 void SFSGraphPalette::RefreshActionsList(bool bPreserveExpansion)
@@ -34,8 +38,9 @@ void SFSGraphPalette::RefreshActionsList(bool bPreserveExpansion)
 
 void SFSGraphPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActions)
 {
-    FFlowStateEditorModule&           FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>("FlowStateEditor");
-    TSharedPtr<FGraphNodeClassHelper> ClassCache      = FSMEditorModule.GetClassCache();
+    FFlowStateEditorModule& FSMEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>(
+        "FlowStateEditor");
+    TSharedPtr<FGraphNodeClassHelper> ClassCache = FSMEditorModule.GetClassCache();
 
     // Node
     FCategorizedGraphActionListBuilder StateAction("FlowState");
@@ -47,7 +52,7 @@ void SFSGraphPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActio
 
     // Composites Nodes
     FCategorizedGraphActionListBuilder CompositesAction("Composites");
-    TArray<FGraphNodeClassData>        CompositesNodeClasses;
+    TArray<FGraphNodeClassData> CompositesNodeClasses;
     ClassCache->GatherClasses(UFlowStateComposite::StaticClass(), CompositesNodeClasses);
     for (FGraphNodeClassData& NodeClass : CompositesNodeClasses)
     {

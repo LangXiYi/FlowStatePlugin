@@ -9,13 +9,12 @@
  ******************************************************************************/
 
 BEGIN_FLOWSTATE_EDITORTYPE
-
-enum class ESubNodeType : uint8
-{
-	None = 0,
-	Condition,
-	Action,
-	Service,
-};
+    enum class ESubNodeType : uint8
+    {
+        None = 0,
+        Condition,
+        Action,
+        Service,
+    };
 
 END_FLOWSTATE_EDITORTYPE

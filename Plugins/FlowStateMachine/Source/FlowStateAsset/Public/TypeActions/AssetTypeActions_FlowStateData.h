@@ -5,9 +5,13 @@
 class FAssetTypeActions_FlowStateData : public FAssetTypeActions_Base
 {
 public:
-	// IAssetTypeActions Implementation
-	virtual FText GetName() const override { return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_FlowStateData", "FlowStateDat"); }
-	virtual UClass* GetSupportedClass() const override { return UFSMMetaDataAsset::StaticClass(); }
-	virtual FColor GetTypeColor() const override { return FColor(0, 55, 100); }
-	virtual uint32 GetCategories() override { return EAssetTypeCategories::Gameplay; }
+    // IAssetTypeActions Implementation
+    virtual FText GetName() const override
+    {
+        return NSLOCTEXT("AssetTypeActions", "AssetTypeActions_FlowStateData", "FlowStateDat");
+    }
+
+    virtual UClass* GetSupportedClass() const override { return UFSMMetaDataAsset::StaticClass(); }
+    virtual FColor GetTypeColor() const override { return FColor(0, 55, 100); }
+    virtual uint32 GetCategories() override { return EAssetTypeCategories::Gameplay; }
 };

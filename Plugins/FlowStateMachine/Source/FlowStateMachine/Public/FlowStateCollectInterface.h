@@ -10,8 +10,7 @@
 UINTERFACE()
 class FLOWSTATEMACHINE_API UFlowStateCollectInterface : public UInterface
 {
-	GENERATED_BODY()
-
+    GENERATED_BODY()
 };
 
 /**
@@ -21,17 +20,17 @@ class FLOWSTATEMACHINE_API UFlowStateCollectInterface : public UInterface
  */
 class FLOWSTATEMACHINE_API IFlowStateCollectInterface
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	/** 调用蓝图函数并执行 */
-	static void Execute_GetStatePinInfos(const UObject* Target, TArray<FStatePinInfo>& PinInfos);
+    /** 调用蓝图函数并执行 */
+    static void Execute_GetStatePinInfos(const UObject* Target, TArray<FStatePinInfo>& PinInfos);
 
-	/** 允许通过 C++ 自定义该函数，但需要注意手动调用 Execute_GetStatePinInfos 确保蓝图函数会被执行 */
-	virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const;
+    /** 允许通过 C++ 自定义该函数，但需要注意手动调用 Execute_GetStatePinInfos 确保蓝图函数会被执行 */
+    virtual void GetStatePinInfos(TArray<FStatePinInfo>& PinInfos) const;
 
 protected:
-	/** 蓝图实现 */
-	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "GetStatePinInfos"))
-	void NativeGetStatePinInfos(TArray<FName>& Array) const;
+    /** 蓝图实现 */
+    UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "GetStatePinInfos"))
+    void NativeGetStatePinInfos(TArray<FName>& Array) const;
 };

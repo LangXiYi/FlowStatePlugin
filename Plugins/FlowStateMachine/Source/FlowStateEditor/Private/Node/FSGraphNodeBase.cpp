@@ -65,13 +65,14 @@ void UFSGraphNodeBase::FindDiffs(class UEdGraphNode* OtherNode, FDiffResults& Re
         if (NodeInstance && OtherGraphNode->NodeInstance)
         {
             FDiffSingleResult Diff;
-            Diff.Diff         = EDiffType::NODE_PROPERTY;
-            Diff.Node1        = this;
-            Diff.Node2        = OtherNode;
-            Diff.ToolTip      = LOCTEXT("DIF_NodeInstancePropertyToolTip", "A property of the node instance has changed");
+            Diff.Diff = EDiffType::NODE_PROPERTY;
+            Diff.Node1 = this;
+            Diff.Node2 = OtherNode;
+            Diff.ToolTip = LOCTEXT("DIF_NodeInstancePropertyToolTip", "A property of the node instance has changed");
             Diff.DisplayColor = FLinearColor(0.25f, 0.71f, 0.85f);
 
-            DiffProperties(NodeInstance->GetClass(), OtherGraphNode->NodeInstance->GetClass(), NodeInstance, OtherGraphNode->NodeInstance, Results, Diff);
+            DiffProperties(NodeInstance->GetClass(), OtherGraphNode->NodeInstance->GetClass(), NodeInstance,
+                           OtherGraphNode->NodeInstance, Results, Diff);
         }
     }
 }
@@ -94,12 +95,14 @@ FEdGraphNodeDeprecationResponse UFSGraphNodeBase::GetDeprecationResponse(
     if (DeprecationType == EEdGraphNodeDeprecationType::NodeTypeIsDeprecated)
     {
         Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
-        Response.MessageText = LOCTEXT("NodeDeprecated_Warning", "Warning: @@ is deprecated; please replace or remove it.");
+        Response.MessageText = LOCTEXT("NodeDeprecated_Warning",
+                                       "Warning: @@ is deprecated; please replace or remove it.");
     }
     else if (DeprecationType == EEdGraphNodeDeprecationType::NodeHasDeprecatedReference)
     {
         Response.MessageType = EEdGraphNodeDeprecationMessageType::Warning;
-        Response.MessageText = LOCTEXT("NodeDeprecatedReference_Note", "Warning: @@ has a deprecated reference; please replace or remove it.");
+        Response.MessageText = LOCTEXT("NodeDeprecatedReference_Note",
+                                       "Warning: @@ has a deprecated reference; please replace or remove it.");
     }
 
     return Response;
@@ -134,8 +137,8 @@ void UFSGraphNodeBase::RefreshStateNode(bool bIsAutoRemoveOrphanedNode)
         return;
     }
 
-    bool                       bIsDirty = false;
-    TArray<FStatePinInfo>      StatePinInfos;
+    bool bIsDirty = false;
+    TArray<FStatePinInfo> StatePinInfos;
     TMap<FName, FStatePinInfo> ValidPinNames;
 
     // 获取所有状态引脚的信息
@@ -163,7 +166,8 @@ void UFSGraphNodeBase::RefreshStateNode(bool bIsAutoRemoveOrphanedNode)
     for (int i = Pins.Num() - 1; i >= 0; --i)
     {
         UEdGraphPin* NodePin = Pins[i];
-        if (NodePin->Direction == EGPD_Output && NodePin->PinName != FPinHelper::Output_DefaultPinName && !ValidPinNames.Contains(NodePin->PinName))
+        if (NodePin->Direction == EGPD_Output && NodePin->PinName != FPinHelper::Output_DefaultPinName && !ValidPinNames
+            .Contains(NodePin->PinName))
         {
             if (NodePin->bOrphanedPin && bIsAutoRemoveOrphanedNode)
             {
@@ -254,7 +258,7 @@ FLinearColor UFSGraphNodeBase::GetNodeTitleColor() const
 
 FText UFSGraphNodeBase::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
-    FText NodeTitle       = NodeInstance ? FText::FromString(NodeInstance->GetNodeName()) : Super::GetNodeTitle(TitleType);
+    FText NodeTitle = NodeInstance ? FText::FromString(NodeInstance->GetNodeName()) : Super::GetNodeTitle(TitleType);
     FText NodeTitleSuffix = GetNodeTitleSuffix();
     if (NodeTitleSuffix.IsEmpty())
     {
@@ -272,7 +276,8 @@ FText UFSGraphNodeBase::GetTooltipText() const
 {
     if (IsDeprecated())
     {
-        FEdGraphNodeDeprecationResponse DeprecationMessage = GetDeprecationResponse(EEdGraphNodeDeprecationType::NodeTypeIsDeprecated);
+        FEdGraphNodeDeprecationResponse DeprecationMessage = GetDeprecationResponse(
+            EEdGraphNodeDeprecationType::NodeTypeIsDeprecated);
         if (DeprecationMessage.MessageType != EEdGraphNodeDeprecationMessageType::None)
         {
             return DeprecationMessage.MessageText;
@@ -281,7 +286,8 @@ FText UFSGraphNodeBase::GetTooltipText() const
 
     if (HasDeprecatedReference())
     {
-        FEdGraphNodeDeprecationResponse DeprecatedReferenceMessage = GetDeprecationResponse(EEdGraphNodeDeprecationType::NodeHasDeprecatedReference);
+        FEdGraphNodeDeprecationResponse DeprecatedReferenceMessage = GetDeprecationResponse(
+            EEdGraphNodeDeprecationType::NodeHasDeprecatedReference);
         if (DeprecatedReferenceMessage.MessageType != EEdGraphNodeDeprecationMessageType::None)
         {
             return DeprecatedReferenceMessage.MessageText;
@@ -292,7 +298,8 @@ FText UFSGraphNodeBase::GetTooltipText() const
     if (NodeInstance->GetClass()->HasAnyClassFlags(CLASS_CompiledFromBlueprint))
     {
         FAssetData AssetData(NodeInstance->GetClass()->ClassGeneratedBy);
-        FString    Description = AssetData.GetTagValueRef<FString>(GET_MEMBER_NAME_CHECKED(UBlueprint, BlueprintDescription));
+        FString Description = AssetData.GetTagValueRef<FString>(
+            GET_MEMBER_NAME_CHECKED(UBlueprint, BlueprintDescription));
         if (!Description.IsEmpty())
         {
             Description.ReplaceInline(TEXT("\\n"), TEXT("\n"));
@@ -315,8 +322,8 @@ void UFSGraphNodeBase::ResetNodeOwner()
 {
     if (NodeInstance)
     {
-        UEdGraph* MyGraph    = GetGraph();
-        UObject*  GraphOwner = MyGraph ? MyGraph->GetOuter() : nullptr;
+        UEdGraph* MyGraph = GetGraph();
+        UObject* GraphOwner = MyGraph ? MyGraph->GetOuter() : nullptr;
 
         NodeInstance->Rename(nullptr, GraphOwner, REN_DontCreateRedirectors | REN_DoNotDirty);
         NodeInstance->ClearFlags(RF_Transient);
@@ -339,11 +346,13 @@ void UFSGraphNodeBase::UpdateNodeClassDataFrom(UClass* InstanceClass, FGraphNode
         UBlueprint* BPOwner = Cast<UBlueprint>(InstanceClass->ClassGeneratedBy);
         if (BPOwner)
         {
-            UpdatedData = FGraphNodeClassData(BPOwner->GetName(), BPOwner->GetOutermost()->GetName(), InstanceClass->GetName(), InstanceClass);
+            UpdatedData = FGraphNodeClassData(BPOwner->GetName(), BPOwner->GetOutermost()->GetName(),
+                                              InstanceClass->GetName(), InstanceClass);
         }
         else
         {
-            UpdatedData = FGraphNodeClassData(InstanceClass, FGraphNodeClassHelper::GetDeprecationMessage(InstanceClass));
+            UpdatedData = FGraphNodeClassData(InstanceClass,
+                                              FGraphNodeClassHelper::GetDeprecationMessage(InstanceClass));
         }
     }
 }
@@ -389,7 +398,8 @@ void UFSGraphNodeBase::PostEditImport()
 
 #endif
 
-FPinConnectionResponse UFSGraphNodeBase::CheckPinConnection(const UFSGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const
+FPinConnectionResponse UFSGraphNodeBase::CheckPinConnection(const UFSGraphNodeBase* OtherNode,
+                                                            EEdGraphPinDirection FromDirection) const
 {
     if (FromDirection == EGPD_Output)
     {

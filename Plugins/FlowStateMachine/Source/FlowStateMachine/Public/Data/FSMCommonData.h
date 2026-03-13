@@ -12,13 +12,13 @@ class UFSMCommonDataType;
 USTRUCT(BlueprintType)
 struct FCommonDataEntry
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
-	FName EntryName;
+    UPROPERTY(EditAnywhere)
+    FName EntryName;
 
-	UPROPERTY(EditAnywhere, Instanced, BlueprintReadOnly)
-	UFSMCommonDataType* KeyType;
+    UPROPERTY(EditAnywhere, Instanced, BlueprintReadOnly)
+    UFSMCommonDataType* KeyType;
 };
 
 /**
@@ -27,20 +27,19 @@ struct FCommonDataEntry
 UCLASS()
 class FLOWSTATEMACHINE_API UFSMCommonData : public UDataAsset
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere)
-	TArray<FCommonDataEntry> Keys;
+    UPROPERTY(EditAnywhere)
+    TArray<FCommonDataEntry> Keys;
 
-const FCommonDataEntry* GetKey(FCommonData::FKey KeyID) const;
+    const FCommonDataEntry* GetKey(FCommonData::FKey KeyID) const;
 
-	FCommonData::FKey GetKeyID(const FName KeyName) const;
-	FName GetKeyName(FCommonData::FKey KeyID) const;
+    FCommonData::FKey GetKeyID(const FName KeyName) const;
+    FName GetKeyName(FCommonData::FKey KeyID) const;
 
-	TSubclassOf<UFSMCommonDataType> GetDataType(FCommonData::FKey KeyID) const;
+    TSubclassOf<UFSMCommonDataType> GetDataType(FCommonData::FKey KeyID) const;
 
 protected:
-	FCommonData::FKey InternalGetKeyID(const FName& KeyName) const;
-
+    FCommonData::FKey InternalGetKeyID(const FName& KeyName) const;
 };

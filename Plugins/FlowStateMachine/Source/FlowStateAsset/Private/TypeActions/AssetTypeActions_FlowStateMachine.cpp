@@ -6,7 +6,7 @@
 #define LOCTEXT_NAMESPACE "AssetTypeActions_FlowStateMachine"
 
 void FAssetTypeActions_FlowStateMachine::OpenAssetEditor(const TArray<UObject*>& InObjects,
-    TSharedPtr<IToolkitHost>                                                     EditWithinLevelEditor)
+                                                         TSharedPtr<IToolkitHost> EditWithinLevelEditor)
 {
     EToolkitMode::Type Mode = EditWithinLevelEditor.IsValid() ? EToolkitMode::WorldCentric : EToolkitMode::Standalone;
     // Open my custom editor
@@ -15,9 +15,11 @@ void FAssetTypeActions_FlowStateMachine::OpenAssetEditor(const TArray<UObject*>&
         auto FlowStateMachine = Cast<UFlowStateMachine>(Object);
         if (FlowStateMachine != nullptr)
         {
-            FFlowStateEditorModule& FlowStateMachineEditorModule = FModuleManager::GetModuleChecked<FFlowStateEditorModule>("FlowStateEditor");
+            FFlowStateEditorModule& FlowStateMachineEditorModule = FModuleManager::GetModuleChecked<
+                FFlowStateEditorModule>("FlowStateEditor");
 
-            auto NewEditor = FlowStateMachineEditorModule.CreateFlowStateMachineEditor(Mode, EditWithinLevelEditor, FlowStateMachine);
+            auto NewEditor = FlowStateMachineEditorModule.CreateFlowStateMachineEditor(
+                Mode, EditWithinLevelEditor, FlowStateMachine);
         }
     }
 }

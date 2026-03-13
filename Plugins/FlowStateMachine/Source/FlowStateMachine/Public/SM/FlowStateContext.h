@@ -28,143 +28,149 @@ class UFSMMetaDataAsset;
 UCLASS()
 class FLOWSTATEMACHINE_API UFlowStateContext : public UObject, public FTickableGameObject
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UFlowStateContext(const FObjectInitializer& ObjectInitializer);
+    UFlowStateContext(const FObjectInitializer& ObjectInitializer);
 
-	/** 注册状态机至运行时上下文对象 */
-	virtual void RegisterFlowStateMachine(UFlowStateMachine& FlowStateMachine);
+    /** 注册状态机至运行时上下文对象 */
+    virtual void RegisterFlowStateMachine(UFlowStateMachine& FlowStateMachine);
 
-	/** 切换至状态节点 */
-	virtual bool GotoStateNode(UFSMNodeInstance* Node);
+    /** 切换至状态节点 */
+    virtual bool GotoStateNode(UFSMNodeInstance* Node);
 
-	/** 切换至零散节点 */
-	virtual bool GotoScatteredNode(FGuid Key);
+    /** 切换至零散节点 */
+    virtual bool GotoScatteredNode(FGuid Key);
 
-	// Begin FTickableGameObject
-	virtual void Tick(float DeltaTime) override;
-	virtual TStatId GetStatId() const override { return GetStatID(); }
-	// End of FTickableGameObject
+    // Begin FTickableGameObject
+    virtual void Tick(float DeltaTime) override;
+    virtual TStatId GetStatId() const override { return GetStatID(); }
+    // End of FTickableGameObject
 
 protected:
-	/** 进入新的状态 */
-	virtual void OnEnterNewState(UFSMNodeInstance* NewState);
+    /** 进入新的状态 */
+    virtual void OnEnterNewState(UFSMNodeInstance* NewState);
 
-	/** 退出当前的状态 */
-	virtual void OnExitCurState();
+    /** 退出当前的状态 */
+    virtual void OnExitCurState();
 
 private:
-	/** 将对象转换为运行时实例化的对象 */
-	UFSMNodeInstanceBase* DumpInstance(const UFSMNodeInstanceBase* Template);
+    /** 将对象转换为运行时实例化的对象 */
+    UFSMNodeInstanceBase* DumpInstance(const UFSMNodeInstanceBase* Template);
 
-	/** 将对象转换为运行时实例化的对象 */
-	template<class T>
-	T* DumpInstance(const UFSMNodeInstanceBase* Template)
-	{
-		return static_cast<T*>(DumpInstance(Template));
-	}
+    /** 将对象转换为运行时实例化的对象 */
+    template <class T>
+    T* DumpInstance(const UFSMNodeInstanceBase* Template)
+    {
+        return static_cast<T*>(DumpInstance(Template));
+    }
 
-	/** 转换模板实例为运行时实例 */
-	UFSMNodeInstance* CreateChildrenInstance(const UFSMNodeInstance* TemplateRootNode, UFSMNodeInstanceBase* ParentNode, TArray<UFSMNodeInstanceBase*>& Stack);
+    /** 转换模板实例为运行时实例 */
+    UFSMNodeInstance* CreateChildrenInstance(const UFSMNodeInstance* TemplateRootNode, UFSMNodeInstanceBase* ParentNode,
+                                             TArray<UFSMNodeInstanceBase*>& Stack);
 
-	/** 转换零散的模板节点为运行时对象 */
-	void CreateScatteredInstance(TArray<UFSMNodeInstanceBase*>& Stack);
+    /** 转换零散的模板节点为运行时对象 */
+    void CreateScatteredInstance(TArray<UFSMNodeInstanceBase*>& Stack);
 
-	////////////////////////////////////////////////////////////////////////
-	/// GCManager Helper
-	////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    /// GCManager Helper
+    ////////////////////////////////////////////////////////////////////////
 public:
-	 TSharedPtr<FSMGC> GetGCManager() { return GCManager; }
+    TSharedPtr<FSMGC> GetGCManager() { return GCManager; }
 
-	/** 将目标添加至缓存 */
-	template<class T>
-	void AddToCache(T Target, EFlowStateLifetime Lifetime)
-	{
-		GCManager->AddToCache(Target, Lifetime);
-	}
-	/** 切换目标的缓存区 */
-	template<class T>
-	void SwitchCache(T Target, EFlowStateLifetime FromLifetime, EFlowStateLifetime ToLifetime)
-	{
-		GCManager->SwitchCache(Target, FromLifetime, ToLifetime);
-	}
-	/** 从缓存中查找目标 */
-	template<class T>
-	EFlowStateLifetime FindByCache(FName Name, T& OutTarget)
-	{
-		return GCManager->FindRefByCache(Name, OutTarget);
-	}
-	/** 清空缓存 */
-	void ClearAllCache() const { GCManager->ClearAllCache(); }
-	
-	////////////////////////////////////////////////////////////////////////
-	/// Get or Set
-	////////////////////////////////////////////////////////////////////////
-	/** 获取布局控件 */
-	UFlowStateLayoutWidget* GetLayoutWidget(EFlowStateWidgetLayer Layer) const;
+    /** 将目标添加至缓存 */
+    template <class T>
+    void AddToCache(T Target, EFlowStateLifetime Lifetime)
+    {
+        GCManager->AddToCache(Target, Lifetime);
+    }
 
-	/** 获取所有的次态对象 */
-	TArray<FStateChildNodeHelper> GetNextStates() const;
+    /** 切换目标的缓存区 */
+    template <class T>
+    void SwitchCache(T Target, EFlowStateLifetime FromLifetime, EFlowStateLifetime ToLifetime)
+    {
+        GCManager->SwitchCache(Target, FromLifetime, ToLifetime);
+    }
 
-	/** 获取当前的状态对象 */
-	UFUNCTION(BlueprintPure, Category="FlowStateContext")
-	FORCEINLINE UFSMNodeInstance* GetCurrentState() const { return CurState; }
-	/** 获取当前的状态对象 */
-	template<class T>
-	FORCEINLINE T* GetCurrentState() const { return static_cast<T*>(CurState); }
+    /** 从缓存中查找目标 */
+    template <class T>
+    EFlowStateLifetime FindByCache(FName Name, T& OutTarget)
+    {
+        return GCManager->FindRefByCache(Name, OutTarget);
+    }
 
-	/** 获取公用数据管理器 */
-	UFUNCTION(BlueprintPure, Category="FlowStateContext")
-	UFSMCommonDataManager* GetCommonDataManager() const { return CommonDataManager; }
+    /** 清空缓存 */
+    void ClearAllCache() const { GCManager->ClearAllCache(); }
 
-	/** 获取所有零散节点的唯一ID */
-	UFUNCTION(BlueprintPure, Category="FlowStateContext")
-	void GetScatteredNodeIDs(TArray<FGuid>& OutData) const { return ScatteredNodeMapping.GenerateKeyArray(OutData); }
+    ////////////////////////////////////////////////////////////////////////
+    /// Get or Set
+    ////////////////////////////////////////////////////////////////////////
+    /** 获取布局控件 */
+    UFlowStateLayoutWidget* GetLayoutWidget(EFlowStateWidgetLayer Layer) const;
+
+    /** 获取所有的次态对象 */
+    TArray<FStateChildNodeHelper> GetNextStates() const;
+
+    /** 获取当前的状态对象 */
+    UFUNCTION(BlueprintPure, Category="FlowStateContext")
+    FORCEINLINE UFSMNodeInstance* GetCurrentState() const { return CurState; }
+
+    /** 获取当前的状态对象 */
+    template <class T>
+    FORCEINLINE T* GetCurrentState() const { return static_cast<T*>(CurState); }
+
+    /** 获取公用数据管理器 */
+    UFUNCTION(BlueprintPure, Category="FlowStateContext")
+    UFSMCommonDataManager* GetCommonDataManager() const { return CommonDataManager; }
+
+    /** 获取所有零散节点的唯一ID */
+    UFUNCTION(BlueprintPure, Category="FlowStateContext")
+    void GetScatteredNodeIDs(TArray<FGuid>& OutData) const { return ScatteredNodeMapping.GenerateKeyArray(OutData); }
 
 protected:
-	/** 当前状态 */
-	UPROPERTY(Transient)
-	UFSMNodeInstance* CurState;
+    /** 当前状态 */
+    UPROPERTY(Transient)
+    UFSMNodeInstance* CurState;
 
-	/** 执行链 */
-	UPROPERTY()
-	TArray<UFSMNodeInstance*> InstanceStack;
+    /** 执行链 */
+    UPROPERTY()
+    TArray<UFSMNodeInstance*> InstanceStack;
 
-	// 表示执行链中最顶部的元素（不是一定），对于出现环形的执行流，该变量表示的就不一定是最顶部的元素
-	TWeakObjectPtr<UFSMNodeInstanceBase> StackTop;
+    // 表示执行链中最顶部的元素（不是一定），对于出现环形的执行流，该变量表示的就不一定是最顶部的元素
+    TWeakObjectPtr<UFSMNodeInstanceBase> StackTop;
 
-	/** 运行时根节点 */
-	UPROPERTY(Transient)
-	UFSMNodeInstance* RootState;
+    /** 运行时根节点 */
+    UPROPERTY(Transient)
+    UFSMNodeInstance* RootState;
 
-	// 所有的零散节点
-	UPROPERTY(Transient)
-	TArray<UFSMNodeInstance*> ScatteredNodes;
+    // 所有的零散节点
+    UPROPERTY(Transient)
+    TArray<UFSMNodeInstance*> ScatteredNodes;
 
-	/** 公用数据管理器 */
-	UPROPERTY(Transient)
-	UFSMCommonDataManager* CommonDataManager;
+    /** 公用数据管理器 */
+    UPROPERTY(Transient)
+    UFSMCommonDataManager* CommonDataManager;
 
 private:
-	// 引用资产，供运行时创建新的运行时节点使用
-	UPROPERTY(Transient)
-	UFlowStateMachine* StateMachine = nullptr;
+    // 引用资产，供运行时创建新的运行时节点使用
+    UPROPERTY(Transient)
+    UFlowStateMachine* StateMachine = nullptr;
 
-	/** 布局控件 */
-	UPROPERTY(Transient)
-	UFlowStateWidgetLayerManager* WidgetLayers;
+    /** 布局控件 */
+    UPROPERTY(Transient)
+    UFlowStateWidgetLayerManager* WidgetLayers;
 
-	/** 资源回收管理器 */
-	TSharedPtr<FSMGC> GCManager;
+    /** 资源回收管理器 */
+    TSharedPtr<FSMGC> GCManager;
 
-	/** 缓存已经加载的对象，加载完成后自动释放 */
-	UPROPERTY(Transient)
-	TMap<const UFSMNodeInstanceBase* /* Template Node */, UFSMNodeInstanceBase* /* Dump Instance */> CacheTemplateObjects;
+    /** 缓存已经加载的对象，加载完成后自动释放 */
+    UPROPERTY(Transient)
+    TMap<const UFSMNodeInstanceBase* /* Template Node */, UFSMNodeInstanceBase* /* Dump Instance */>
+    CacheTemplateObjects;
 
-	/** 缓存零碎节点与它的唯一ID，加快查询速度 */
-	UPROPERTY(Transient)
-	TMap<FGuid, UFSMNodeInstance*> ScatteredNodeMapping;
+    /** 缓存零碎节点与它的唯一ID，加快查询速度 */
+    UPROPERTY(Transient)
+    TMap<FGuid, UFSMNodeInstance*> ScatteredNodeMapping;
 
-	bool bIsRegisterFlowStateMachine = false;
+    bool bIsRegisterFlowStateMachine = false;
 };

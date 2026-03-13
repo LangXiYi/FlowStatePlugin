@@ -17,28 +17,28 @@ class UGameplayTagSlot;
 UCLASS()
 class FLOWSTATEMACHINE_WIDGET_API UFlowStateLayoutWidget : public UUserWidget
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
+
 public:
-	virtual TSharedRef<SWidget> RebuildWidget() override;
+    virtual TSharedRef<SWidget> RebuildWidget() override;
 
-	UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
-	virtual void ClearChildSlots();
+    UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
+    virtual void ClearChildSlots();
 
-	UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
-	UGameplayTagSlot* FindSlot(FGameplayTag SlotTag) const;
+    UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
+    UGameplayTagSlot* FindSlot(FGameplayTag SlotTag) const;
 
-	UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
-	bool CheckSlot(FGameplayTag SlotTag) const;
+    UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
+    bool CheckSlot(FGameplayTag SlotTag) const;
 
-	UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
-	void AddChildTo(FGameplayTag SlotTag, UWidget* Child);
+    UFUNCTION(BlueprintCallable, Category = "FlowStateWidget")
+    void AddChildTo(FGameplayTag SlotTag, UWidget* Child);
 
 protected:
-	UPROPERTY(BlueprintReadOnly, Category = "FlowStateWidget")
-	TArray<UGameplayTagSlot*> TagSlots;
+    UPROPERTY(BlueprintReadOnly, Category = "FlowStateWidget")
+    TArray<UGameplayTagSlot*> TagSlots;
 
 private:
-	UPROPERTY(meta = (BindWidget))
-	UPanelWidget* RootWidget;
+    UPROPERTY(meta = (BindWidget))
+    UPanelWidget* RootWidget;
 };
-

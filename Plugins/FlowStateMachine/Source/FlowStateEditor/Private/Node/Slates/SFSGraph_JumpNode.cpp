@@ -22,30 +22,34 @@ TSharedRef<SWidget> SFSGraph_JumpStartNode::CreateNodeContentArea()
         .HAlign(HAlign_Fill)
         .VAlign(VAlign_Fill)
         .Padding(FMargin(0, 3))
-            [SNew(SHorizontalBox)
-                + SHorizontalBox::Slot()
-                    .HAlign(HAlign_Left)
-                    .FillWidth(1.0f)
-                        [
-                            // LEFT
-                            SAssignNew(LeftNodeBox, SVerticalBox)]
-                /*+SHorizontalBox::Slot()
-                .AutoWidth()
-                .VAlign(VAlign_Center)
-                .HAlign(HAlign_Center)
-                .Padding(10)
-                [
-                    SNew(SImage)
-                    // TODO::为根节点使用自定义的图标
-                    .Image(FEditorStyle::GetBrush("BTEditor.SwitchToBehaviorTreeMode"))
-                ]*/
-                + SHorizontalBox::Slot()
-                    .AutoWidth()
-                    .HAlign(HAlign_Right)
-                    .VAlign(VAlign_Center)
-                        [
-                            // RIGHT
-                            SAssignNew(RightNodeBox, SVerticalBox)]];
+        [
+            SNew(SHorizontalBox)
+            + SHorizontalBox::Slot()
+            .HAlign(HAlign_Left)
+            .FillWidth(1.0f)
+            [
+                // LEFT
+                SAssignNew(LeftNodeBox, SVerticalBox)
+            ]
+            /*+SHorizontalBox::Slot()
+            .AutoWidth()
+            .VAlign(VAlign_Center)
+            .HAlign(HAlign_Center)
+            .Padding(10)
+            [
+                SNew(SImage)
+                // TODO::为根节点使用自定义的图标
+                .Image(FEditorStyle::GetBrush("BTEditor.SwitchToBehaviorTreeMode"))
+            ]*/
+            + SHorizontalBox::Slot()
+            .AutoWidth()
+            .HAlign(HAlign_Right)
+            .VAlign(VAlign_Center)
+            [
+                // RIGHT
+                SAssignNew(RightNodeBox, SVerticalBox)
+            ]
+        ];
 }
 
 
@@ -75,28 +79,32 @@ TSharedRef<SWidget> SFSGraph_JumpToNode::CreateNodeContentArea()
         .HAlign(HAlign_Fill)
         .VAlign(VAlign_Fill)
         .Padding(FMargin(0, 3))
-            [SNew(SHorizontalBox)
-                + SHorizontalBox::Slot()
-                    .HAlign(HAlign_Left)
-                    .FillWidth(1.0f)
-                        [
-                            // LEFT
-                            SAssignNew(LeftNodeBox, SVerticalBox)]
-                /*+SHorizontalBox::Slot()
-                .AutoWidth()
-                .VAlign(VAlign_Center)
-                .HAlign(HAlign_Center)
-                .Padding(10)
-                [
-                    SNew(SImage)
-                    // TODO::为根节点使用自定义的图标
-                    .Image(FEditorStyle::GetBrush("BTEditor.SwitchToBehaviorTreeMode"))
-                ]*/
-                + SHorizontalBox::Slot()
-                    .AutoWidth()
-                    .HAlign(HAlign_Right)
-                    .VAlign(VAlign_Center)
-                        [
-                            // RIGHT
-                            SAssignNew(RightNodeBox, SVerticalBox)]];
+        [
+            SNew(SHorizontalBox)
+            + SHorizontalBox::Slot()
+            .HAlign(HAlign_Left)
+            .FillWidth(1.0f)
+            [
+                // LEFT
+                SAssignNew(LeftNodeBox, SVerticalBox)
+            ]
+            /*+SHorizontalBox::Slot()
+            .AutoWidth()
+            .VAlign(VAlign_Center)
+            .HAlign(HAlign_Center)
+            .Padding(10)
+            [
+                SNew(SImage)
+                // TODO::为根节点使用自定义的图标
+                .Image(FEditorStyle::GetBrush("BTEditor.SwitchToBehaviorTreeMode"))
+            ]*/
+            + SHorizontalBox::Slot()
+            .AutoWidth()
+            .HAlign(HAlign_Right)
+            .VAlign(VAlign_Center)
+            [
+                // RIGHT
+                SAssignNew(RightNodeBox, SVerticalBox)
+            ]
+        ];
 }

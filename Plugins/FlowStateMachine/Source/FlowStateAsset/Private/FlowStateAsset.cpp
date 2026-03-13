@@ -19,8 +19,9 @@ void FFlowStateAssetModule::StartupModule()
     RegisterAssetTypeAction(AssetTools, MakeShareable(new FAssetTypeActions_FlowStateMachine));
 
     // Register Property Type Layout
-    FPropertyEditorModule& PropertyEditorModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
-    
+    FPropertyEditorModule& PropertyEditorModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>(
+        "PropertyEditor");
+
     // 自定义资产略缩图
     StateStyleSet = MakeShareable(new FFlowStateStyleSet("FlowStateMachine"));
     StateStyleSet->RegisterAssetThumbnail("FlowStateMachine", "FlowStateMachine_64x.png", FVector2D(64, 64));
@@ -45,30 +46,35 @@ void FFlowStateAssetModule::ShutdownModule()
     // Unregister Property Type Layout
     if (FModuleManager::Get().IsModuleLoaded("PropertyEditor"))
     {
-        FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+        FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(
+            "PropertyEditor");
         for (int32 Index = 0; Index < CreatedPropertyTypeLayouts.Num(); ++Index)
         {
             PropertyEditorModule.UnregisterCustomPropertyTypeLayout(CreatedPropertyTypeLayouts[Index]);
         }
     }
-    
+
     // 注销所有样式
     FSlateStyleRegistry::UnRegisterSlateStyle(*StateStyleSet);
 }
 
 void FFlowStateAssetModule::RegisterAssetTypeAction(class IAssetTools& AssetTools,
-    TSharedRef<IAssetTypeActions>                                      Action)
+                                                    TSharedRef<IAssetTypeActions> Action)
 {
     AssetTools.RegisterAssetTypeActions(Action);
     CreatedAssetTypeActions.Add(Action);
 }
 
-void FFlowStateAssetModule::RegisterPropertyTypeLayout(FPropertyEditorModule& PropertyEditorModule, FName PropertyName, TSharedRef<IPropertyTypeCustomization> TypeCustomization)
+void FFlowStateAssetModule::RegisterPropertyTypeLayout(FPropertyEditorModule& PropertyEditorModule, FName PropertyName,
+                                                       TSharedRef<IPropertyTypeCustomization> TypeCustomization)
 {
-    PropertyEditorModule.RegisterCustomPropertyTypeLayout(PropertyName, FOnGetPropertyTypeCustomizationInstance::CreateLambda(
-                                                                            [TypeCustomization]() -> TSharedRef<IPropertyTypeCustomization> {
-        return TypeCustomization;
-    }));
+    PropertyEditorModule.RegisterCustomPropertyTypeLayout(PropertyName,
+                                                          FOnGetPropertyTypeCustomizationInstance::CreateLambda(
+                                                              [TypeCustomization
+                                                              ]() -> TSharedRef<IPropertyTypeCustomization>
+                                                              {
+                                                                  return TypeCustomization;
+                                                              }));
     CreatedPropertyTypeLayouts.Add(PropertyName);
     PropertyEditorModule.NotifyCustomizationModuleChanged();
 }

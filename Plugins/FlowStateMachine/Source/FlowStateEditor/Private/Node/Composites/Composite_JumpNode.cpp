@@ -19,6 +19,7 @@ UGraphCNode_JumpStart::UGraphCNode_JumpStart(const FObjectInitializer& ObjectIni
     // 	JumpStartId = FGuid::NewGuid();
     // }
 }
+
 TSharedPtr<SGraphNode> UGraphCNode_JumpStart::CreateVisualWidget()
 {
     return SNew(SFSGraph_JumpStartNode, this);
@@ -37,7 +38,7 @@ void UGraphCNode_JumpStart::PostPlacedNewNode()
     {
         if (!JumpStartId.IsValid())
         {
-            JumpStartId                        = FGuid::NewGuid();
+            JumpStartId = FGuid::NewGuid();
             JumpStartNodeInstance->JumpStartId = JumpStartId;
         }
         GetFSMGraph()->AddScatteredNode(this);
@@ -63,7 +64,7 @@ FString UGraphCNode_JumpStart::GetNodeTitleFormatString() const
 }
 
 FPinConnectionResponse UGraphCNode_JumpStart::CheckPinConnection(const UFSGraphNodeBase* OtherNode,
-    EEdGraphPinDirection                                                                 FromDirection) const
+                                                                 EEdGraphPinDirection FromDirection) const
 {
     // 检查 OtherNode 是否被根节点引用
     if (OtherNode == nullptr || OtherNode->NodeInstance == nullptr)
@@ -82,6 +83,7 @@ TSharedPtr<SGraphNode> UGraphCNode_JumpTo::CreateVisualWidget()
 {
     return SNew(SFSGraph_JumpToNode, this);
 }
+
 void UGraphCNode_JumpTo::AllocateDefaultPins()
 {
     Super::AllocateDefaultPins();

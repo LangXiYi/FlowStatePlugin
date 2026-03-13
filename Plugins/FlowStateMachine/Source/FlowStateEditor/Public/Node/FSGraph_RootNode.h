@@ -17,11 +17,11 @@ class FLOWSTATEEDITOR_API UFSGraph_RootNode : public UFSGraphNode
     GENERATED_BODY()
 
 public:
-    virtual void  AllocateDefaultPins() override;
-    virtual bool  CanDuplicateNode() const override { return false; }
-    virtual bool  CanUserDeleteNode() const override { return false; }
-    virtual bool  IsSelectedInEditor() const override { return false; }
-    virtual bool  IsDeprecated() const override;
+    virtual void AllocateDefaultPins() override;
+    virtual bool CanDuplicateNode() const override { return false; }
+    virtual bool CanUserDeleteNode() const override { return false; }
+    virtual bool IsSelectedInEditor() const override { return false; }
+    virtual bool IsDeprecated() const override;
     virtual FText GetTooltipText() const override;
     virtual TSharedPtr<SGraphNode> CreateVisualWidget() override;
 
@@ -31,7 +31,7 @@ public:
     }
 
     virtual FPinConnectionResponse CheckPinConnection(const UFSGraphNodeBase* OtherNode,
-        EEdGraphPinDirection                                                  Direction) const override;
+                                                      EEdGraphPinDirection Direction) const override;
     // TODO::监听 CommonData 改变事件
     virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 

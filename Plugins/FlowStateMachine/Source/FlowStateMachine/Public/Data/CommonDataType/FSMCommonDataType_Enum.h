@@ -12,30 +12,31 @@
 UCLASS()
 class FLOWSTATEMACHINE_API UFSMCommonDataType_Enum : public UFSMCommonDataType
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	using FDataType =  uint8;
-	static const FDataType InvalidValue;
-	static FDataType GetValue(const UFSMCommonDataType_Enum* KeyObj)
-	{
-		return KeyObj ? KeyObj->EnumValue : InvalidValue;
-	}
+    using FDataType = uint8;
+    static const FDataType InvalidValue;
 
-	static bool SetValue(UFSMCommonDataType_Enum* KeyObj,  FDataType Value)
-	{
-		if (KeyObj)
-		{
-			KeyObj->EnumValue = Value;
-			return true;
-		}
-		return false;
-	}
+    static FDataType GetValue(const UFSMCommonDataType_Enum* KeyObj)
+    {
+        return KeyObj ? KeyObj->EnumValue : InvalidValue;
+    }
+
+    static bool SetValue(UFSMCommonDataType_Enum* KeyObj, FDataType Value)
+    {
+        if (KeyObj)
+        {
+            KeyObj->EnumValue = Value;
+            return true;
+        }
+        return false;
+    }
 
 protected:
-	UPROPERTY(EditAnywhere)
-	UEnum* EnumType;
+    UPROPERTY(EditAnywhere)
+    UEnum* EnumType;
 
-	UPROPERTY()
-	uint8 EnumValue;
+    UPROPERTY()
+    uint8 EnumValue;
 };

@@ -28,12 +28,14 @@ FText UFSGraph_RootNode::GetTooltipText() const
 {
     return LOCTEXT("RootNodeTooltip", "RootNode");
 }
+
 TSharedPtr<SGraphNode> UFSGraph_RootNode::CreateVisualWidget()
 {
     return SNew(SFSGraph_RootNode, this);;
 }
 
-FPinConnectionResponse UFSGraph_RootNode::CheckPinConnection(const UFSGraphNodeBase* OtherNode, EEdGraphPinDirection FromDirection) const
+FPinConnectionResponse UFSGraph_RootNode::CheckPinConnection(const UFSGraphNodeBase* OtherNode,
+                                                             EEdGraphPinDirection FromDirection) const
 {
     return FPinConnectionResponse(CONNECT_RESPONSE_BREAK_OTHERS_AB, TEXT("Connect node"));
 }
@@ -41,7 +43,8 @@ FPinConnectionResponse UFSGraph_RootNode::CheckPinConnection(const UFSGraphNodeB
 void UFSGraph_RootNode::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
     Super::PostEditChangeProperty(PropertyChangedEvent);
-    if (PropertyChangedEvent.MemberProperty && PropertyChangedEvent.MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UFSGraph_RootNode, CommonData))
+    if (PropertyChangedEvent.MemberProperty && PropertyChangedEvent.MemberProperty->GetFName() ==
+        GET_MEMBER_NAME_CHECKED(UFSGraph_RootNode, CommonData))
     {
         UFlowStateGraph* MyGraph = GetFSMGraph();
         if (MyGraph)
@@ -53,7 +56,8 @@ void UFSGraph_RootNode::PostEditChangeProperty(struct FPropertyChangedEvent& Pro
             }
         }
     }
-    if (PropertyChangedEvent.MemberProperty && PropertyChangedEvent.MemberProperty->GetFName() == GET_MEMBER_NAME_CHECKED(UFSGraph_RootNode, WidgetLayerManagerClass))
+    if (PropertyChangedEvent.MemberProperty && PropertyChangedEvent.MemberProperty->GetFName() ==
+        GET_MEMBER_NAME_CHECKED(UFSGraph_RootNode, WidgetLayerManagerClass))
     {
         UFlowStateGraph* MyGraph = GetFSMGraph();
         if (MyGraph)

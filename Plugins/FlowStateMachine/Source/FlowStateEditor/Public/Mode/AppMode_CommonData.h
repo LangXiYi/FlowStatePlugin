@@ -7,13 +7,13 @@ class FFlowStateMachineEditor;
 class FAppMode_CommonData : public FApplicationMode
 {
 public:
-	FAppMode_CommonData(TSharedPtr<FFlowStateMachineEditor> InEditor);
+    FAppMode_CommonData(TSharedPtr<FFlowStateMachineEditor> InEditor);
 
-	virtual void RegisterTabFactories(TSharedPtr<FTabManager> InTabManager) override;
-	virtual void PostActivateMode() override;
+    virtual void RegisterTabFactories(TSharedPtr<FTabManager> InTabManager) override;
+    virtual void PostActivateMode() override;
 
 protected:
-	TWeakPtr<FFlowStateMachineEditor> FlowStateMachineEditor;
+    TWeakPtr<FFlowStateMachineEditor> FlowStateMachineEditor;
 
-	FWorkflowAllowedTabSet CommonDataTabFactories;
+    FWorkflowAllowedTabSet CommonDataTabFactories;
 };
