@@ -1,0 +1,16 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.FlowStateMachine_Node.cpp.obj": [
+			"FlowStateMachine_Node.cpp.obj",
+			"K2Node_CreateAndBindWidget.cpp.obj",
+			"K2Node_SpawnAndBindActor.cpp.obj",
+			"SMyGraphNodeCreateWidget.cpp.obj"
+		],
+		"Module.FlowStateMachine_Node.gen.cpp.obj": [
+			"FlowStateMachine_Node.init.gen.cpp.obj",
+			"K2Node_CreateAndBindWidget.gen.cpp.obj",
+			"K2Node_SpawnAndBindActor.gen.cpp.obj"
+		]
+	}
+}

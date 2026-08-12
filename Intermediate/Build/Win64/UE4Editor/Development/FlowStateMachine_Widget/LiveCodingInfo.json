@@ -1,0 +1,19 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.FlowStateMachine_Widget.cpp.obj": [
+			"FlowStateMachine_Widget.cpp.obj",
+			"UIExtensionsBFL.cpp.obj",
+			"FlowStateLayoutWidget.cpp.obj",
+			"FlowStateWidgetLayerManager.cpp.obj",
+			"GameplayTagSlot.cpp.obj"
+		],
+		"Module.FlowStateMachine_Widget.gen.cpp.obj": [
+			"FlowStateLayoutWidget.gen.cpp.obj",
+			"FlowStateMachine_Widget.init.gen.cpp.obj",
+			"FlowStateWidgetLayerManager.gen.cpp.obj",
+			"GameplayTagSlot.gen.cpp.obj",
+			"UIExtensionsBFL.gen.cpp.obj"
+		]
+	}
+}

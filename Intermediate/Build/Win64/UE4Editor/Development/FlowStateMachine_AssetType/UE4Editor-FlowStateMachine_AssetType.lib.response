@@ -1,0 +1,13 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UE4Editor-FlowStateMachine_AssetType.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Workspace\IPM\Intermediate\Build\Win64\IPMEditor\Development\UnrealEd\SharedPCH.UnrealEd.ShadowErrors.h.obj"
+"C:\Workspace\IPM\Plugins\FlowStateMachine\Intermediate\Build\Win64\UE4Editor\Development\FlowStateMachine_AssetType\Module.FlowStateMachine_AssetType.cpp.obj"
+"C:\Workspace\IPM\Plugins\FlowStateMachine\Intermediate\Build\Win64\UE4Editor\Development\FlowStateMachine_AssetType\Module.FlowStateMachine_AssetType.gen.cpp.obj"
+"C:\Workspace\IPM\Plugins\FlowStateMachine\Intermediate\Build\Win64\UE4Editor\Development\FlowStateMachine_AssetType\Default.rc2.res"
+/OUT:"C:\Workspace\IPM\Plugins\FlowStateMachine\Intermediate\Build\Win64\UE4Editor\Development\FlowStateMachine_AssetType\UE4Editor-FlowStateMachine_AssetType.lib"

@@ -1,0 +1,13 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UE4Editor-FlowStateMachine_Editor.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Workspace\IPM\Intermediate\Build\Win64\IPMEditor\Development\UnrealEd\SharedPCH.UnrealEd.ShadowErrors.h.obj"
+"C:\Workspace\IPM\Plugins\FlowStateMachine\Intermediate\Build\Win64\UE4Editor\Development\FlowStateMachine_Editor\Module.FlowStateMachine_Editor.cpp.obj"
+"C:\Workspace\IPM\Plugins\FlowStateMachine\Intermediate\Build\Win64\UE4Editor\Development\FlowStateMachine_Editor\Module.FlowStateMachine_Editor.gen.cpp.obj"
+"C:\Workspace\IPM\Plugins\FlowStateMachine\Intermediate\Build\Win64\UE4Editor\Development\FlowStateMachine_Editor\Default.rc2.res"
+/OUT:"C:\Workspace\IPM\Plugins\FlowStateMachine\Intermediate\Build\Win64\UE4Editor\Development\FlowStateMachine_Editor\UE4Editor-FlowStateMachine_Editor.lib"

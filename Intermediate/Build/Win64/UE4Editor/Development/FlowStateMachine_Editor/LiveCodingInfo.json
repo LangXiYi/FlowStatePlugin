@@ -1,0 +1,50 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.FlowStateMachine_Editor.cpp.obj": [
+			"FlowStateMachine_EditorModule.cpp.obj",
+			"FSMEditorToolbar.cpp.obj",
+			"FSMGraphEditor.cpp.obj",
+			"FSMGraph.cpp.obj",
+			"EdGraphSchema_FSM.cpp.obj",
+			"IFlowStateMachineEditor.cpp.obj",
+			"CommonDataEditorAppMode.cpp.obj",
+			"FSMEditorAppMode.cpp.obj",
+			"FSMGraphNode_Branch.cpp.obj",
+			"FSMGraphNode_Jump.cpp.obj",
+			"FSMGraphNode_Switch.cpp.obj",
+			"FSMGraphNode.cpp.obj",
+			"FSMGraphNode_Composites.cpp.obj",
+			"FSMGraphNode_Root.cpp.obj",
+			"FSMGraphNode_State.cpp.obj",
+			"FSMGraphNodeBase.cpp.obj",
+			"FSMGraphSubNode.cpp.obj",
+			"SFSMGraphNode_JumpStart.cpp.obj",
+			"SFSMGraphNode_JumpTo.cpp.obj",
+			"SFSMGraphNode_Root.cpp.obj",
+			"SFSMGraphNode_State.cpp.obj",
+			"SFSMGraphNodeBase.cpp.obj",
+			"SFSMGraphPalette.cpp.obj",
+			"SFSMGraphSubNode.cpp.obj",
+			"SGraphEditorActionMenu_FSM.cpp.obj",
+			"CommonDataTabSummoner.cpp.obj",
+			"FSMEditorTabsHelper.cpp.obj",
+			"FSMTabSummoner.cpp.obj",
+			"FSMEditorCore.cpp.obj"
+		],
+		"Module.FlowStateMachine_Editor.gen.cpp.obj": [
+			"EdGraphSchema_FSM.gen.cpp.obj",
+			"FlowStateMachine_Editor.init.gen.cpp.obj",
+			"FSMGraph.gen.cpp.obj",
+			"FSMGraphNode.gen.cpp.obj",
+			"FSMGraphNode_Branch.gen.cpp.obj",
+			"FSMGraphNode_Composites.gen.cpp.obj",
+			"FSMGraphNode_Jump.gen.cpp.obj",
+			"FSMGraphNode_Root.gen.cpp.obj",
+			"FSMGraphNode_State.gen.cpp.obj",
+			"FSMGraphNode_Switch.gen.cpp.obj",
+			"FSMGraphNodeBase.gen.cpp.obj",
+			"FSMGraphSubNode.gen.cpp.obj"
+		]
+	}
+}

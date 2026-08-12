@@ -1,0 +1,21 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.FlowStateMachine_AssetType.cpp.obj": [
+			"FlowStateClassParentFilter.cpp.obj",
+			"FlowStateMachineFactories.cpp.obj",
+			"FlowStateBlueprint.cpp.obj",
+			"FlowStateMachine_AssetType.cpp.obj",
+			"AssetTypeActions_FlowState.cpp.obj",
+			"AssetTypeActions_FlowStateData.cpp.obj",
+			"AssetTypeActions_FlowStateMachine.cpp.obj"
+		],
+		"Module.FlowStateMachine_AssetType.gen.cpp.obj": [
+			"Factory_FlowState.gen.cpp.obj",
+			"Factory_FlowStateData.gen.cpp.obj",
+			"Factory_FlowStateMachine.gen.cpp.obj",
+			"FlowStateBlueprint.gen.cpp.obj",
+			"FlowStateMachine_AssetType.init.gen.cpp.obj"
+		]
+	}
+}
